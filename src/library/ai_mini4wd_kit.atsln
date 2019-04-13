@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Atmel Studio Solution File, Format Version 11.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "libsamd51", "libsamd51\libsamd51.cproj", "{DCE6C7E3-EE26-4D79-826B-08594B9AD897}"
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "libaimini4wd", "libaimini4wd\libaimini4wd.cproj", "{BCC9B307-7041-4E0B-9942-67C7FD43D8D9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897} = {DCE6C7E3-EE26-4D79-826B-08594B9AD897}
+	EndProjectSection
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "library_test", "library_test\library_test.cproj", "{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BCC9B307-7041-4E0B-9942-67C7FD43D8D9} = {BCC9B307-7041-4E0B-9942-67C7FD43D8D9}
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897} = {DCE6C7E3-EE26-4D79-826B-08594B9AD897}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.ActiveCfg = Debug|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.Build.0 = Debug|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Release|ARM.ActiveCfg = Release|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Release|ARM.Build.0 = Release|ARM
+		{BCC9B307-7041-4E0B-9942-67C7FD43D8D9}.Debug|ARM.ActiveCfg = Debug|ARM
+		{BCC9B307-7041-4E0B-9942-67C7FD43D8D9}.Debug|ARM.Build.0 = Debug|ARM
+		{BCC9B307-7041-4E0B-9942-67C7FD43D8D9}.Release|ARM.ActiveCfg = Release|ARM
+		{BCC9B307-7041-4E0B-9942-67C7FD43D8D9}.Release|ARM.Build.0 = Release|ARM
+		{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}.Debug|ARM.ActiveCfg = Debug|ARM
+		{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}.Debug|ARM.Build.0 = Debug|ARM
+		{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}.Release|ARM.ActiveCfg = Release|ARM
+		{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

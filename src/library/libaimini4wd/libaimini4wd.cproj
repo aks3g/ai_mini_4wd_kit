@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>7.0</ProjectVersion>
+    <ToolchainName>com.Atmel.ARMGCC.C</ToolchainName>
+    <ProjectGuid>{bcc9b307-7041-4e0b-9942-67c7fd43d8d9}</ProjectGuid>
+    <avrdevice>ATSAMD51J20A</avrdevice>
+    <avrdeviceseries>none</avrdeviceseries>
+    <OutputType>StaticLibrary</OutputType>
+    <Language>C</Language>
+    <OutputFileName>lib$(MSBuildProjectName)</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
+    <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
+    <AvrGccProjectExtensions>
+    </AvrGccProjectExtensions>
+    <AssemblyName>libaimini4wd</AssemblyName>
+    <Name>libaimini4wd</Name>
+    <RootNamespace>libaimini4wd</RootNamespace>
+    <ToolchainFlavour>Native</ToolchainFlavour>
+    <KeepTimersRunning>true</KeepTimersRunning>
+    <OverrideVtor>false</OverrideVtor>
+    <CacheFlash>true</CacheFlash>
+    <ProgFlashFromRam>true</ProgFlashFromRam>
+    <RamSnippetAddress>0x20000000</RamSnippetAddress>
+    <UncachedRange />
+    <preserveEEPROM>true</preserveEEPROM>
+    <OverrideVtorValue>exception_table</OverrideVtorValue>
+    <BootSegment>2</BootSegment>
+    <ResetRule>0</ResetRule>
+    <eraseonlaunchrule>0</eraseonlaunchrule>
+    <EraseKey />
+    <AsfFrameworkConfig>
+      <framework-data xmlns="">
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.35.1" />
+        </dependencies>
+      </framework-data>
+    </AsfFrameworkConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <ToolchainSettings>
+      <ArmGcc>
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>NDEBUG</Value>
+    </ListValues>
+  </armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+      <Value>../include</Value>
+      <Value>../include/internal</Value>
+      <Value>../../include</Value>
+    </ListValues>
+  </armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </armgcc.linker.libraries.Libraries>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
+  <armgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+    </ListValues>
+  </armgcc.assembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+    </ListValues>
+  </armgcc.preprocessingassembler.general.IncludePaths>
+</ArmGcc>
+    </ToolchainSettings>
+    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(SolutionDir)\include
+cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
+    <OutputFileName>libaimini4wd</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <ToolchainSettings>
+      <ArmGcc>
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+    </ListValues>
+  </armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+      <Value>../include</Value>
+      <Value>../include/internal</Value>
+      <Value>../../include</Value>
+    </ListValues>
+  </armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </armgcc.linker.libraries.Libraries>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
+  <armgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+    </ListValues>
+  </armgcc.assembler.general.IncludePaths>
+  <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
+  <armgcc.preprocessingassembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+    </ListValues>
+  </armgcc.preprocessingassembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
+</ArmGcc>
+    </ToolchainSettings>
+    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(SolutionDir)\include
+cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
+    <OutputFileName>libaimini4wd</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="include" />
+    <Folder Include="driver" />
+    <Folder Include="include\internal" />
+    <Folder Include="file_system" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="driver\lsm6ds3h.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="file_system\diskio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="file_system\ff.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="file_system\ffsystem.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="file_system\ffunicode.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="file_system\sdhc_diskio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="fs.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="gpio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="hids.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd_error.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd_fs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd_hid.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd_motor_driver.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd_sensor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd_timer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\clock.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\diskio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\ff.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\ffconf.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\fs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\hids.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\lsm6ds3h.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\pwm.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\mmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\sdhc_diskio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\sensor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\timer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\sdk_version.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="pwm.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="sensor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="system_software.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="timer.c">
+      <SubType>compile</SubType>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
+</Project>
