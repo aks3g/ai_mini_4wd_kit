@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>7.0</ProjectVersion>
+    <ToolchainName>com.Atmel.ARMGCC.C</ToolchainName>
+    <ProjectGuid>dce6c7e3-ee26-4d79-826b-08594b9ad897</ProjectGuid>
+    <avrdevice>ATSAMD51J20A</avrdevice>
+    <avrdeviceseries>none</avrdeviceseries>
+    <OutputType>Executable</OutputType>
+    <Language>C</Language>
+    <OutputFileName>$(MSBuildProjectName)</OutputFileName>
+    <OutputFileExtension>.elf</OutputFileExtension>
+    <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
+    <AssemblyName>skeleton</AssemblyName>
+    <Name>skeleton</Name>
+    <RootNamespace>skeleton</RootNamespace>
+    <ToolchainFlavour>Native</ToolchainFlavour>
+    <KeepTimersRunning>true</KeepTimersRunning>
+    <OverrideVtor>false</OverrideVtor>
+    <CacheFlash>true</CacheFlash>
+    <ProgFlashFromRam>true</ProgFlashFromRam>
+    <RamSnippetAddress />
+    <UncachedRange />
+    <preserveEEPROM>true</preserveEEPROM>
+    <OverrideVtorValue />
+    <BootSegment>2</BootSegment>
+    <ResetRule>0</ResetRule>
+    <eraseonlaunchrule>0</eraseonlaunchrule>
+    <EraseKey />
+    <AsfFrameworkConfig>
+      <framework-data xmlns="">
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.35.1" />
+        </dependencies>
+      </framework-data>
+    </AsfFrameworkConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <ToolchainSettings>
+      <ArmGcc>
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.directories.IncludePaths><ListValues><Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value><Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value><Value>../../../library/include</Value></ListValues></armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.linker.libraries.Libraries><ListValues><Value>libm</Value><Value>libsamd51.a</Value><Value>libaimini4wd.a</Value></ListValues></armgcc.linker.libraries.Libraries>
+  <armgcc.linker.libraries.LibrarySearchPaths><ListValues><Value>%24(ProjectDir)\Device_Startup</Value><Value>../../../library/lib</Value></ListValues></armgcc.linker.libraries.LibrarySearchPaths>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM>False</armgcc.linker.memorysettings.ExternalRAM>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51j20a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.assembler.general.IncludePaths><ListValues><Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value><Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value></ListValues></armgcc.assembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.general.IncludePaths><ListValues><Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value><Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value></ListValues></armgcc.preprocessingassembler.general.IncludePaths>
+  <armgcc.compiler.symbols.DefSymbols><ListValues><Value>NDEBUG</Value></ListValues></armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
+</ArmGcc>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <ToolchainSettings>
+      <ArmGcc>
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.directories.IncludePaths><ListValues><Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value><Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value><Value>../../../library/include</Value></ListValues></armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.linker.libraries.Libraries><ListValues><Value>libm</Value><Value>libsamd51.a</Value><Value>libaimini4wd.a</Value></ListValues></armgcc.linker.libraries.Libraries>
+  <armgcc.linker.libraries.LibrarySearchPaths><ListValues><Value>%24(ProjectDir)\Device_Startup</Value><Value>../../../library/lib</Value></ListValues></armgcc.linker.libraries.LibrarySearchPaths>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM>False</armgcc.linker.memorysettings.ExternalRAM>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Tsamd51j20a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.assembler.general.IncludePaths><ListValues><Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value><Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value></ListValues></armgcc.assembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.general.IncludePaths><ListValues><Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value><Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value></ListValues></armgcc.preprocessingassembler.general.IncludePaths>
+  <armgcc.compiler.symbols.DefSymbols><ListValues><Value>DEBUG</Value></ListValues></armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
+  <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
+  <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
+</ArmGcc>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Device_Startup\startup_samd51.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Device_Startup\syscalls.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Device_Startup\system_samd51.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Device_Startup\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Device_Startup\samd51j20a_flash.ld">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="Device_Startup\samd51j20a_sram.ld">
+      <SubType>compile</SubType>
+    </None>
+  </ItemGroup>
+  <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
+</Project>
