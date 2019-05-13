@@ -230,11 +230,6 @@ int main(void)
 	aiMini4wdFsSeek(sConsoleOut, 0);
 	aiMini4wdFsSync(sConsoleOut);
 
-	sScriptFile = aiMini4wdFsOpen("test.py", "r");
-	if (sScriptFile == NULL) {
-		__fatal_error("Script Not found.\r\n");
-	}
-
 	ret = aiMini4WdTimerRegister100msCallback(_timer_cb_100ms);
 	if (ret != 0) {
 		__fatal_error("Failed to set Timer callback.");
