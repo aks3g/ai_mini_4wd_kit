@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "sam.h"
+// #include "sam.h"
 #include <ai_mini4wd.h>
 #include <ai_mini4wd_error.h>
 #include <ai_mini4wd_fs.h>
@@ -210,8 +210,6 @@ static AiMini4wdFile *sScriptFile = NULL;
 /*---------------------------------------------------------------------------*/
 int main(void)
 {
-    SystemInit();
-
 	int ret = aiMini4wdInitialize(AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT);
 	if (ret != 0) {
 		aiMini4wdDebugPrintf("Failed to initialize mini4wd ai. ret = %08x\r\n", ret);
@@ -283,24 +281,23 @@ int main(void)
 	mp_init();
     
 soft_reset:
-    for (;;) {
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            if ((ret = pyexec_raw_repl()) != 0) {
-                break;
-            }
+	for (;;) {
+		if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+			if ((ret = pyexec_raw_repl()) != 0) {
+				break;
+			}
 			//J 強制的にFlushする
 			aiMini4wdFsPutsFlush(sConsoleOut);
 			aiMini4wdFsTruncate(sConsoleOut);
 			aiMini4wdFsSync(sConsoleOut);
-			
+
 			//J LEDを起動状態にしておく
 			aiMini4wdPrintLedPattern(0);
-        } else {
-            if ((ret = pyexec_friendly_repl()) != 0) {
-                break;
-            }
-        }
-
+		} else {
+			if ((ret = pyexec_friendly_repl()) != 0) {
+				break;
+			}
+		}
     }
 	aiMini4wdFsSync(sConsoleOut);
 
@@ -318,6 +315,13 @@ void nlr_jump_fail(void *val) {
 }
 
 void NORETURN __fatal_error(const char *msg) {
+	//J Fatalで落ちたときにディスクを無駄にしないように修正
+	aiMini4wdFsPuts(sConsoleOut, msg, strlen(msg));
+	aiMini4wdFsPutsFlush(sConsoleOut);
+	aiMini4wdFsTruncate(sConsoleOut);
+	aiMini4wdFsSync(sConsoleOut);
+
+
 	aiMini4wdSetErrorStatus(1);
 	aiMini4wdDebugPrintf("[FATAL] %s\r\n", msg);
     while (1);

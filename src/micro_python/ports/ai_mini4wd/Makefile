@@ -1,23 +1,17 @@
 include ../../py/mkenv.mk
 
-CROSS = 1
-
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-ifeq ($(CROSS), 1)
-CROSS_COMPILE=/opt/arm/arm-gnu-toolchain/bin/arm-none-eabi-
-endif
-
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I../../../include/
-INC += -I../../../../../../import/packs/atmel/SAMD51_DFP/1.0.70/include/
-INC += -I../../../../../../import/packs/arm/cmsis/5.0.1/CMSIS/Include/
+INC += -I../../../library/include/
+INC += -I$(PACKS_PATH)/atmel/SAMD51_DFP/1.0.70/include/
+INC += -I$(PACKS_PATH)/arm/cmsis/5.0.1/CMSIS/Include/
 
 
 LD = $(CROSS_COMPILE)gcc
@@ -39,7 +33,7 @@ CFLAGS += -fdata-sections -ffunction-sections
 endif
 
 
-LIB = -L../../../lib
+LIB = -L../../../library/lib
 LIBS = -laimini4wd -lsamd51 -lm
 
 SRC_C = \
@@ -59,11 +53,7 @@ SRC_C = \
 
 OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-ifeq ($(CROSS), 1)
 all: $(BUILD)/firmware.dfu
-else
-all: $(BUILD)/firmware.elf
-endif
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
@@ -84,6 +74,7 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(PYDFU) -u $<
+
 
 # Run emulation build on a POSIX system with suitable terminal settings
 run:
