@@ -10,6 +10,9 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I../../../library/include/
+INC += -I$(PACKS_PATH)/atmel/SAMD51_DFP/1.0.70/include/
+INC += -I$(PACKS_PATH)/arm/cmsis/5.0.1/CMSIS/Include/
+
 
 LD = $(CROSS_COMPILE)gcc
 
@@ -38,6 +41,9 @@ SRC_C = \
 	mini4wd.c \
 	mini4wd_type.c \
 	modpyb.c \
+	startup_samd51.c \
+	system_samd51.c \
+	syscalls.c \
 	lib/utils/printf.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
