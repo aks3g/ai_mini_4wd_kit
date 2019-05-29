@@ -51,7 +51,7 @@ SRC_C = \
 	lib/mp-readline/readline.c \
 	$(BUILD)/_frozen_mpy.c \
 
-OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 all: $(BUILD)/firmware.dfu
 
