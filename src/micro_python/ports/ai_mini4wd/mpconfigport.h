@@ -75,6 +75,10 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 
+// extended modules
+#define MICROPY_PY_URANDOM             (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))

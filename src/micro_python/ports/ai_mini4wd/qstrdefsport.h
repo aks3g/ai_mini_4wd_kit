@@ -57,6 +57,9 @@ Q(radians)
 Q(trunc)
 Q(gamma)
 
+// ext
+Q(urandom)
+
 
 
 
