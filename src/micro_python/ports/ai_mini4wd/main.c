@@ -16,6 +16,7 @@
 #include <ai_mini4wd_timer.h>
 #include <ai_mini4wd_sensor.h>
 
+#include "samd51.h"
 
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -23,6 +24,8 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "lib/utils/pyexec.h"
+
+#include "storage_if.h"
 
 static char *stack_top;
 static char heap[128*1024];
@@ -274,7 +277,32 @@ int main(void)
 	gc_init(heap, heap + sizeof(heap));
 #endif
 	mp_init();
-    
+
+	//J Initialize VFS
+	fs_user_mount_t *vfs_fat = m_new_obj_maybe(fs_user_mount_t);
+	vfs_fat->flags = FSUSER_FREE_OBJ;
+	ai_mini4wd_fs_init_vfs(vfs_fat);
+
+	//J マウントが成功（＝SDK側で正しくMMCカードが初期化できている）
+	//J した場合にはVFSのカレントを移動する
+	mp_vfs_mount_t *vfs      = m_new_obj_maybe(mp_vfs_mount_t);
+	int res = f_mount(&vfs_fat->fatfs);
+	if (res == 0) {
+		vfs->str = "/sd";
+		vfs->len = 3;
+		vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+		vfs->next = NULL;
+
+		mp_vfs_mount_t **m;
+		for (m = &MP_STATE_VM(vfs_mount_table); ; m = &(*m)->next) {
+			if (*m == NULL) {
+				*m = vfs;
+				break;
+			}
+		}
+		MP_STATE_PORT(vfs_cur) = vfs;
+	}
+
 soft_reset:
 	for (;;) {
 		if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -322,18 +350,19 @@ void NORETURN __fatal_error(const char *msg) {
     while (1);
 }
 
-mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
-}
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    mp_raise_OSError(MP_ENOENT);
-}
+//J FatfsのPortingに必要
+DWORD get_fattime(void)
+{
+	uint32_t year = 2018;
+	uint32_t month = 4;
+	uint32_t date  = 17;
+	uint32_t hours = 23;
+	uint32_t minutes = 45;
+	uint32_t seconds = 0;
 
-mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_const_none;
+    return ((2000 + year - 1980) << 25) | ((month) << 21) | ((date) << 16) | ((hours) << 11) | ((minutes) << 5) | (seconds / 2);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 
 void gc_collect(void) {
@@ -343,7 +372,6 @@ void gc_collect(void) {
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
-//  gc_dump_info();
 }
 
 /*---------------------------------------------------------------------------*/

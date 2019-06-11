@@ -65,6 +65,10 @@
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (0)
+#define MICROPY_READER_VFS          (1)
+#define MICROPY_VFS                         (1)
+#define MICROPY_VFS_FAT                     (1)
+#define MICROPY_PY_IO_FILEIO        (1)
 
 #define MICROPY_MODULE_BUILTIN_INIT         (1)
 #define MICROPY_MODULE_WEAK_LINKS           (1)
@@ -78,6 +82,17 @@
 // extended modules
 #define MICROPY_PY_URANDOM             (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+
+
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_MULTI_PARTITION  (1)
+
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
 
 // type definitions for the specific machine
 
@@ -95,6 +110,11 @@ typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+
+
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

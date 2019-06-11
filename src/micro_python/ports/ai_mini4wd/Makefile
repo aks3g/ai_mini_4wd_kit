@@ -6,12 +6,14 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+FATFS_DIR=lib/oofatfs
+
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I../../../library/include/
 INC += -I$(PACKS_PATH)/atmel/SAMD51_DFP/1.0.70/include/
-INC += -I$(PACKS_PATH)/arm/cmsis/5.0.1/CMSIS/Include/
+INC += -I$(PACKS_PATH)/arm/CMSIS/Include/
 
 
 LD = $(CROSS_COMPILE)gcc
@@ -20,7 +22,7 @@ DFU = $(TOP)/tools/dfu.py
 PYDFU = $(TOP)/tools/pydfu.py
 #CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_CORTEX_M4 = -mthumb -D__SAMD51J20A__ -mcpu=cortex-m4
-CFLAGS = -x c $(INC) -D__SAMD51J20A__ -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+CFLAGS = -x c $(INC) -D__SAMD51J20A__ -Wall -Werror -std=c99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS = -mthumb -Wl,-Map=$@.map  -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m4 -T samd51j20a_flash.ld
 
 
@@ -37,13 +39,17 @@ LIB = -L../../../library/lib
 LIBS = -laimini4wd -lsamd51 -lm
 
 SRC_C = \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/unicode.c \
 	main.c \
 	mini4wd.c \
 	mini4wd_type.c \
+	storage_if.c \
 	modpyb.c \
 	startup_samd51.c \
 	system_samd51.c \
 	syscalls.c \
+	lib/timeutils/timeutils.c \
 	lib/utils/printf.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
@@ -52,6 +58,9 @@ SRC_C = \
 	$(BUILD)/_frozen_mpy.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+
+$(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
+$(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 all: $(BUILD)/firmware.dfu
 

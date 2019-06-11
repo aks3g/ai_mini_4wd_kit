@@ -37,6 +37,11 @@ Q(waitIntTrig)
 Q(waitExtTrig)
 Q(checkExtTrig)
 
+//J FS
+Q(ai_mini4wd_disk)
+Q(readblocks)
+Q(writeblocks)
+Q(ioctl)
 
 //J PYB
 Q(pyb)
