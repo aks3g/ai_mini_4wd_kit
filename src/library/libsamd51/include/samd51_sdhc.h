@@ -1054,7 +1054,7 @@ typedef enum SAMD51_SDHC_CARD_TYPE_t
 #define SAMD51_SDHC_CARD_STATUS_NODISK		(0x00000001)
 #define SAMD51_SDHC_CARD_STATUS_NOINIT		(0x00000002)
 
-typedef struct Samd51_dhcCardContext_t
+typedef struct Samd51_sdhcCardContext_t
 {
 	uint32_t status;
 	uint32_t rca;
@@ -1063,7 +1063,7 @@ typedef struct Samd51_dhcCardContext_t
 	
 	SdcCidReg cid;
 	SdcCsdReg csd;
-} Samd51_dhcCardContext;
+} Samd51_sdhcCardContext;
 
 
 //----------------------------------------------------------------------------
@@ -1086,8 +1086,8 @@ int samd51_sdhc_send_cmd_blocing(SAMD51_SDHC sdhc, uint16_t cmd, uint32_t arg, v
 int samd51_sdhc_send_cmd(SAMD51_SDHC sdhc, uint16_t cmd, uint32_t arg, Samd51SdhcTransactionDoneCallback cb);
 
 
-int samd51_sdhc_card_initialization_and_identification(SAMD51_SDHC sdhc, Samd51_dhcCardContext *ctx);
-int samd51_transfer(SAMD51_SDHC sdhc,  Samd51_dhcCardContext *ctx, int dir_read, uint32_t sector, void *buf, uint32_t length_byte, int blocking);
+int samd51_sdhc_card_initialization_and_identification(SAMD51_SDHC sdhc, Samd51_sdhcCardContext *ctx);
+int samd51_transfer(SAMD51_SDHC sdhc,  Samd51_sdhcCardContext *ctx, int dir_read, uint32_t sector, void *buf, uint32_t length_byte, int blocking);
 
 int samd51_sdhc_changing_bus_width(SAMD51_SDHC sdhc, uint16_t rca, SAMD51_SDHC_BUS_WIDTH bus_width);
 int samd51_sdhc_timeout_setting_on_dat_line(SAMD51_SDHC sdhc, uint32_t timeout_us);

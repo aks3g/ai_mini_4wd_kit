@@ -112,7 +112,7 @@ int aiMini4wdFsInitialize(void)
 	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
 	while ((tick + 2000) > aiMini4WdTimerGetSystemtick());
 
-	FRESULT res = f_mount(&sFatFs, "", 1);
+	FRESULT res = _f_mount(&sFatFs, "", 1);
 
 	return _aiMini4wdFsErrorCodeConvert(res);	
 }
@@ -154,7 +154,7 @@ AiMini4wdFile *aiMini4wdFsOpen(const char *path, const char *mode)
 		return NULL;
 	}
 
-	FRESULT res =  f_open(fil, path, mode_b);
+	FRESULT res =  _f_open(fil, path, mode_b);
 	if (res != FR_OK) {
 		_destroyFileDescriptor((AiMini4wdFile *)fil);
 		return NULL;		
@@ -167,7 +167,7 @@ AiMini4wdFile *aiMini4wdFsOpen(const char *path, const char *mode)
 /*--------------------------------------------------------------------------*/
 void aiMini4wdFsClose(AiMini4wdFile *file)
 {
-	f_close((FIL*)file);
+	_f_close((FIL*)file);
 	_destroyFileDescriptor(file);	
 }
 
@@ -175,7 +175,7 @@ void aiMini4wdFsClose(AiMini4wdFile *file)
 int aiMini4wdFsRead(AiMini4wdFile *file, void *buf, size_t size)
 {
 	UINT read_size = 0;
-	FRESULT res = f_read((FIL*)file, buf, size, &read_size);
+	FRESULT res = _f_read((FIL*)file, buf, size, &read_size);
 	if (res != FR_OK) {
 		return _aiMini4wdFsErrorCodeConvert(res);
 	}
@@ -187,7 +187,7 @@ int aiMini4wdFsRead(AiMini4wdFile *file, void *buf, size_t size)
 int aiMini4wdFsWrite(AiMini4wdFile *file, const void *buf, size_t size)
 {
 	UINT write_size = 0;
-	FRESULT res = f_write((FIL*)file, buf, size, &write_size);
+	FRESULT res = _f_write((FIL*)file, buf, size, &write_size);
 	if (res != FR_OK) {
 		return _aiMini4wdFsErrorCodeConvert(res);
 	}
@@ -198,7 +198,7 @@ int aiMini4wdFsWrite(AiMini4wdFile *file, const void *buf, size_t size)
 /*--------------------------------------------------------------------------*/
 int aiMini4wdFsSeek(AiMini4wdFile *file, int32_t offset)
 {
-	FRESULT res = f_lseek((FIL*)file, offset);
+	FRESULT res = _f_lseek((FIL*)file, offset);
 	
 	return _aiMini4wdFsErrorCodeConvert(res);
 }
@@ -206,19 +206,19 @@ int aiMini4wdFsSeek(AiMini4wdFile *file, int32_t offset)
 /*--------------------------------------------------------------------------*/
 int aiMini4wdFsSize(AiMini4wdFile *file)
 {
-	return f_size((FIL*)file);
+	return _f_size((FIL*)file);
 }
 
 /*--------------------------------------------------------------------------*/
 int aiMini4wdFsEof(AiMini4wdFile *file)
 {
-	return f_eof((FIL*)file);
+	return _f_eof((FIL*)file);
 }
 
 /*--------------------------------------------------------------------------*/
 int aiMini4wdFsSync(AiMini4wdFile *file)
 {
-	FRESULT ret = f_sync((FIL *)file);
+	FRESULT ret = _f_sync((FIL *)file);
 	
 	return _aiMini4wdFsErrorCodeConvert(ret);
 }
@@ -226,7 +226,7 @@ int aiMini4wdFsSync(AiMini4wdFile *file)
 /*--------------------------------------------------------------------------*/
 int aiMini4wdFsTruncate(AiMini4wdFile *file)
 {
-	FRESULT ret = f_truncate((FIL *)file);
+	FRESULT ret = _f_truncate((FIL *)file);
 	return _aiMini4wdFsErrorCodeConvert(ret);
 }
 
@@ -238,7 +238,7 @@ int aiMini4wdFsStat(const char *path, AiMini4wdFileInfo *info)
 	}
 	
 	FILINFO fno;
-	FRESULT res = f_stat(path, &fno);
+	FRESULT res = _f_stat(path, &fno);
 	if (res != FR_OK) {
 		return _aiMini4wdFsErrorCodeConvert(res);
 	}
@@ -260,7 +260,7 @@ int aiMini4wdFsPrintf(AiMini4wdFile *file, const char *str, ...)
     int len = vsnprintf(gCommonLineBuf, sizeof(gCommonLineBuf), str, ap );
     va_end( ap );
 
-	f_puts(gCommonLineBuf, (FIL*)file);
+	_f_puts(gCommonLineBuf, (FIL*)file);
 
 	return len;
 }
@@ -279,7 +279,7 @@ int aiMini4wdFsPuts(AiMini4wdFile *file, const char *str, size_t len)
 		if (sBufferdSize >= sizeof(sPutsBuf[sActiveBufIndex])) {
 			sBufferdSize = 0;
 			UINT written = 0;
-			f_write((FIL*)file, sPutsBuf[sActiveBufIndex], sizeof(sPutsBuf[sActiveBufIndex]), &written);
+			_f_write((FIL*)file, sPutsBuf[sActiveBufIndex], sizeof(sPutsBuf[sActiveBufIndex]), &written);
 //			f_sync((FIL*)file);
 
 			sActiveBufIndex = 1-sActiveBufIndex;
@@ -294,7 +294,7 @@ int aiMini4wdFsPuts(AiMini4wdFile *file, const char *str, size_t len)
 int aiMini4wdFsPutsFlush(AiMini4wdFile *file)
 {
 	UINT written = 0;
-	f_write((FIL *)file, sPutsBuf[sActiveBufIndex], sBufferdSize, &written);
+	_f_write((FIL *)file, sPutsBuf[sActiveBufIndex], sBufferdSize, &written);
 	
 	sBufferdSize = 0;
 	sActiveBufIndex = 1 - sActiveBufIndex;
@@ -306,7 +306,7 @@ int aiMini4wdFsPutsFlush(AiMini4wdFile *file)
 /*--------------------------------------------------------------------------*/
 char *aiMini4wdFsGets(AiMini4wdFile *file, char *buf, size_t len)
 {
-	return f_gets(buf, len, (FIL*)file);
+	return _f_gets(buf, len, (FIL*)file);
 }
 
 

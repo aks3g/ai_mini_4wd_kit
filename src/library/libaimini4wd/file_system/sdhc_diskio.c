@@ -18,12 +18,19 @@
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-static Samd51_dhcCardContext sCardCtx;
+static Samd51_sdhcCardContext sCardCtx;
 
+
+//J 行儀が悪いですが、micro Python側からFSを使えるようにするために仕方がない…
+Samd51_sdhcCardContext *aiMini4wdGetSdhcCardContextFromSDK_only_for_microPython_porting(void)
+{
+	return &sCardCtx;
+}
 
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
+#if 0
 static int _print_cid_regs(SdcCidReg *reg)
 {
 	if (reg == NULL) {
@@ -46,7 +53,7 @@ static int _print_cid_regs(SdcCidReg *reg)
 
 	return 0;
 }
-
+#endif
 
 /*-----------------------------------------------------------------------*/
 /* Initialize Disk Drive                                                 */

@@ -13,7 +13,7 @@
 /* Allocate a memory block                                                */
 /*------------------------------------------------------------------------*/
 
-void* ff_memalloc (	/* Returns pointer to the allocated memory block (null if not enough core) */
+void* _ff_memalloc (	/* Returns pointer to the allocated memory block (null if not enough core) */
 	UINT msize		/* Number of bytes to allocate */
 )
 {
@@ -25,7 +25,7 @@ void* ff_memalloc (	/* Returns pointer to the allocated memory block (null if no
 /* Free a memory block                                                    */
 /*------------------------------------------------------------------------*/
 
-void ff_memfree (
+void _ff_memfree (
 	void* mblock	/* Pointer to the memory block to free (nothing to do if null) */
 )
 {
@@ -49,7 +49,7 @@ void ff_memfree (
 //const osMutexDef_t Mutex[FF_VOLUMES];	/* Table of CMSIS-RTOS mutex */
 
 
-int ff_cre_syncobj (	/* 1:Function succeeded, 0:Could not create the sync object */
+int _ff_cre_syncobj (	/* 1:Function succeeded, 0:Could not create the sync object */
 	BYTE vol,			/* Corresponding volume (logical drive number) */
 	FF_SYNC_t* sobj		/* Pointer to return the created sync object */
 )
@@ -82,11 +82,11 @@ int ff_cre_syncobj (	/* 1:Function succeeded, 0:Could not create the sync object
 /* Delete a Synchronization Object                                        */
 /*------------------------------------------------------------------------*/
 /* This function is called in f_mount() function to delete a synchronization
-/  object that created with ff_cre_syncobj() function. When a 0 is returned,
+/  object that created with _ff_cre_syncobj() function. When a 0 is returned,
 /  the f_mount() function fails with FR_INT_ERR.
 */
 
-int ff_del_syncobj (	/* 1:Function succeeded, 0:Could not delete due to an error */
+int _ff_del_syncobj (	/* 1:Function succeeded, 0:Could not delete due to an error */
 	FF_SYNC_t sobj		/* Sync object tied to the logical drive to be deleted */
 )
 {
@@ -117,7 +117,7 @@ int ff_del_syncobj (	/* 1:Function succeeded, 0:Could not delete due to an error
 /  When a 0 is returned, the file function fails with FR_TIMEOUT.
 */
 
-int ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a grant */
+int _ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a grant */
 	FF_SYNC_t sobj	/* Sync object to wait */
 )
 {
@@ -146,7 +146,7 @@ int ff_req_grant (	/* 1:Got a grant to access the volume, 0:Could not get a gran
 /* This function is called on leaving file functions to unlock the volume.
 */
 
-void ff_rel_grant (
+void _ff_rel_grant (
 	FF_SYNC_t sobj	/* Sync object to be signaled */
 )
 {

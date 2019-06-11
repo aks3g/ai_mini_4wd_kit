@@ -251,7 +251,7 @@ int samd51_sdhc_send_cmd_blocing(SAMD51_SDHC sdhc, uint16_t cmd, uint32_t arg, v
 }
 
 /*--------------------------------------------------------------------------*/
-int samd51_sdhc_card_initialization_and_identification(SAMD51_SDHC sdhc, Samd51_dhcCardContext *ctx)
+int samd51_sdhc_card_initialization_and_identification(SAMD51_SDHC sdhc, Samd51_sdhcCardContext *ctx)
 {
 	int flagCMD8 = 0;
 	if (ctx == NULL) {
@@ -361,7 +361,7 @@ int samd51_sdhc_card_initialization_and_identification(SAMD51_SDHC sdhc, Samd51_
 }
 
 /*--------------------------------------------------------------------------*/
-int samd51_transfer(SAMD51_SDHC sdhc, Samd51_dhcCardContext *ctx, int dir_read, uint32_t sector, void *buf, uint32_t length, int blocking)
+int samd51_transfer(SAMD51_SDHC sdhc, Samd51_sdhcCardContext *ctx, int dir_read, uint32_t sector, void *buf, uint32_t length, int blocking)
 {
 	static const uint16_t cSdhcTransferCmdTable[4] =
 	{
@@ -686,7 +686,6 @@ void SDHC0_Handler(void)
 	return;
 }
 
-
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 static int _sdhc_acmd41(void)
@@ -783,3 +782,4 @@ static void _recover_cmd_line(SAMD51_SDHC sdhc)
 	
 	return;
 }
+
