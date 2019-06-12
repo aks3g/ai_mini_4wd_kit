@@ -169,6 +169,9 @@ cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="include\samd51_interrupt.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\samd51_nvmctrl.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\samd51_sdhc.h">
       <SubType>compile</SubType>
     </Compile>
@@ -200,6 +203,9 @@ cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="samd51_interrupt.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="samd51_nvmctrl.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="samd51_sdhc.c">
