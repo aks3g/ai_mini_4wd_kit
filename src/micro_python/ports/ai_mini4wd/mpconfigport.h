@@ -62,7 +62,7 @@
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (1)
-#define MICROPY_PY_IO               (0)
+#define MICROPY_PY_IO               (1)
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (0)
 #define MICROPY_READER_VFS          (1)
@@ -80,6 +80,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 
 // extended modules
+#define MICROPY_PY_UJSON               (1)
 #define MICROPY_PY_URANDOM             (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 
