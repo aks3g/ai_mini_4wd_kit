@@ -1,0 +1,385 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<style type="text/css">
+<!--
+  html {
+    max-width: 600pt;
+    margin: 0 auto;
+    background: khaki; /* Fills the page */
+  }
+  a {
+    text-decoration: none;
+    color: black;
+  }
+  a:hover {
+    color: khaki;
+    background: darkorange;
+  }
+  .header_menu {
+    background-color: gold;
+    position: fixed;
+    top:  0pt;
+    left: 0;
+    width: 100%;
+    text-align: center;
+  }
+  .footer_menu {
+    background-color: gold;
+    position: fixed;
+    bottom:  0pt;
+    left: 0;
+    width: 100%;
+    height: 30pt;
+  }
+  .wrapper {
+    padding-bottom: 40pt;
+    box-sizing: border-box;
+  }
+  .dash_board {
+    display: inline-block;
+    width: 500px;
+    text-align: left;
+  }
+  .sub_section {
+    margin-top: 10pt;
+    background-color: gold;
+    width: 100%;
+    font-weight: bold;
+  }
+  .menu_title {
+    padding-top: 10pt;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-size: xx-large;
+  }
+  .logo_outline {
+    text-shadow: 2px 2px 0px black,
+      -2px  2px 0px black,
+       2px -2px 0px black,
+      -2px -2px 0px black;
+  }
+
+  .menu_copy {
+    padding-top: 10pt;
+    color: black;
+    text-align: center;
+  }
+  .top {
+    margin-top: 60pt;
+  }
+
+  .control_btn{
+    margin-top: 2pt;
+    margin-bottom: 2pt;
+    width: 100pt;
+    text-align: center;
+
+    display: inline-block;
+    padding: 0.5em 1em;
+    text-decoration: none;
+    background: gold;
+    color: black;
+    border-bottom: solid 4px darkgoldenrod;
+    border-radius: 3px;
+
+    float: center;
+  }
+  .control_btn:active {
+    margin-top: 2pt;
+    margin-bottom: 5pt;
+    width: 100pt;
+    text-align: center;
+
+    -ms-transform: translateY(4px);
+    -webkit-transform: translateY(4px);
+    transform: translateY(4px);/*下に動く*/
+    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);/*影を小さく*/
+    border-bottom: none;
+  }
+
+  .map_canvas {
+  }
+
+  .canvas_graph{
+    overflow-x:scroll;
+  }
+
+-->
+</style>
+<title> AI mini4wd Kit Log Visualizer </title>
+
+<script language="javascript" type="text/javascript">
+window.onload = function() {
+  var canvas = document.getElementById("canvas_graph");
+  canvas.addEventListener('click', canvasOnClick, false);
+}
+
+//J Re-size時には描画をやり直す
+window.onresize = function () {
+}
+
+//J Canvasクリック時の挙動を入れる（TODO）
+function canvasOnClick(evt)
+{
+  console.log(evt)
+
+  //J Canvas上の点を求める
+  var rect = evt.target.getBoundingClientRect();
+  x = evt.clientX - rect.left;
+  y = evt.clientY - rect.top;
+
+  console.log(x.toString(10) + "," + y.toString(10))
+
+  return;
+}
+
+//J TODO読み込むセンサデータの情報を決め打ちにする（将来的に柔軟にやっていきたい）
+var IDX_AX    = 0;
+var IDX_AY    = 1;
+var IDX_AZ    = 2
+var IDX_PITCH = 3;
+var IDX_ROLL  = 4;
+var IDX_YAW   = 5;
+var IDX_RPM   = 6;
+var IDX_VBAT  = 7;
+var IDX_IMOT  = 8;
+
+var SensorName = ["Accel-X", "Accel-Y", "Accel-Z", "Pitch", "Roll", "Yaw", "rpm", "V-BATT", "I-MOT"];
+var SensorUnit = ["mG", "mG", "mG", "mdegree/sec", "mdegree/sec", "mdegree/sec", "rpm", "mV", "mA"];
+
+var SensorData = []
+
+//J センサデータの文字列を解析して配列に入れる
+function loadAndParseSensorFile(file)
+{
+  var reader = new FileReader();
+  reader.readAsText(file);
+
+  //J ファイルの中身を読み込む
+  reader.onload = function (evt) {
+    var raw = reader.result;
+    SensorData = [[],[],[],[],[],[],[],[],[],[]] //J 内容を破棄する
+
+    //J 1行に区切って処理する
+    var lines = raw.split(/\r\n|\r|\n/);
+    lines.forEach( function (line) {
+      //J Tab区切りの数字列なのでこれを処理する
+      var values = line.split(/\t/)
+      if (values.length == 10) { //J TODOレコード数を可変にしていきたい気持ちはある
+        SensorData[IDX_AX].push(Number(values[IDX_AX+1]));
+        SensorData[IDX_AY].push(Number(values[IDX_AY+1]));
+        SensorData[IDX_AZ].push(Number(values[IDX_AZ+1]));
+        SensorData[IDX_PITCH].push(Number(values[IDX_PITCH+1]));
+        SensorData[IDX_ROLL].push(Number(values[IDX_ROLL+1]));
+        SensorData[IDX_YAW].push(Number(values[IDX_YAW+1]));
+        SensorData[IDX_RPM].push(Number(values[IDX_RPM+1]));
+        SensorData[IDX_VBAT].push(Number(values[IDX_VBAT+1]));
+        SensorData[IDX_IMOT].push(Number(values[IDX_IMOT+1]));
+      }
+    });
+
+    //J Canvasにデータを渡す
+    drawGraph(SensorData);
+  }
+}
+
+//J グラフの罫線を引く
+function drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y)
+{
+  ctx2d.lineWidth = 0.5;
+  ctx2d.strokeRect(x, y, w, h);
+
+  ctx2d.beginPath();
+  ctx2d.moveTo    (x, y + h/2);
+  ctx2d.lineWidth = 1;
+  ctx2d.lineTo    (w+x ,y + h/2);
+
+  var i=sub_x;
+  for (i=sub_x + x ; i<w ; i += sub_x) {
+    ctx2d.moveTo(i, y);
+    ctx2d.lineWidth = 0.5;
+    ctx2d.lineTo(i, y+h);
+  }
+  ctx2d.lineWidth = 1.0;
+  ctx2d.closePath();
+  ctx2d.stroke();
+}
+
+
+//J 配列の中で絶対値が一番大きいものを返す
+function checkRange(arr)
+{
+  range_n = Math.min(...arr);
+  range_p = Math.max(...arr);
+
+  return Math.max(Math.abs(range_n), Math.abs(range_p));
+}
+
+//J グラフ本体を描画する
+function drawGraphBody(ctx2d, arr, x0, y0, scale)
+{
+  ctx2d.strokeStyle="maroon";
+  ctx2d.shadowBlur = 2;
+  ctx2d.shadowColor = "indianred"
+  ctx2d.beginPath();
+  ctx2d.moveTo(x0, y0 - arr[0]*scale);
+
+  var i=1;
+  for (i=1 ; i<arr.length ; ++i) {
+    ctx2d.lineTo(x0+i, y0 - arr[i]*scale);
+  }
+  ctx2d.stroke();
+  ctx2d.strokeStyle="black";
+  ctx2d.shadowBlur = 0;
+}
+
+//J Check Boxのうち、チェックされているものの数を調べる
+function checkGraphNum()
+{
+  var num = 0;
+  for (var i=0 ; i<document.data_select_form.sensors.length ; ++i) {
+    if (document.data_select_form.sensors[i].checked) {
+      num++;
+    }
+  }
+
+  return num;
+}
+
+
+//J Canvas上にグラフを描く
+function drawGraph(data)
+{
+  if (SensorData.length == 0) {
+    return
+  }
+
+  var numGraph = checkGraphNum();
+  var canvas = document.getElementById("canvas_graph");
+  var ctx2d = canvas.getContext("2d");
+
+  var graph_margin_y = 10;
+  var height = 150;
+
+  //J Canvas のサイズを決定する
+  var graph_offset_x = 50
+  var width = data[0].length ; //TODO x2スケールでいいのか？
+
+  //J widthはデータ数に依存、heightはデータ種別数に依存
+  canvas.setAttribute("width",  (width +  + graph_offset_x + 10).toString(10));
+  canvas.setAttribute("height", (numGraph * height + graph_margin_y * numGraph).toString(10));
+
+  //J 下地は透明色にする
+  ctx2d.fillStyle = "rgba(0, 0, 0, 0)";
+  ctx2d.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+  //J グラフがない場合はここで終わる
+  if (numGraph == 0) {
+    return;
+  }
+
+  var i;
+  var j = 0;
+  for (i=0 ; i<9 ; ++i) {
+    if (document.data_select_form.sensors[i].checked) {
+      //J Y軸の範囲とグラフ描画時のスケールを決める
+      range = checkRange(data[i]);
+      scale = height / (range * 2)
+
+      drawGraphRuledLine(ctx2d, graph_offset_x, j*(height + graph_margin_y) + graph_margin_y/2, width, height, 52*5, height/4);
+
+      //J 原点に0を描く
+      ctx2d.strokeText("0", graph_offset_x - 10, j*(height + graph_margin_y) + graph_margin_y/2 + height/2);
+
+      //J Rangeを出す
+      ctx2d.textAlign="right";
+      ctx2d.strokeText(Math.round( range).toString(), graph_offset_x - 3, j*(height + graph_margin_y) + graph_margin_y/2 + 10);
+      ctx2d.strokeText(Math.round(-range).toString(), graph_offset_x - 3, j*(height + graph_margin_y) + graph_margin_y/2 + height);
+      ctx2d.textAlign="start";
+
+      //J ラベルを出す
+      label = SensorName[i] + "[" + SensorUnit[i] + "]";
+      ctx2d.save()
+      {
+        //J 中心軸を文字中心に変更する
+        ctx2d.translate(10, j*(height + graph_margin_y) + graph_margin_y/2 + height/2);
+        ctx2d.rotate(-90 * Math.PI/180);
+        ctx2d.textAlign="center";
+        ctx2d.strokeText(label, 0, 0);
+      }
+      ctx2d.restore();
+
+      drawGraphBody(ctx2d, data[i], graph_offset_x, j*(height + graph_margin_y) + graph_margin_y/2 + height/2, scale);
+      j++;
+    }
+  }
+}
+
+
+//J HTML標準のファイル選択の仕組みを使いたくないが故の暴挙
+function onFileLoadButtonClick()
+{
+  document.getElementById("sensor_file").click();
+  document.getElementById("sensor_file").addEventListener('change', handleSensorFileSelect, false);
+}
+
+function handleSensorFileSelect(evt)
+{
+  var file = evt.target.files[0];
+
+  //J ファイル名の表示
+  sensor_file_name.innerHTML = file.name;
+
+  //J ファイルの内容をパースする
+  loadAndParseSensorFile(file);
+}
+
+</script>
+
+</HEAD>
+<BODY>
+<div class="header_menu">
+  <div class="dash_board">
+    <div class="menu_title"> <font class="logo_outline">AI mini4wd Kit</font></div>
+  </div>
+</div>
+<div class="top" id="top"></div>
+
+<div class = "wrapper">
+<div class = "map_canvas" id = "sensor_visualizer">
+  <div class = "sub_section">Visualize Sensor Data</div>
+  <div class = "button_left">
+    <a href="#" onclick="onFileLoadButtonClick();"  class="control_btn">SELECT</a>
+    <text id="sensor_file_name">File not selected</text>
+  </div>
+  <input hidden type="file" id="sensor_file" />
+  <div class = "canvas_graph">
+    <form name="data_select_form">
+      <input type="checkbox" name="sensors" value="ax" checked ="1" onChange="drawGraph(SensorData)">X軸加速度[mg]
+      <input type="checkbox" name="sensors" value="ay" checked ="1" onChange="drawGraph(SensorData)">Y軸加速度[mg]
+      <input type="checkbox" name="sensors" value="az" checked ="1" onChange="drawGraph(SensorData)">Z軸加速度[mg]
+      <br>
+      <input type="checkbox" name="sensors" value="pitch" checked ="1" onChange="drawGraph(SensorData)">pitch[mdegree/sec]
+      <input type="checkbox" name="sensors" value="roll" checked ="1" onChange="drawGraph(SensorData)">roll[mdegree/sec]
+      <input type="checkbox" name="sensors" value="yaw" checked ="1" onChange="drawGraph(SensorData)">yaw[mdegree/sec]
+      <br>
+      <input type="checkbox" name="sensors" value="rpm" checked ="1" onChange="drawGraph(SensorData)">車軸回転数[rpm]
+      <input type="checkbox" name="sensors" value="vbat" checked ="1" onChange="drawGraph(SensorData)">バッテリ電圧[mV]
+      <input type="checkbox" name="sensors" value="imon" checked ="1" onChange="drawGraph(SensorData)">モーター電流[mA]
+    </form>
+    <canvas id="canvas_graph" width="100%" height="0pt"></canvas><br>
+  </div>
+  <div class = "sub_section">Sample data</div>
+  <a href="log000.txt" download="log000.txt">sample_log_data</a>
+</div>
+
+</div>
+<div class="footer_menu">
+<div class="menu_copy">Copyright 2019 aks3g.com All rights reserved.</div>
+<div>
+</BODY>
+</HTML>
