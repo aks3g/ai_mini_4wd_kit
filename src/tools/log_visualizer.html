@@ -108,13 +108,55 @@
     overflow-x:scroll;
   }
 
+  /* TAB表示に対応するためのあれこれ */
+  .tab_labels{
+    width:100%;
+    font-size:0;
+    margin:0 10px;
+  }
+  /* Tabに使うRadioButtonは不可視にする */
+  input[type="radio"].for_tabs {
+    display:none;
+  }
+
+  .tab_labels label{
+    width:150px;
+    margin:0 3px;
+    display:inline-block;
+    padding:10px 0;
+    color:#999;
+    background:darkkhaki;
+    text-align:center;
+    font-size:15px;
+    cursor:pointer;
+    transition:ease 0.2s opacity;
+  }
+  .tab_labels label:hover{
+    opacity:0.5;
+  }
+  .tab_contents{
+    background:beige;
+  }
+  .tab_content{
+    width:100%;
+    padding:1px 0;
+    display:none;
+  }
+ 
+  #tab1:checked ~ .tab_labels .tab1_label{background:beige; color:#000;}
+  #tab1:checked ~ .tab_contents #panel1{display:block;}
+  #tab2:checked ~ .tab_labels .tab2_label{background:beige; color:#000;}
+  #tab2:checked ~ .tab_contents #panel2{display:block;}
+  #tab3:checked ~ .tab_labels .tab3_label{background:beige; color:#000;}
+  #tab3:checked ~ .tab_contents #panel3{display:block;}
+
 -->
 </style>
 <title> AI mini4wd Kit Log Visualizer </title>
 
 <script language="javascript" type="text/javascript">
 window.onload = function() {
-  var canvas = document.getElementById("canvas_graph");
+  var canvas = document.getElementById("canvas_graph_raw");
   canvas.addEventListener('click', canvasOnClick, false);
 }
 
@@ -184,11 +226,12 @@ function loadAndParseSensorFile(file)
 
     //J Canvasにデータを渡す
     drawGraph(SensorData);
+    drawVelocityAndOdometryGraph(SensorData);
   }
 }
 
 //J グラフの罫線を引く
-function drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y)
+function drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, margin_y, range, label)
 {
   ctx2d.lineWidth = 0.5;
   ctx2d.strokeRect(x, y, w, h);
@@ -207,7 +250,69 @@ function drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y)
   ctx2d.lineWidth = 1.0;
   ctx2d.closePath();
   ctx2d.stroke();
+
+
+  //J 原点に0を描く
+  ctx2d.strokeText("0", x - 10, y + h/2);
+
+  //J Rangeを出す
+  ctx2d.textAlign="right";
+  ctx2d.strokeText(Math.round( range).toString(), x - 3, y + 10);
+  ctx2d.strokeText(Math.round(-range).toString(), x - 3, y + h);
+  ctx2d.textAlign="start";
+
+  //J ラベルを出す
+  ctx2d.save()
+  {
+    //J 中心軸を文字中心に変更する
+    ctx2d.translate(10, y + h/2);
+    ctx2d.rotate(-90 * Math.PI/180);
+    ctx2d.textAlign="center";
+    ctx2d.strokeText(label, 0, 0);
+  }
+  ctx2d.restore();
+
 }
+
+//J 正相のみのグラフを表示する場合の罫線を作る
+function drawGraphRuledLinePositiveOnly(ctx2d, x, y, w, h, sub_x, sub_y, margin_y, range, label)
+{
+  ctx2d.lineWidth = 0.5;
+  ctx2d.strokeRect(x, y, w, h);
+
+  var i=sub_x;
+  for (i=sub_x + x ; i<w ; i += sub_x) {
+    ctx2d.moveTo(i, y);
+    ctx2d.lineWidth = 0.5;
+    ctx2d.lineTo(i, y+h);
+  }
+  ctx2d.lineWidth = 1.0;
+  ctx2d.closePath();
+  ctx2d.stroke();
+
+
+  //J 原点に0を描く
+//  ctx2d.strokeText("0", x - 10, y + h);
+
+  //J Rangeを出す
+  ctx2d.textAlign="right";
+  ctx2d.strokeText(Math.round( range).toString(), x - 3, y + 10);
+  ctx2d.strokeText("0", x - 10, y + h);
+  ctx2d.textAlign="start";
+
+  //J ラベルを出す
+  ctx2d.save()
+  {
+    //J 中心軸を文字中心に変更する
+    ctx2d.translate(10, y + h/2);
+    ctx2d.rotate(-90 * Math.PI/180);
+    ctx2d.textAlign="center";
+    ctx2d.strokeText(label, 0, 0);
+  }
+  ctx2d.restore();
+}
+
+
 
 
 //J 配列の中で絶対値が一番大きいものを返す
@@ -237,6 +342,25 @@ function drawGraphBody(ctx2d, arr, x0, y0, scale)
   ctx2d.shadowBlur = 0;
 }
 
+//J 正相のみのグラフ本体を描画する
+function drawGraphBodyPositiveOnly(ctx2d, arr, x0, y0, scale)
+{
+  ctx2d.strokeStyle="maroon";
+  ctx2d.shadowBlur = 2;
+  ctx2d.shadowColor = "indianred"
+  ctx2d.beginPath();
+  ctx2d.moveTo(x0, y0 - arr[0]*scale);
+
+  var i=1;
+  for (i=1 ; i<arr.length ; ++i) {
+    ctx2d.lineTo(x0+i, y0 - arr[i]*scale);
+  }
+  ctx2d.stroke();
+  ctx2d.strokeStyle="black";
+  ctx2d.shadowBlur = 0;
+}
+
+
 //J Check Boxのうち、チェックされているものの数を調べる
 function checkGraphNum()
 {
@@ -259,7 +383,7 @@ function drawGraph(data)
   }
 
   var numGraph = checkGraphNum();
-  var canvas = document.getElementById("canvas_graph");
+  var canvas = document.getElementById("canvas_graph_raw");
   var ctx2d = canvas.getContext("2d");
 
   var graph_margin_y = 10;
@@ -267,7 +391,7 @@ function drawGraph(data)
 
   //J Canvas のサイズを決定する
   var graph_offset_x = 50
-  var width = data[0].length ; //TODO x2スケールでいいのか？
+  var width = data[0].length ;
 
   //J widthはデータ数に依存、heightはデータ種別数に依存
   canvas.setAttribute("width",  (width +  + graph_offset_x + 10).toString(10));
@@ -290,34 +414,105 @@ function drawGraph(data)
       range = checkRange(data[i]);
       scale = height / (range * 2)
 
-      drawGraphRuledLine(ctx2d, graph_offset_x, j*(height + graph_margin_y) + graph_margin_y/2, width, height, 52*5, height/4);
-
-      //J 原点に0を描く
-      ctx2d.strokeText("0", graph_offset_x - 10, j*(height + graph_margin_y) + graph_margin_y/2 + height/2);
-
-      //J Rangeを出す
-      ctx2d.textAlign="right";
-      ctx2d.strokeText(Math.round( range).toString(), graph_offset_x - 3, j*(height + graph_margin_y) + graph_margin_y/2 + 10);
-      ctx2d.strokeText(Math.round(-range).toString(), graph_offset_x - 3, j*(height + graph_margin_y) + graph_margin_y/2 + height);
-      ctx2d.textAlign="start";
-
-      //J ラベルを出す
       label = SensorName[i] + "[" + SensorUnit[i] + "]";
-      ctx2d.save()
-      {
-        //J 中心軸を文字中心に変更する
-        ctx2d.translate(10, j*(height + graph_margin_y) + graph_margin_y/2 + height/2);
-        ctx2d.rotate(-90 * Math.PI/180);
-        ctx2d.textAlign="center";
-        ctx2d.strokeText(label, 0, 0);
-      }
-      ctx2d.restore();
-
+      drawGraphRuledLine(ctx2d, graph_offset_x, j*(height + graph_margin_y) + graph_margin_y/2, width, height, 52*5, height/4, graph_margin_y, range, label);
       drawGraphBody(ctx2d, data[i], graph_offset_x, j*(height + graph_margin_y) + graph_margin_y/2 + height/2, scale);
       j++;
     }
   }
 }
+
+//J Canvas上にグラフを描く
+function drawVelocityAndOdometryGraph(data)
+{
+  if (data.length == 0) {
+    return;
+  }
+
+  var velocityArr = [];
+  var velocityArrFromAccel = [];
+
+  var odometryArr = [];
+  var odometryArrFromAccel = [];
+
+  var Interval = 1.0/52.0;
+  var WheelSize = parseFloat(document.getElementById("wheel_size").value);
+  if (WheelSize == NaN) {
+    return;
+  }
+
+  var odometry = 0;
+  var velocity = 0;
+  //J タコメータベースの速度と距離
+  for (var i=0 ; i<data[IDX_RPM].length ; ++i) {
+    var delta_mm = WheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
+    velocity = (delta_mm / (1000.0 * 1000.0)) / (Interval / 3600.0);
+
+    velocityArr.push(velocity)
+
+    odometry += delta_mm;
+    odometryArr.push(odometry);
+  }
+
+  //J 加速度センサベースの速度と距離
+  var odometry = 0;
+  var velocity = 0;
+  for (var i=0 ; i<data[IDX_AY].length ; ++i) {
+    odometry = 0.5 * (9.8 / 1000.0) * data[IDX_AY][i] * Interval * Interval + velocity * Interval + odometry;
+    velocity = (9.8 / 1000.0) * data[IDX_AY][i] * Interval + velocity;
+
+    velocityArrFromAccel.push(velocity * (3600.0 / 1000.0))   //J m/s -> km/h
+    odometryArrFromAccel.push(odometry * 1000); //J m -> mm
+  }
+
+
+  var canvas = document.getElementById("canvas_graph_velocity");
+  var ctx2d = canvas.getContext("2d");
+  var graph_margin_y = 10;
+  var graph_offset_x = 50
+  var width = data[0].length ;
+  var height = 200;
+
+  //J widthはデータ数に依存、heightはデータ種別数に依存
+  canvas.setAttribute("width",  (width +  + graph_offset_x + 10).toString(10));
+  canvas.setAttribute("height", (4 * height + graph_margin_y * 4).toString(10));
+
+  //J 下地は透明色にする
+  ctx2d.fillStyle = "rgba(0, 0, 0, 0)";
+  ctx2d.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+
+  //J タコメータベースの推定
+  //J 速度グラフを表示
+  var range = checkRange(velocityArr);
+  var scale = height / (range)
+  var label = "Velocity[km/h]"
+  drawGraphRuledLinePositiveOnly(ctx2d, graph_offset_x, 0*(height + graph_margin_y) + graph_margin_y/2, width, height, 52*5, height/4, graph_margin_y, range, label);
+  drawGraphBodyPositiveOnly(ctx2d, velocityArr, graph_offset_x, 0*(height + graph_margin_y) + graph_margin_y/2 + height, scale);
+
+  //J 距離グラフを表示
+  var range = checkRange(odometryArr);
+  var scale = height / (range)
+  var label = "Odometry[mm]"
+  drawGraphRuledLinePositiveOnly(ctx2d, graph_offset_x, 1*(height + graph_margin_y) + graph_margin_y/2, width, height, 52*5, height/4, graph_margin_y, range, label);
+  drawGraphBodyPositiveOnly(ctx2d, odometryArr, graph_offset_x, 1*(height + graph_margin_y) + graph_margin_y/2 + height, scale);
+
+  //J 加速度センサベースの推定
+  //J 速度グラフを表示
+  var range = checkRange(velocityArrFromAccel);
+  var scale = height / (range)
+  var label = "Velocity[km/h]"
+  drawGraphRuledLinePositiveOnly(ctx2d, graph_offset_x, 2*(height + graph_margin_y) + graph_margin_y/2, width, height, 52*5, height/4, graph_margin_y, range, label);
+  drawGraphBodyPositiveOnly(ctx2d, velocityArrFromAccel, graph_offset_x, 2*(height + graph_margin_y) + graph_margin_y/2 + height, scale);
+
+  //J 距離グラフを表示
+  var range = checkRange(odometryArrFromAccel);
+  var scale = height / (range)
+  var label = "Odometry[mm]"
+  drawGraphRuledLinePositiveOnly(ctx2d, graph_offset_x, 3*(height + graph_margin_y) + graph_margin_y/2, width, height, 52*5, height/4, graph_margin_y, range, label);
+  drawGraphBodyPositiveOnly(ctx2d, odometryArrFromAccel, graph_offset_x, 3*(height + graph_margin_y) + graph_margin_y/2 + height, scale);
+}
+
 
 
 //J HTML標準のファイル選択の仕組みを使いたくないが故の暴挙
@@ -338,6 +533,20 @@ function handleSensorFileSelect(evt)
   loadAndParseSensorFile(file);
 }
 
+//J ホイールが変更になった際の処理
+function onWheelSelected()
+{
+  document.getElementById("wheel_size").value = document.getElementById("wheel_select").options[document.getElementById("wheel_select").selectedIndex].value;
+
+  drawVelocityAndOdometryGraph(SensorData);
+}
+
+//J ホイールサイズが入力されたとき
+function onWheelSizeChanged()
+{
+  drawVelocityAndOdometryGraph(SensorData);
+}
+
 </script>
 
 </HEAD>
@@ -350,6 +559,11 @@ function handleSensorFileSelect(evt)
 <div class="top" id="top"></div>
 
 <div class = "wrapper">
+<div class="tab_wrap">
+
+</div>
+
+
 <div class = "map_canvas" id = "sensor_visualizer">
   <div class = "sub_section">Visualize Sensor Data</div>
   <div class = "button_left">
@@ -357,22 +571,57 @@ function handleSensorFileSelect(evt)
     <text id="sensor_file_name">File not selected</text>
   </div>
   <input hidden type="file" id="sensor_file" />
-  <div class = "canvas_graph">
-    <form name="data_select_form">
-      <input type="checkbox" name="sensors" value="ax" checked ="1" onChange="drawGraph(SensorData)">X軸加速度[mg]
-      <input type="checkbox" name="sensors" value="ay" checked ="1" onChange="drawGraph(SensorData)">Y軸加速度[mg]
-      <input type="checkbox" name="sensors" value="az" checked ="1" onChange="drawGraph(SensorData)">Z軸加速度[mg]
-      <br>
-      <input type="checkbox" name="sensors" value="pitch" checked ="1" onChange="drawGraph(SensorData)">pitch[mdegree/sec]
-      <input type="checkbox" name="sensors" value="roll" checked ="1" onChange="drawGraph(SensorData)">roll[mdegree/sec]
-      <input type="checkbox" name="sensors" value="yaw" checked ="1" onChange="drawGraph(SensorData)">yaw[mdegree/sec]
-      <br>
-      <input type="checkbox" name="sensors" value="rpm" checked ="1" onChange="drawGraph(SensorData)">車軸回転数[rpm]
-      <input type="checkbox" name="sensors" value="vbat" checked ="1" onChange="drawGraph(SensorData)">バッテリ電圧[mV]
-      <input type="checkbox" name="sensors" value="imon" checked ="1" onChange="drawGraph(SensorData)">モーター電流[mA]
-    </form>
-    <canvas id="canvas_graph" width="100%" height="0pt"></canvas><br>
+
+  <!-- 正直これが美しいやり方なのかどうかについては自信がない -->
+  <input class="for_tabs" id="tab1" type="radio" name="tab_btn" checked>
+  <input class="for_tabs" id="tab2" type="radio" name="tab_btn">
+  <input class="for_tabs" id="tab3" type="radio" name="tab_btn">
+
+  <div class="tab_labels">
+    <label class="tab1_label" for="tab1">Raw Data</label>
+    <label class="tab2_label" for="tab2">Velocity/Odometry</label>
+    <label class="tab3_label" for="tab3">X-Y Plot</label>
   </div>
+  <div class="tab_contents">
+    <div id="panel1" class="tab_content">
+      <div class = "canvas_graph">
+        <form name="data_select_form">
+          <span width="200pt"><input type="checkbox" name="sensors" value="ax" checked ="1" onChange="drawGraph(SensorData)">X軸加速度[mg]</span>
+          <input type="checkbox" name="sensors" value="ay" checked ="1" onChange="drawGraph(SensorData)">Y軸加速度[mg]
+          <input type="checkbox" name="sensors" value="az" checked ="1" onChange="drawGraph(SensorData)">Z軸加速度[mg]
+          <br>
+          <input type="checkbox" name="sensors" value="pitch" checked ="1" onChange="drawGraph(SensorData)">pitch[mdegree/sec]
+          <input type="checkbox" name="sensors" value="roll" checked ="1" onChange="drawGraph(SensorData)">roll[mdegree/sec]
+          <input type="checkbox" name="sensors" value="yaw" checked ="1" onChange="drawGraph(SensorData)">yaw[mdegree/sec]
+          <br>
+          <input type="checkbox" name="sensors" value="rpm" checked ="1" onChange="drawGraph(SensorData)">車軸回転数[rpm]
+          <input type="checkbox" name="sensors" value="vbat" checked ="1" onChange="drawGraph(SensorData)">バッテリ電圧[mV]
+          <input type="checkbox" name="sensors" value="imon" checked ="1" onChange="drawGraph(SensorData)">モーター電流[mA]
+        </form>
+        <canvas id="canvas_graph_raw" width="100%" height="0pt"></canvas><br>
+      </div>
+    </div>
+    <div id="panel2" class="tab_content">
+      <div class = "canvas_graph">
+        Select the wheel size: 
+        <select id="wheel_select" onChange="onWheelSelected()">
+          <option value="31">大径ホイール</option>
+          <option value="26">中径ホイール</option>
+          <option value="24">小径ホイール</option>
+          <option value="31">カスタムホイール</option>
+        </select>
+        <input type="number" id="wheel_size" size="4" maxlength="5" value="31" onChange="onWheelSizeChanged()">[mm]
+        <canvas id="canvas_graph_velocity" width="100%" height="0pt"></canvas><br>
+      </div>
+    </div>
+    <div id="panel3" class="tab_content">
+      <div class = "canvas_graph">
+        <canvas id="canvas_graph_xy_plot" width="100%" height="0pt"></canvas><br>
+      </div>
+    </div>
+  </div>
+
+
   <div class = "sub_section">Sample data</div>
   <a href="log000.txt" download="log000.txt">sample_log_data</a>
 </div>
