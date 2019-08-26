@@ -27,7 +27,7 @@ typedef enum AiMIni4wdDriveMode_t
 } AiMIni4wdDriveMode;
 
 static AiMIni4wdDriveMode sDriveMode = DRIVE_MODE_DUTY;
-
+static int sCurrentDuty = 0;
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -52,6 +52,12 @@ int aiMini4wdMotorDriverDrive(int duty)
 	sDriveMode = DRIVE_MODE_DUTY;
 	
 	return _setDuty(duty);
+}
+
+/*--------------------------------------------------------------------------*/
+int aiMini4wdMotorDriverGetDuty(void)
+{
+  return sCurrentDuty;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -91,6 +97,7 @@ static int _setDuty(int duty)
 		samd51_tc_set_pwm(SAMD51_TC4, 0, -duty);
 	}
 	
+	sCurrentDuty = duty;
 	
 	return 0;
 }

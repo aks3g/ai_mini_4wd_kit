@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 int aiMini4wdMotorDriverDrive(int duty);
+int aiMini4wdMotorDriverGetDuty(void);
 int aiMini4wdMotorDriverSetRpm(int rpm);
 int aiMini4wdMotorDriverSetPidGain(float Kp, float Ki, float Kd);
 
