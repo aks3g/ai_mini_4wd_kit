@@ -26,6 +26,7 @@ static float sTireSize = 31.0f;
 static float sKp = 0.3f;
 static float sKi = 0.01f;
 static float sKd = 0.01f;
+static int sCurrentDuty = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,10 +58,19 @@ STATIC mp_obj_t mini4wd_grab_sensor(mp_obj_t self_in)
 	sSensorCount = aiMini4wdNextSensorData(&sSensorData);
 	(void)aiMini4wdGetBatteryVoltage(&sBatteryVoltage);
 	(void)aiMini4wdMotorDriverGetDriveCurrent(&sMotorCurrent);
+	sCurrentDuty = aiMini4wdMotorDriverGetDuty();
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mini4wd_grab_sensor_obj, mini4wd_grab_sensor);
+
+/*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_getCount(mp_obj_t self_in)
+{
+    return mp_obj_new_int(sSensorCount);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mini4wd_getCount_obj, mini4wd_getCount);
+
 
 /*---------------------------------------------------------------------------*/
 STATIC mp_obj_t mini4wd_getAx(mp_obj_t self_in)
@@ -297,6 +307,7 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_setGainKd),		MP_ROM_PTR(&mini4wd_setGainKd_obj) },
 
 	{ MP_ROM_QSTR(MP_QSTR_grab),			MP_ROM_PTR(&mini4wd_grab_sensor_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_getCount),		MP_ROM_PTR(&mini4wd_getCount_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_getAx),			MP_ROM_PTR(&mini4wd_getAx_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_getAy),			MP_ROM_PTR(&mini4wd_getAy_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_getAz),			MP_ROM_PTR(&mini4wd_getAz_obj) },
@@ -318,7 +329,7 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 /*---------------------------------------------------------------------------*/
 void machine_state_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind)
 {
-	mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f",
+	mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d",
 		sSensorCount,
 		sSensorData.imu.accel_f[0],
 		sSensorData.imu.accel_f[1],
@@ -327,8 +338,10 @@ void machine_state_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 		sSensorData.imu.gyro_f[1],
 		sSensorData.imu.gyro_f[2],
 		sSensorData.rpm,
+		
 		sBatteryVoltage,
-		sMotorCurrent);
+		sMotorCurrent,
+		sCurrentDuty);
 }
 
 

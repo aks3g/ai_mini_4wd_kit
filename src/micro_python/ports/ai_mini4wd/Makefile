@@ -38,12 +38,17 @@ endif
 LIB = -L../../../library/lib
 LIBS = -laimini4wd -lsamd51 -lm
 
+SRC_S = \
+	gchelper.s
+
 SRC_C = \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/unicode.c \
 	main.c \
 	mini4wd.c \
 	mini4wd_type.c \
+	self_position_estimater_type.c \
+	machine_learning_type.c \
 	storage_if.c \
 	modpyb.c \
 	startup_samd51.c \
@@ -57,7 +62,7 @@ SRC_C = \
 	lib/mp-readline/readline.c \
 	$(BUILD)/_frozen_mpy.c \
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os

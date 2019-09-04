@@ -27,7 +27,6 @@
 
 #include "storage_if.h"
 
-static char *stack_top;
 static char heap[128*1024];
 
 void NORETURN __fatal_error(const char *msg);
@@ -208,7 +207,6 @@ void _searchNewLogFilename(char *logfilename) {
 static AiMini4wdFile *sConsoleOut = NULL;
 static AiMini4wdFile *sScriptFile = NULL;
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 int main(void)
@@ -269,9 +267,6 @@ int main(void)
 	if (sScriptFile == NULL) {
 		__fatal_error("Script Not found.\r\n");
 	}
-
-    int stack_dummy;
-    stack_top = (char*)&stack_dummy;
 
 #if MICROPY_ENABLE_GC
 	gc_init(heap, heap + sizeof(heap));
@@ -364,14 +359,18 @@ DWORD get_fattime(void)
     return ((2000 + year - 1980) << 25) | ((month) << 21) | ((date) << 16) | ((hours) << 11) | ((minutes) << 5) | (seconds / 2);
 }
 
-
+extern uint32_t _ram_end;
+mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
 void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    void *dummy;
-    gc_collect_start();
-    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
-    gc_collect_end();
+	gc_collect_start();
+
+	//Get Stack info from CPU
+	mp_uint_t regs[10];
+	mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
+
+	gc_collect_root((void**)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
+
+	gc_collect_end();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -23,6 +23,7 @@ Q(setGainKp)
 Q(setGainKi)
 Q(setGainKd)
 Q(grab)
+Q(getCount)
 Q(getAx)
 Q(getAy)
 Q(getAz)
@@ -36,6 +37,23 @@ Q(getMotorCurrent)
 Q(waitIntTrig)
 Q(waitExtTrig)
 Q(checkExtTrig)
+
+//J Estimater
+Q(SelfPositionEstimater)
+Q(push_map_item)
+Q(len)
+Q(prepare)
+Q(estimate)
+Q(set_weight)
+Q(get_probability)
+
+// Machine Learning
+Q(MachineLearning)
+Q(set_reward)
+Q(get_policy)
+Q(set_policy)
+Q(update)
+
 
 //J FS
 Q(ai_mini4wd_disk)
