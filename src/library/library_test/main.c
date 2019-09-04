@@ -74,6 +74,62 @@ int main(void)
 {
 	aiMini4wdInitialize(AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT);
 
+	volatile uint32_t page_size = samd51_nvmctrl_get_page_size();
+	volatile uint32_t pages = samd51_nvmctrl_get_pages();
+	aiMini4wdDebugPrintf("PAGE SIZE = %u, PAGES = %u, Flash size = %u\r\n", page_size, pages, pages * page_size);
+
+	uint8_t test_buf[1024];
+	memset (test_buf, 0x00, sizeof(test_buf));
+	samd51_nvmctrl_read(0x80000, (void *)test_buf, sizeof(test_buf));
+	aiMini4wdDebugPrintf("Check target flash value\r\n");
+	int i=0;
+	volatile int wait = 0;
+	for (i=0 ; i<1024 ; ++i) {
+		aiMini4wdDebugPrintf("%02x ", test_buf[i]);
+		if ((i+1) % 16 == 0) {
+			aiMini4wdDebugPrintf("\r\n");
+			wait = 500000;
+			while (wait--);
+		}
+	}
+
+	int err = samd51_nvmctrl_erase_page(0x80000, 2);
+	aiMini4wdDebugPrintf("Erase Block. err = %08x\r\n", err);
+
+	memset (test_buf, 0x00, sizeof(test_buf));
+	samd51_nvmctrl_read(0x80000, (void *)test_buf, sizeof(test_buf));
+	aiMini4wdDebugPrintf("Check target flash value\r\n");
+	for (i=0 ; i<1024 ; ++i) {
+		aiMini4wdDebugPrintf("%02x ", test_buf[i]);
+		if ((i+1) % 16 == 0) {
+			aiMini4wdDebugPrintf("\r\n");
+			wait = 500000;
+			while (wait--);
+		}
+	}
+
+	// Create Test Data
+	for (i=0 ; i<1024 ; ++i) {
+		test_buf[i] = (i & 0xff);
+	}
+	samd51_nvmctrl_write_page(0x80000, test_buf, 2);
+
+	memset (test_buf, 0x00, sizeof(test_buf));
+	samd51_nvmctrl_read(0x80000, (void *)test_buf, sizeof(test_buf));
+	aiMini4wdDebugPrintf("Check target flash value\r\n");
+	for (i=0 ; i<1024 ; ++i) {
+		aiMini4wdDebugPrintf("%02x ", test_buf[i]);
+		if ((i+1) % 16 == 0) {
+			aiMini4wdDebugPrintf("\r\n");
+			wait = 500000;
+			while (wait--);
+		}
+	}
+
+
+	while (1);
+
+
 	aiMini4wdRegisterSwitchCb(cAiMini4wdSwitch0, _sw0_cb);
 	aiMini4wdRegisterSwitchCb(cAiMini4wdSwitch1, _sw1_cb);
 
@@ -86,6 +142,7 @@ int main(void)
 
 	aiMini4wdDebugPrintf("Test for AI mini 4WD %s %s\r\n", __DATE__, __TIME__);
 	aiMini4wdDebugPrintf("System Initialized. \r\n");
+
 
 
 	AiMini4wdFile *fp1;

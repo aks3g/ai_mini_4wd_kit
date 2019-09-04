@@ -18,25 +18,25 @@
 #pragma pack(1)
 typedef struct STRUCT_NVMCTRL_REG_t
 {
-	uint16_t ctrla;
-	uint8_t  reserved[2];
-	uint16_t ctrlb;
-	uint8_t  reserved2[2];
-	uint32_t param;
-	uint16_t intenclr;
-	uint16_t intenset;
-	uint16_t intflag;
-	uint16_t status;
-	uint32_t addr;
-	uint32_t runlock;
-	uint32_t pbldata0;
-	uint32_t pbldata1;
-	uint32_t eccerr;
-	uint8_t  dbgctrl;
-	uint8_t  reserved3;
-	uint8_t  seecfg;
-	uint8_t  reserved4;
-	uint32_t seestat;
+	volatile uint16_t ctrla;
+	volatile uint8_t  reserved[2];
+	volatile uint16_t ctrlb;
+	volatile uint8_t  reserved2[2];
+	volatile uint32_t param;
+	volatile uint16_t intenclr;
+	volatile uint16_t intenset;
+	volatile uint16_t intflag;
+	volatile uint16_t status;
+	volatile uint32_t addr;
+	volatile uint32_t runlock;
+	volatile uint32_t pbldata0;
+	volatile uint32_t pbldata1;
+	volatile uint32_t eccerr;
+	volatile uint8_t  dbgctrl;
+	volatile uint8_t  reserved3;
+	volatile uint8_t  seecfg;
+	volatile uint8_t  reserved4;
+	volatile uint32_t seestat;
 
 } STRUCT_NVMCTRL_REG;
 
