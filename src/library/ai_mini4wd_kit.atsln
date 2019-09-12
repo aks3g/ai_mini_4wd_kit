@@ -16,6 +16,8 @@ Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "library_test", "library_tes
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897} = {DCE6C7E3-EE26-4D79-826B-08594B9AD897}
 	EndProjectSection
 EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "samd51_bootloader", "samd51_bootloader\samd51_bootloader.cproj", "{48B92A04-6DBC-4785-8308-78A194D57C59}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -34,6 +36,10 @@ Global
 		{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}.Debug|ARM.Build.0 = Debug|ARM
 		{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}.Release|ARM.ActiveCfg = Release|ARM
 		{CF0ECAB4-34DA-4ABC-9E68-2DCBF8DB3E8D}.Release|ARM.Build.0 = Release|ARM
+		{48B92A04-6DBC-4785-8308-78A194D57C59}.Debug|ARM.ActiveCfg = Debug|ARM
+		{48B92A04-6DBC-4785-8308-78A194D57C59}.Debug|ARM.Build.0 = Debug|ARM
+		{48B92A04-6DBC-4785-8308-78A194D57C59}.Release|ARM.ActiveCfg = Release|ARM
+		{48B92A04-6DBC-4785-8308-78A194D57C59}.Release|ARM.Build.0 = Release|ARM
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
