@@ -17,6 +17,7 @@
 typedef void (*SAMD51_I2C_DONE_CB)(int error);
 
 int samd51_i2c_initialize(SAMD51_SERCOM sercom, uint32_t i2c_clock);
+void samd51_i2c_finalize(SAMD51_SERCOM sercom);
 int samd51_i2c_txrx(SAMD51_SERCOM sercom, const uint8_t slave_addr, const uint8_t *txbuf, const size_t txlen, uint8_t *rxbuf, const size_t rxlen, SAMD51_I2C_DONE_CB callback);
 
 #endif /* SAMD51_I2C_H_ */

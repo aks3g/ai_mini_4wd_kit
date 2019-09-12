@@ -109,6 +109,16 @@ int samd51_sdhc_initialize(SAMD51_SDHC sdhc)
 	return AI_OK;
 }
 
+/*--------------------------------------------------------------------------*/
+void samd51_sdhc_finalize(SAMD51_SDHC sdhc)
+{
+	volatile SdHostControllerRegs *regs = (SdHostControllerRegs*)(sdhc);
+
+	NVIC_DisableIRQ(SDHC0_IRQn);
+
+	regs->software_reset.byte = 1;
+}
+
 
 /*--------------------------------------------------------------------------*/
 int samd51_sdhc_is_card_inserted(SAMD51_SDHC sdhc)

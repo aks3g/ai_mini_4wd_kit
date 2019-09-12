@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 #define AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT				(0x00000001)
-	
+
 int aiMini4wdInitialize(uint32_t flags);
 void aiMini4wdSetErrorStatus(int status);
 

@@ -117,6 +117,7 @@ int samd51_adc_convert(uint32_t ch, SAMD51_ADC_INPUT_TYPE input, SAMD51_ADC_POS_
 int samd51_adc_get_result(uint32_t ch, int16_t *result);
 int samd51_adc_abort(uint32_t ch);
 
+void samd51_adc_finalize(uint32_t ch);
 
 
 #endif /* SAMD51_ADC_H_ */

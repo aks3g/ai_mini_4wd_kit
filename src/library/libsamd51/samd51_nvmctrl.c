@@ -113,7 +113,7 @@ int samd51_nvmctrl_write_page(const uint32_t phisical_adr, const void *buf, cons
 		}
 
 		//J Buffer Clear
-		NVMCTRL_REG.ctrlb = ((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NCMCTRL_CMD_PBC;
+		NVMCTRL_REG.ctrlb = (uint16_t)(((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NCMCTRL_CMD_PBC);
 		while ((NVMCTRL_REG.intflag & SAMD51_NVMCTRL_FLAG_DONE) == 0);
 
 		//Check Status
@@ -133,7 +133,7 @@ int samd51_nvmctrl_write_page(const uint32_t phisical_adr, const void *buf, cons
 		}
 
 		// Write Page
-		NVMCTRL_REG.ctrlb = ((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NVMCTRL_CMD_WP;
+		NVMCTRL_REG.ctrlb = (uint16_t)(((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NVMCTRL_CMD_WP);
 		while ((NVMCTRL_REG.intflag & SAMD51_NVMCTRL_FLAG_DONE) == 0);
 		if (NVMCTRL_REG.intflag & ~SAMD51_NVMCTRL_FLAG_DONE) {
 			ret = AI_ERROR_NOT_READY;
@@ -160,7 +160,7 @@ int samd51_nvmctrl_erase_page(const uint32_t phisical_adr, size_t npages)
 	uint32_t addr = phisical_adr;
 	for (i=0 ;  i<npages ; ++i) {
 		NVMCTRL_REG.addr = addr;
-		NVMCTRL_REG.ctrlb = ((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NVMCTRL_CMD_EB;
+		NVMCTRL_REG.ctrlb = (uint16_t)(((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NVMCTRL_CMD_EB);
 
 		while ((NVMCTRL_REG.intflag & SAMD51_NVMCTRL_FLAG_DONE) == 0);
 		if (NVMCTRL_REG.intflag & ~SAMD51_NVMCTRL_FLAG_DONE) {

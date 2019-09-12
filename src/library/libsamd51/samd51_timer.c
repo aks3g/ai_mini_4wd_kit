@@ -251,6 +251,20 @@ int samd51_tc_initialize_as_pwm(SAMD51_TC tc, uint32_t pheripheral_clock, uint32
 
 
 /*--------------------------------------------------------------------------*/
+void samd51_tc_finalize(SAMD51_TC tc)
+{
+	volatile REG_TC8 volatile *reg = (REG_TC8 *)_getRegTc(tc);
+	if (reg == NULL) {
+		return;
+	}
+
+	NVIC_DisableIRQ(TC0_IRQn + (int)tc);
+
+	reg->CTRLA = 1; //SWRST
+	while (reg->SYNCBUSY & 1);
+}
+
+/*--------------------------------------------------------------------------*/
 int samd51_tc_set_pwm(SAMD51_TC tc, uint8_t wave_index, uint16_t duty)
 {
 	volatile REG_TC8 volatile *reg = (REG_TC8 *)_getRegTc(tc);

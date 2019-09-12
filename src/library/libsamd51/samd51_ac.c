@@ -146,6 +146,14 @@ int samd51_ac_initialize(
 	return AI_OK;
 }
 
+/*--------------------------------------------------------------------------*/
+void samd51_ac_finalize(void) 
+{
+	NVIC_DisableIRQ(AC_IRQn);
+
+	reg_ac->CTRLA = (1 << SAMD51_AC_SWRST_pos);
+	while(reg_ac->SYNCBUSY & (1 << SAMD51_AC_SWRST_pos));
+}
 
 /*--------------------------------------------------------------------------*/
 void AC_Handler(void) 

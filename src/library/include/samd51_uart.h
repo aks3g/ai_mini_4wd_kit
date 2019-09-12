@@ -35,6 +35,7 @@ int samd51_uart_fifo_setup(SAMD51_UART_FIFO *fifo, uint8_t *buf, size_t len);
 
 
 int samd51_uart_initialize(SAMD51_SERCOM sercom, uint32_t baudrate, SAMD51_SERCOM_PAD rx, SAMD51_SERCOM_PAD tx, SAMD51_UART_FIFO *tx_fifo, SAMD51_UART_FIFO *rx_fifo);
+void samd51_uart_finalize(SAMD51_SERCOM sercom);
 
 int samd51_uart_tx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len);
 int samd51_uart_try_rx(SAMD51_SERCOM sercom, uint8_t *buf);

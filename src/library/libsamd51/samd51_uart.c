@@ -199,6 +199,21 @@ int samd51_uart_initialize(SAMD51_SERCOM sercom, uint32_t baudrate, SAMD51_SERCO
 }
 
 /*--------------------------------------------------------------------------*/
+void samd51_uart_finalize(SAMD51_SERCOM sercom)
+{
+	volatile REG_SERCOM_UART *reg_uart = _getRegUart(sercom);
+	if (reg_uart == NULL) {
+		return;
+	}
+
+	samd51_sercom_reset_intterrupt(sercom);
+
+	reg_uart->CTRLA = 1;
+	while(reg_uart->SYNCBUSY & 1);
+}
+
+
+/*--------------------------------------------------------------------------*/
 int samd51_uart_tx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len)
 {
 	if (buf == NULL) {

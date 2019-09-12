@@ -153,6 +153,13 @@ int samd51_dac_initialize(uint32_t ch, SAMD51_DAC_REFERENCE ref)
 
 
 /*--------------------------------------------------------------------------*/
+void samd51_dac_finalize(void)
+{
+	reg_dac->CTRLA = (1 << SAMD51_DAC_SWRST_pos);
+	while (reg_dac->SYNBUSY & (1 << SAMD51_DAC_SWRST_pos));
+}
+
+/*--------------------------------------------------------------------------*/
 int samd51_dac_output(uint32_t ch, uint16_t val) 
 {
 	if (ch >= 2) {

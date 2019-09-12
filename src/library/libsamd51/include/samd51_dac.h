@@ -18,6 +18,7 @@ typedef enum SAMD51_DAC_REFERENCE_t
 } SAMD51_DAC_REFERENCE;
 
 int samd51_dac_initialize(uint32_t ch, SAMD51_DAC_REFERENCE ref);
+void samd51_dac_finalize(void);
 int samd51_dac_output(uint32_t ch, uint16_t val);
 
 

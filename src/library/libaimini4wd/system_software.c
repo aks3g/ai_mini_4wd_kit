@@ -36,6 +36,9 @@
 #include "include/ai_mini4wd_timer.h"
 
 
+#define AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER	(0x80000000)
+
+
 typedef struct GlobalParameters_t
 {
 	uint8_t enabledPrintf;
@@ -70,7 +73,7 @@ int aiMini4wdInitialize(uint32_t flags)
 	//J 32kHz backup clock
 	samd51_gclk_configure_generator(LIB_MINI_4WD_CLK_GEN_NUMBER_32kHZ, SAMD51_GCLK_SRC_OSCULP32K, 0, 0, SAMD51_GCLK_DIV_NORMAL);
 
-	//J 48MHzのクロック源をMAINとは切り離す
+	//J 48MHzのクロック源をMAINとは別に用意
 	samd51_gclk_configure_generator(LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ, SAMD51_GCLK_SRC_DFLL, 0, 0, SAMD51_GCLK_DIV_NORMAL);
 	//J 48MHz 基準クロックをクロジェネ0番から移動させる
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_OSCCTRL_DFLL48, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
@@ -88,7 +91,7 @@ int aiMini4wdInitialize(uint32_t flags)
 		osc_opt.filter_en = 1;		
 	}
 	samd51_oscillator_dpll_enable(0, SAMD51_OSC_REF_GCLK, 1000000, 120000000, &osc_opt);
-	
+
 	//J 120MHzになったFDPLLをGCLK0のソースに設定する（死にそう）
 	samd51_gclk_configure_generator(LIB_MINI_4WD_CLK_GEN_NUMBER_MAIN, SAMD51_GCLK_SRC_DPLL0, 0, 0, SAMD51_GCLK_DIV_NORMAL);
 
@@ -108,6 +111,12 @@ int aiMini4wdInitialize(uint32_t flags)
 	
 	//J FSの初期化. 内部的に2000ms 待つので旧来のWaitを消す
 	aiMini4wdFsInitialize();
+  
+	if (flags & AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER) {
+		//J Status OK
+		aiMini4wdSetStatusLed(1);
+	}
+
 	
 //	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
 //	while ((tick + 2000) > aiMini4WdTimerGetSystemtick());

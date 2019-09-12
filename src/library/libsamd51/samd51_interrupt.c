@@ -115,6 +115,31 @@ int samd51_external_interrupt_initialize(int use_clk32k)
 
 
 /*--------------------------------------------------------------------------*/
+void samd51_external_interrupt_finalize(void)
+{
+	NVIC_DisableIRQ(EIC_0_IRQn);
+	NVIC_DisableIRQ(EIC_1_IRQn);
+	NVIC_DisableIRQ(EIC_2_IRQn);
+	NVIC_DisableIRQ(EIC_3_IRQn);
+	NVIC_DisableIRQ(EIC_4_IRQn);
+	NVIC_DisableIRQ(EIC_5_IRQn);
+	NVIC_DisableIRQ(EIC_6_IRQn);
+	NVIC_DisableIRQ(EIC_7_IRQn);
+	NVIC_DisableIRQ(EIC_8_IRQn);
+	NVIC_DisableIRQ(EIC_9_IRQn);
+	NVIC_DisableIRQ(EIC_10_IRQn);
+	NVIC_DisableIRQ(EIC_11_IRQn);
+	NVIC_DisableIRQ(EIC_12_IRQn);
+	NVIC_DisableIRQ(EIC_13_IRQn);
+	NVIC_DisableIRQ(EIC_14_IRQn);
+	NVIC_DisableIRQ(EIC_15_IRQn);
+
+	sEicRegs->CTRLA = (1 << SAMD51_EIC_SWRST_bp);
+	while(sEicRegs->SYNCBUSY & (1 << SAMD51_EIC_SWRST_bp));
+}
+
+
+/*--------------------------------------------------------------------------*/
 int samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL ch, SAMD51_EIC_SENSE_TYPE type, int use_filter, SAMD51_EIC_INTERRUPT_HANDLER cb)
 {
 	if ((ch >= SAMD51_EIC_CHANNEL_MAX) || (type >= SAMD51_EIC_SENSE_MAX)) {

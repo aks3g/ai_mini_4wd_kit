@@ -24,5 +24,6 @@ typedef enum SAMD51_SERCOM_t
 typedef void (*SAMD51_SERCOM_INTERRUPT_CB)(SAMD51_SERCOM);
 
 int samd51_sercom_set_interrupt_handler(SAMD51_SERCOM sercom, uint32_t index, SAMD51_SERCOM_INTERRUPT_CB cb);
+void samd51_sercom_reset_intterrupt(SAMD51_SERCOM sercom);
 
 #endif /* SAMD51_SERCOM_H_ */

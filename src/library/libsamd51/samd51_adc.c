@@ -210,6 +210,20 @@ int samd51_adc_setup(uint32_t ch, SAMD51_ADC_MODE mode, SAMD51_ADC_BIT_RESOLUTIO
 }
 
 /*--------------------------------------------------------------------------*/
+void samd51_adc_finalize(uint32_t ch)
+{
+	volatile REG_ADC *reg = _get_regset(ch);
+	if (reg == NULL) {
+		return;
+	}
+
+	NVIC_DisableIRQ(ADC0_1_IRQn + (2 * ch));
+
+	reg->CTRLA = (1 << SAMD51_ADC_CTRLA_SWRST);
+	while(reg->SYNCBUSY & (1 << SAMD51_ADC_SYNCBUSY_SWRST));
+}
+
+/*--------------------------------------------------------------------------*/
 int samd51_adc_convert(uint32_t ch, SAMD51_ADC_INPUT_TYPE input, SAMD51_ADC_POS_INPUT pos, SAMD51_ADC_NEG_INPUT neg, SAMD51_ADC_CONVERSION_DONE_CB cb)
 {
 	volatile REG_ADC *reg = _get_regset(ch);

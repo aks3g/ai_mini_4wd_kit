@@ -54,7 +54,7 @@ int samd51_sercom_set_interrupt_handler(SAMD51_SERCOM sercom, uint32_t index, SA
 		break;
 
 	case SAMD51_SERCOM4:
-		NVIC_EnableIRQ(62 + index);
+		NVIC_EnableIRQ(SERCOM4_0_IRQn + index);
 		sCallbacks[sercom][index] = cb;
 		break;
 
@@ -63,6 +63,45 @@ int samd51_sercom_set_interrupt_handler(SAMD51_SERCOM sercom, uint32_t index, SA
 	}
 
 	return AI_OK;
+}
+
+/*--------------------------------------------------------------------------*/
+void samd51_sercom_reset_intterrupt(SAMD51_SERCOM sercom)
+{
+	switch (sercom) {
+	case SAMD51_SERCOM0:
+		NVIC_DisableIRQ(SERCOM0_0_IRQn);
+		NVIC_DisableIRQ(SERCOM0_1_IRQn);
+		NVIC_DisableIRQ(SERCOM0_2_IRQn);
+		break;
+
+	case SAMD51_SERCOM1:
+		NVIC_DisableIRQ(SERCOM1_0_IRQn);
+		NVIC_DisableIRQ(SERCOM1_1_IRQn);
+		NVIC_DisableIRQ(SERCOM1_2_IRQn);
+		break;
+
+	case SAMD51_SERCOM2:
+		NVIC_DisableIRQ(SERCOM2_0_IRQn);
+		NVIC_DisableIRQ(SERCOM2_1_IRQn);
+		NVIC_DisableIRQ(SERCOM2_2_IRQn);
+		break;
+
+	case SAMD51_SERCOM3:
+		NVIC_DisableIRQ(SERCOM3_0_IRQn);
+		NVIC_DisableIRQ(SERCOM3_1_IRQn);
+		NVIC_DisableIRQ(SERCOM3_2_IRQn);
+		break;
+
+	case SAMD51_SERCOM4:
+		NVIC_DisableIRQ(SERCOM4_0_IRQn);
+		NVIC_DisableIRQ(SERCOM4_1_IRQn);
+		NVIC_DisableIRQ(SERCOM4_2_IRQn);
+		break;
+
+	default:
+		return AI_ERROR_INVALID;
+	}
 }
 
 

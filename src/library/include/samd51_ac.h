@@ -73,6 +73,6 @@ int samd51_ac_initialize(
 						int singleshot,
 						SAMD51_AC_INTERRUPT_CALLBACK cb
 						);
-
+void samd51_ac_finalize(void);
 
 #endif /* SAMD51_AC_H_ */

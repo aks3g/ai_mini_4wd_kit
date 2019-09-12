@@ -266,6 +266,20 @@ int samd51_i2c_initialize(SAMD51_SERCOM sercom, uint32_t i2c_clock)
 	return AI_OK;	
 }
 
+/*--------------------------------------------------------------------------*/
+void samd51_i2c_finalize(SAMD51_SERCOM sercom)
+{
+	volatile REG_SERCOM_I2C *reg = _getRegI2C(sercom);
+	if (reg == NULL) {
+		return;
+	}
+
+	samd51_sercom_reset_intterrupt(sercom);
+
+	reg->CTRLA = (1 << SAMD51_SERCOM_I2C_SWRST_POS);
+	while(reg->SYNCBUSY & (1 << SAMD51_SERCOM_I2C_SWRST_POS));
+}
+
 
 /*--------------------------------------------------------------------------*/
 int samd51_i2c_txrx(SAMD51_SERCOM sercom, const uint8_t slave_addr, const uint8_t *txbuf, const size_t txlen, uint8_t *rxbuf, const size_t rxlen, SAMD51_I2C_DONE_CB callback)

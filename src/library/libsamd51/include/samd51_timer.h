@@ -26,6 +26,7 @@ typedef void (*SAMD51_TIMER_COUNTER_CB)(void);
 
 int samd51_tc_initialize_as_timer(SAMD51_TC tc, uint32_t peripheral_clock, uint32_t tick_us, SAMD51_TIMER_COUNTER_CB cb);
 int samd51_tc_initialize_as_pwm(SAMD51_TC tc, uint32_t peripheral_clock, uint32_t period_ms, uint32_t initial_duty);
+void samd51_tc_finalize(SAMD51_TC tc);
 int samd51_tc_set_pwm(SAMD51_TC tc, uint8_t wave_index, uint16_t duty);
 
 

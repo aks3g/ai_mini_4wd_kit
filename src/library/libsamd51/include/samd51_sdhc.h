@@ -1074,6 +1074,7 @@ typedef void (*Samd51SdhcErrorCallback)(int error_code);
 
 //----------------------------------------------------------------------------
 int samd51_sdhc_initialize(SAMD51_SDHC sdhc);
+void samd51_sdhc_finalize(SAMD51_SDHC sdhc);
 int samd51_sdhc_get_host_controller_info(SAMD51_SDHC sdhc, char *info, size_t info_len);
 int samd51_sdhc_get_host_controller_version(SAMD51_SDHC sdhc);
 

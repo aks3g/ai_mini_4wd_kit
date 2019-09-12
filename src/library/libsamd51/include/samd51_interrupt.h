@@ -45,6 +45,7 @@ typedef enum SAMD51_EIC_SENSE_TYPE_t
 typedef void (*SAMD51_EIC_INTERRUPT_HANDLER)(void);
 
 int samd51_external_interrupt_initialize(int use_clk32k);
+void samd51_external_interrupt_finalize(void);
 
 int samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL ch, SAMD51_EIC_SENSE_TYPE type, int use_filter, SAMD51_EIC_INTERRUPT_HANDLER cb);
 
