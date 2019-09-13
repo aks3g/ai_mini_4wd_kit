@@ -185,11 +185,11 @@ static int _searchParameter(AiMini4wdFile *fp, const char *key, char *value, siz
 	return ret;
 }
 
-void _searchNewLogFilename(char *logfilename) {
+void _searchNewLogFilename(char *logfilename, size_t len) {
 	AiMini4wdFileInfo info;
 	int cnt = 0;
 	while (cnt < 1000) {
-		sprintf (logfilename, "log%03d.txt", cnt);
+		snprintf (logfilename, len, "log%03d.txt", cnt);
 		int ret = aiMini4wdFsStat(logfilename, &info);
 		if (ret != AI_OK) {
 			break; //J ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚ç‚È‚¢ = ì‚Á‚ÄOK
@@ -207,6 +207,16 @@ void _searchNewLogFilename(char *logfilename) {
 static AiMini4wdFile *sConsoleOut = NULL;
 static AiMini4wdFile *sScriptFile = NULL;
 
+extern uint32_t _sfixed;
+extern uint32_t _efixed;
+extern uint32_t _etext;
+extern uint32_t _srelocate;
+extern uint32_t _erelocate;
+extern uint32_t _szero;
+extern uint32_t _ezero;
+extern uint32_t _sstack;
+extern uint32_t _estack;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 int main(void)
@@ -219,7 +229,7 @@ int main(void)
 	aiMini4wdDebugPrintf("AI System was Initialized. Build at %s %s\r\n", __DATE__, __TIME__);
 
 	char logfilename[16];
-	_searchNewLogFilename(logfilename);
+	_searchNewLogFilename(logfilename, sizeof(logfilename));
 	sConsoleOut = aiMini4wdFsOpen(logfilename, "w");
 	if (sConsoleOut == NULL) {
 		__fatal_error("Failed to open logfile.\r\n");

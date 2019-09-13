@@ -1,5 +1,9 @@
 include ../../py/mkenv.mk
 
+AUP_BUILDER = ../../../tools/build_aup.py
+RM = rm -f
+MV = mv -f
+
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
@@ -24,7 +28,7 @@ PYDFU = $(TOP)/tools/pydfu.py
 CFLAGS_CORTEX_M4 = -mthumb -D__SAMD51J20A__ -mcpu=cortex-m4
 CFLAGS = -x c $(INC) -D__SAMD51J20A__ -Wall -Werror -std=c99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS = -mthumb -Wl,-Map=$@.map  -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m4 -T samd51j20a_flash.ld
-
+LDFLAGS_BOOTLOADER = -mthumb -Wl,-Map=$@.map  -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m4 -T samd51j20a_bootloader.ld
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG), 1)
@@ -67,7 +71,7 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SR
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-all: $(BUILD)/firmware.dfu
+all: $(BUILD)/MINI4WD.AUP $(BUILD)/firmware.bin
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
@@ -78,28 +82,21 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) $(LIB) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
+$(BUILD)/MINI4WD.elf: $(OBJ)
+	$(ECHO) "LINK $@"
+	$(Q)$(LD) $(LDFLAGS_BOOTLOADER) $(LIB) -o $@ $^ $(LIBS)
+	$(Q)$(SIZE) $@
+
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .relocate $^ $(BUILD)/firmware.bin
 
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
+$(BUILD)/MINI4WD.bin: $(BUILD)/MINI4WD.elf
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .relocate $^ $(BUILD)/MINI4WD.bin
+
+$(BUILD)/MINI4WD.AUP: $(BUILD)/MINI4WD.bin
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
-
-deploy: $(BUILD)/firmware.dfu
-	$(ECHO) "Writing $< to the board"
-	$(Q)$(PYTHON) $(PYDFU) -u $<
-
-
-# Run emulation build on a POSIX system with suitable terminal settings
-run:
-	stty raw opost -echo
-	build/firmware.elf
-	@echo Resetting terminal...
-# This sleep is useful to spot segfaults
-	sleep 1
-	reset
-
-test: $(BUILD)/firmware.elf
-	$(Q)/bin/echo -e "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\x04" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"
+	$(Q)$(RM) MINI4WD.AUP
+	$(Q)$(PYTHON) $(AUP_BUILDER) $(BUILD)/MINI4WD.bin
+	$(Q)$(MV) MINI4WD.AUP $@
 
 include $(TOP)/py/mkrules.mk
