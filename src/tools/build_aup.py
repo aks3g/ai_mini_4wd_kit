@@ -5,7 +5,7 @@ import binascii
 import hashlib
 
 def get_sdk_version() :
-	sdk_version_h = open("../library/include/sdk_version.h", 'r');
+	sdk_version_h = open(os.path.dirname(__file__) + "/../library/include/sdk_version.h", 'r');
 
 	for line in sdk_version_h :
 		if '#define AI_MINI_4WD_VERSION' in line :
@@ -24,7 +24,7 @@ def get_firmware_size(fw_name) :
 	return os.path.getsize(fw_name);
 
 def get_git_hash() :
-	orig_head = open("../../.git/ORIG_HEAD", 'r');
+	orig_head = open(os.path.dirname(__file__) + "/../../.git/ORIG_HEAD", 'r');
 
 	return orig_head.readline()[0:4];
 
