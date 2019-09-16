@@ -117,10 +117,6 @@ int aiMini4wdInitialize(uint32_t flags)
 		aiMini4wdSetStatusLed(1);
 	}
 
-	
-//	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
-//	while ((tick + 2000) > aiMini4WdTimerGetSystemtick());
-	
 	//J Sensor 関係処理の初期化
 	//J 加速度センサ、タコメータ
 	aiMini4wdSensorsInitialize();
@@ -128,29 +124,6 @@ int aiMini4wdInitialize(uint32_t flags)
 	//J Motor Driver
 	aiMini4WdInitializePwm();
 	
-/*
-	FIL fp;
-	res = f_open(&fp, "TEST.TXT", FA_READ);
-	aiMini4wdDebugPrintf ("f_open(). res = %d\r\n", res);
-
-	char str[10] = "";
-	f_read(&fp, str, 5, NULL);
-	
-	aiMini4wdDebugPrintf("[TEST] %s\r\n", str);
-	
-	f_close(&fp);
-
-	res = f_open(&fp, "TEST2.TXT", FA_CREATE_ALWAYS | FA_WRITE);
-	aiMini4wdDebugPrintf ("f_open(). res = %d\r\n", res);
-
-	char test[2048];
-	memset (test, 'A', sizeof(test));
-
-	f_write(&fp, test, sizeof(test), NULL);
-	
-	f_close(&fp);
-*/
-
 	//J ADC for Battery Voltage and Motor Current
 	samd51_mclk_enable(SAMD51_APBD_ADCn0, 1);
 	samd51_mclk_enable(SAMD51_APBD_ADCn1, 1);

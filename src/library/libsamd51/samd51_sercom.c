@@ -100,7 +100,7 @@ void samd51_sercom_reset_intterrupt(SAMD51_SERCOM sercom)
 		break;
 
 	default:
-		return AI_ERROR_INVALID;
+		break;
 	}
 }
 

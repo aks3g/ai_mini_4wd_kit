@@ -16,6 +16,7 @@
 #include <samd51_timer.h>
 #include <samd51_dac.h>
 #include <samd51_ac.h>
+#include <samd51_adc.h>
 #include <samd51_interrupt.h>
 #include <samd51_sercom.h>
 #include <samd51_clock.h>
@@ -23,9 +24,12 @@
 #include "include//internal/lsm6ds3h.h"
 #include "include//internal/sensor.h"
 #include "include/internal/clock.h"
+#include "include/internal/timer.h"
 
 #include "include/ai_mini4wd_sensor.h"
+#include "include/ai_mini4wd_motor_driver.h"
 #include "include/ai_mini4wd_hid.h"
+#include "include/ai_mini4wd_timer.h"
 
 static AiMini4wdSensorData sCurrentData;
 static AiMini4wdCapturedSensorDataCb sSensorCapturedCb = NULL;
@@ -142,7 +146,7 @@ static int _initialize_tachometer(void)
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_DAC, LIB_MINI_4WD_CLK_GEN_NUMBER_1MHZ);
 
 	samd51_dac_initialize(0, SAMD51_DAC_REF_BUFFERED_EXTERNAL_VOLTAGE);
-	samd51_dac_output(0, 2500); //J 3.3V x 3500/4096 = 2805mV
+	samd51_dac_output(0, 2500); //J 3.3V x 2500/4096 = 2014mV
 
 	//J Enable AC
 	samd51_mclk_enable(SAMD51_APBC_AC, 1);
@@ -237,5 +241,94 @@ int aiMini4wdRegisterOnStartCb(AiMini4wdOnStartCallback cb)
 {
 	sOnStartCb = cb;
 
+	return AI_OK;
+}
+
+/*--------------------------------------------------------------------------*/
+volatile static int sAdcConversionDone = 0;
+volatile static uint16_t sAdcResult = 0;
+void _adcConversionDone(int status, int16_t result)
+{
+	sAdcConversionDone = 1;
+	sAdcResult = result;
+}
+
+int _cmp_uint16(const void *p1, const void *p2)
+{
+	uint16_t v1 = *((uint16_t *)p1);
+	uint16_t v2 = *((uint16_t *)p2);
+	
+	if (v1 < v2) {
+		return -1;
+	}
+	else if (v1 > v2) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+	
+}
+
+int aiMini4wdSensorCalibrateTachoMeter(uint32_t *threshold_mv, uint16_t *work_buf, size_t length)
+{
+	int ret = 0;
+
+	if (threshold_mv == NULL) {
+		return AI_ERROR_NULL;
+	}
+
+	//J ADCをLockする
+	aiMini4wdCurrentVoltageMonitorControl(0);
+
+	//J モーターをある程度の時間回す
+//	aiMini4wdMotorDriverDrive(255);
+	
+	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
+	while ((tick+500) > aiMini4WdTimerGetSystemtick());
+	
+	//J ADCで全力サンプリング
+	for (int i=0 ; i<length ; ++i) {
+		sAdcConversionDone= 0;
+		ret = samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN5, SAMD51_ADC_NEG_GND, _adcConversionDone);
+		if (ret != AI_OK) {
+			return ret;
+		}
+		while (sAdcConversionDone == 0);
+
+		work_buf[i] = sAdcResult;
+	}
+
+	//J モーターを止める
+	aiMini4wdMotorDriverDrive(0);
+
+	//J ADCをUnlockする
+	aiMini4wdCurrentVoltageMonitorControl(1);
+
+	//J ソートする
+	qsort(work_buf, length, sizeof(work_buf[0]), _cmp_uint16);
+
+	//J 閾値を決定
+	//J 小さい側と大きい側の5％を捨てて、その中での最大、最小の値
+	//J の中間をとる
+	uint16_t limited_max = work_buf[(int)(length * 0.95)];
+	uint16_t limited_min = work_buf[(int)(length * 0.05)];
+
+	*threshold_mv = (uint16_t)(3300.0f * ((limited_max + limited_min)/2.0f) / 4096.0f);
+
+	return AI_OK;
+}
+
+
+int aiMini4wdSensorSetTachometerThreshold(uint16_t threshold_mv)
+{
+	uint16_t dac_out = (uint16_t)((float)threshold_mv * (4096.0f/3300.0f));
+	
+	if (dac_out > 0x0fff) {
+		return AI_ERROR_OUT_OF_RANGE;
+	}
+
+	samd51_dac_output(0, dac_out);
+	
 	return AI_OK;
 }

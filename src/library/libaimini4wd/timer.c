@@ -26,7 +26,7 @@ static AiMini4wdTimerCallback _timer_cb_10ms =  NULL;
 static AiMini4wdTimerCallback _timer_cb_100ms =  NULL;
 
 static uint32_t sGlobalTick = 0;
-
+static int sEnableCurrentVoltageMonitor = 1;
 
 static void _tc0_cb(void);
 
@@ -95,6 +95,13 @@ int aiMini4wdMotorDriverGetDriveCurrent(float *current_mA)
 }
 
 
+int aiMini4wdCurrentVoltageMonitorControl(int enable)
+{
+	sEnableCurrentVoltageMonitor = enable;
+	
+	return AI_OK;
+}
+
 
 static volatile uint32_t sAdcSwitch = 0;
 static void _tc0_cb(void)
@@ -104,15 +111,17 @@ static void _tc0_cb(void)
 		_timer_cb_10ms();
 	}
 
-	//J Update ADC
-	if (sAdcSwitch) {
-		(void)samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN14, SAMD51_ADC_NEG_GND, _updateBatteryVoltage);
-	}
-	else {
-		(void)samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN15, SAMD51_ADC_NEG_GND, _updateMotorCurrent);
+	if (sEnableCurrentVoltageMonitor) {
+		//J Update ADC
+		if (sAdcSwitch) {
+			(void)samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN14, SAMD51_ADC_NEG_GND, _updateBatteryVoltage);
+		}
+		else {
+			(void)samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN15, SAMD51_ADC_NEG_GND, _updateMotorCurrent);
+		}
+		sAdcSwitch = 1 - sAdcSwitch;
 	}
 
-	sAdcSwitch = 1 - sAdcSwitch;
 
 
 

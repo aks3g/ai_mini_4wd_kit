@@ -345,5 +345,11 @@ void ADC1_1_Handler(void)
 {
 	uint8_t flag = reg_adc1->INTFLAG;
 
+	if (flag & (1 << SAMD51_ADC_INTFLAG_RESRDY)) {
+		if (sConversionDoneCb[1] != NULL) {
+			sConversionDoneCb[1](AI_OK, reg_adc0->RESULT);
+		}
+	}
+
 	reg_adc1->INTFLAG = flag;
 }
