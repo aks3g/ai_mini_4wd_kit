@@ -38,6 +38,9 @@ Q(waitIntTrig)
 Q(waitExtTrig)
 Q(checkExtTrig)
 
+Q(calibrateTachometer)
+Q(setTachometerThreshold)
+
 //J Estimater
 Q(SelfPositionEstimater)
 Q(push_map_item)

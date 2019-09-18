@@ -294,6 +294,33 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setGainKd_obj, mini4wd_setGainKd);
 
 
 /*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_calibrateTachometer(mp_obj_t self_in)
+{
+	uint16_t threshold_mv = 0;
+	uint16_t *work_buf = m_new(uint16_t,  1024);
+
+	int ret = aiMini4wdSensorCalibrateTachoMeter(&threshold_mv, work_buf, 1024);
+	if (ret != 0) {
+	   return mp_const_none;
+	}
+
+	return mp_obj_new_int((int)threshold_mv);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mini4wd_calibrateTachometer_obj, mini4wd_calibrateTachometer);
+
+
+/*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_setTachometerThreshold(mp_obj_t self_in, mp_obj_t threshold)
+{
+	uint16_t threshold_mv = mp_obj_get_int(threshold);
+	aiMini4wdSensorSetTachometerThreshold(threshold_mv, 1); // Flashに毎回保存する
+
+	return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setTachometerThreshold_obj, mini4wd_setTachometerThreshold);
+
+
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_led),				MP_ROM_PTR(&mini4wd_led_obj) },
@@ -305,6 +332,7 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_setGainKp),		MP_ROM_PTR(&mini4wd_setGainKp_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setGainKi),		MP_ROM_PTR(&mini4wd_setGainKi_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setGainKd),		MP_ROM_PTR(&mini4wd_setGainKd_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_setTachometerThreshold),		MP_ROM_PTR(&mini4wd_setTachometerThreshold_obj) },
 
 	{ MP_ROM_QSTR(MP_QSTR_grab),			MP_ROM_PTR(&mini4wd_grab_sensor_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_getCount),		MP_ROM_PTR(&mini4wd_getCount_obj) },
@@ -321,7 +349,8 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 
 	{ MP_ROM_QSTR(MP_QSTR_waitIntTrig),		MP_ROM_PTR(&mini4wd_waitIntTrig_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_waitExtTrig),		MP_ROM_PTR(&mini4wd_waitExtTrig_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_checkExtTrig),		MP_ROM_PTR(&mini4wd_checkExtTrig_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_checkExtTrig),	MP_ROM_PTR(&mini4wd_checkExtTrig_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_calibrateTachometer),	MP_ROM_PTR(&mini4wd_calibrateTachometer_obj) },
 };
 
 
