@@ -32,7 +32,8 @@ float aiMini4wdSensorGetCurrentRpm(void);
 float aiMini4wdSensorGetSpeed(void);
 int aiMini4wdSensorSetTireSize(float mm);
 
-int aiMini4wdSensorCalibrateTachoMeter(uint32_t *threshold_mv, uint16_t *work_buf, size_t length);
+int aiMini4wdSensorCalibrateTachoMeter(uint16_t *threshold_mv, uint16_t *work_buf, size_t length);
+int aiMini4wdSensorSetTachometerThreshold(uint16_t threshold_mv, int save);
 
 #ifdef __cplusplus
 }

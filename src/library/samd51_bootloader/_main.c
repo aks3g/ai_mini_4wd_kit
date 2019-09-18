@@ -33,20 +33,10 @@
 #include <samd51_dac.h>
 #include <samd51_interrupt.h>
 
-#pragma pack(1)
-typedef struct UpdateFileHeader_t
-{
-  char signature[4];
-  uint32_t version;
-  uint8_t hash[4];
-  uint32_t size;
-  uint8_t file_hash[16];
-} UpdateFileHeader;
-#pragma pack()
+#include "../libaimini4wd/include/internal/registry.h"
+
 
 #define FLASH_HEAD					(0x1E000)
-#define FILE_INFO_ADDR				(0x00100000 - 0x200)	//J Flash末尾にFileInfoを書いておく
-
 
 void RESTART (volatile uint32_t *entry_addr, volatile uint32_t *stack_addr)
 {
@@ -116,8 +106,6 @@ int main(void)
 		goto ENSURE;
 	}
 
-	aiMini4wdDebugPrintf("Update file is exits.\n");
-
 	UpdateFileHeader header;
 	ret = aiMini4wdFsRead(hex_file, (void*)&header, sizeof(header));
 	if (ret < sizeof(header)) {
@@ -128,12 +116,12 @@ int main(void)
 		goto ERROR;
 	}
 
-	UpdateFileHeader current_header;
-	samd51_nvmctrl_read(FILE_INFO_ADDR, &current_header, sizeof(current_header));
-	if (0 == memcmp(current_header.file_hash, header.file_hash, 16)) {
+	AiMini4wdRegistry *regstry = aiMini4wdRegistryGet();
+	if ((regstry != NULL) && (0 == memcmp(regstry->sdk_data.field.fw.file_hash, header.file_hash, 16))){
 		goto ENSURE;
 	}
 
+	aiMini4wdDebugPrintf("Valid update file is exits.\n");
 	aiMini4wdDebugPrintf("Signature is OK\n");
 	aiMini4wdDebugPrintf("Version: 0x%08x\n", header.version);
 	aiMini4wdDebugPrintf("Hash: %c%c%c%c\n", header.hash[0], header.hash[1], header.hash[2], header.hash[3]);
@@ -149,13 +137,6 @@ int main(void)
 
 		sProgress = ((4 * i) / pages) + 1;
 	}
-	
-	//J File Infoも消す
-	ret = samd51_nvmctrl_erase_page(FILE_INFO_ADDR, 1);
-	if (ret != AI_OK) {
-		goto ERROR;
-	}
-
 
 	// 512Byte毎に読み込んでFlashに書き込む
 	uint32_t addr = FLASH_HEAD;
@@ -173,14 +154,9 @@ int main(void)
 		addr += sizeof(buf);
 	}
 
-	//J 書き込んだファイルのFile Headerを書いておく
-	memset (buf, 0xff, sizeof(buf));
-	memcpy(buf, &header, sizeof(header));
-	ret = samd51_nvmctrl_write_page(FILE_INFO_ADDR, buf, 1);
-	if (ret != AI_OK) {
-		goto ERROR;
-	}
-
+	//J 書き込んだファイルのFile HeaderをRegistryに書く	
+	memcpy(&(regstry->sdk_data.field.fw), &header, sizeof(header));
+	aiMini4wdRegistryUpdate();
 
 ENSURE:
 
@@ -229,7 +205,7 @@ ENSURE:
 
 ERROR:
 	aiMini4wdDebugPrintf("ERROR ret = %d\n", ret);
-
+	aiMini4wdSetErrorStatus(2);
 	while(1);
 
 }

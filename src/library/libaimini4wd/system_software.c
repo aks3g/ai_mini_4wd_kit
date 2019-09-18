@@ -29,6 +29,7 @@
 #include "include/internal/mmc.h"
 #include "include/internal/hids.h"
 #include "include/internal/fs.h"
+#include "include/internal/registry.h"
 
 #include "include/ai_mini4wd_sensor.h"
 #include "include/ai_mini4wd_motor_driver.h"
@@ -112,6 +113,9 @@ int aiMini4wdInitialize(uint32_t flags)
 	//J FSの初期化. 内部的に2000ms 待つので旧来のWaitを消す
 	aiMini4wdFsInitialize();
   
+	//J レジストリロード
+	aiMini4wdRegistryLoad();
+
 	if (flags & AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER) {
 		//J Status OK
 		aiMini4wdSetStatusLed(1);

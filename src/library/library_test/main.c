@@ -21,7 +21,7 @@ int main(void)
 		while(1);
 	}
 
-	uint32_t threshold_mv = 0;
+	uint16_t threshold_mv = 0;
 	uint16_t buf[1024];
 	aiMini4wdSensorCalibrateTachoMeter(&threshold_mv, buf, sizeof(buf)/sizeof(buf[0]));
 

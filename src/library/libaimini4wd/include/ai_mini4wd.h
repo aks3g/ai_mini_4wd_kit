@@ -26,6 +26,8 @@ int aiMini4wdGetBatteryVoltage(float *voltage_mV);
 int aiMini4wdDebugPrintf(const char *format, ...);
 int aiMini4wdDebugPuts(const char *str, size_t len);
 
+int aiMini4wdRegistryUpdateTachometerThreshold_mv(uint16_t mv);
+
 #ifdef __cplusplus
 }
 #endif

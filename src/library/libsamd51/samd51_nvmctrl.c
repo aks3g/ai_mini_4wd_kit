@@ -128,6 +128,7 @@ int samd51_nvmctrl_write_page(const uint32_t phisical_adr, const void *buf, cons
 		// Push data to page buffer
 		//J 内部バスからFlash領域に書き込むと、いったんバッファに入る
 		int n = 0;
+		NVMCTRL_REG.addr = addr;
 		for (n=0 ; n<page_size ; n+=4, addr+=4, buf_32++) {
 			*(uint32_t *)addr = *buf_32;
 		}

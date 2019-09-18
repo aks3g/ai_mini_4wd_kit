@@ -17,6 +17,10 @@ Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "library_test", "library_tes
 	EndProjectSection
 EndProject
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "samd51_bootloader", "samd51_bootloader\samd51_bootloader.cproj", "{48B92A04-6DBC-4785-8308-78A194D57C59}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BCC9B307-7041-4E0B-9942-67C7FD43D8D9} = {BCC9B307-7041-4E0B-9942-67C7FD43D8D9}
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897} = {DCE6C7E3-EE26-4D79-826B-08594B9AD897}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

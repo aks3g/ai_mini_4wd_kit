@@ -233,6 +233,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="include\internal\mmc.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\internal\registry.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\internal\sdhc_diskio.h">
       <SubType>compile</SubType>
     </Compile>
@@ -246,6 +249,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="pwm.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="registry.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="sensor.c">

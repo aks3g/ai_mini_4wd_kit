@@ -25,6 +25,7 @@
 #include "include//internal/sensor.h"
 #include "include/internal/clock.h"
 #include "include/internal/timer.h"
+#include "include/internal/registry.h"
 
 #include "include/ai_mini4wd_sensor.h"
 #include "include/ai_mini4wd_motor_driver.h"
@@ -146,7 +147,14 @@ static int _initialize_tachometer(void)
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_DAC, LIB_MINI_4WD_CLK_GEN_NUMBER_1MHZ);
 
 	samd51_dac_initialize(0, SAMD51_DAC_REF_BUFFERED_EXTERNAL_VOLTAGE);
-	samd51_dac_output(0, 2500); //J 3.3V x 2500/4096 = 2014mV
+	AiMini4wdRegistry *regstry = aiMini4wdRegistryGet();
+	if (regstry != NULL) {
+		aiMini4wdSensorSetTachometerThreshold(regstry->sdk_data.field.tachometer_threshold, 0);
+	} else {
+		aiMini4wdSensorSetTachometerThreshold(1200, 0);
+	}
+	
+
 
 	//J Enable AC
 	samd51_mclk_enable(SAMD51_APBC_AC, 1);
@@ -270,7 +278,8 @@ int _cmp_uint16(const void *p1, const void *p2)
 	
 }
 
-int aiMini4wdSensorCalibrateTachoMeter(uint32_t *threshold_mv, uint16_t *work_buf, size_t length)
+/*--------------------------------------------------------------------------*/
+int aiMini4wdSensorCalibrateTachoMeter(uint16_t *threshold_mv, uint16_t *work_buf, size_t length)
 {
 	int ret = 0;
 
@@ -282,7 +291,7 @@ int aiMini4wdSensorCalibrateTachoMeter(uint32_t *threshold_mv, uint16_t *work_bu
 	aiMini4wdCurrentVoltageMonitorControl(0);
 
 	//J モーターをある程度の時間回す
-//	aiMini4wdMotorDriverDrive(255);
+	aiMini4wdMotorDriverDrive(150);
 	
 	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
 	while ((tick+500) > aiMini4WdTimerGetSystemtick());
@@ -320,15 +329,25 @@ int aiMini4wdSensorCalibrateTachoMeter(uint32_t *threshold_mv, uint16_t *work_bu
 }
 
 
-int aiMini4wdSensorSetTachometerThreshold(uint16_t threshold_mv)
+/*--------------------------------------------------------------------------*/
+int aiMini4wdSensorSetTachometerThreshold(uint16_t threshold_mv, int save)
 {
+	int ret = AI_OK;
 	uint16_t dac_out = (uint16_t)((float)threshold_mv * (4096.0f/3300.0f));
-	
 	if (dac_out > 0x0fff) {
 		return AI_ERROR_OUT_OF_RANGE;
 	}
 
+	//J Flashに保存する
+	if (save) {
+		AiMini4wdRegistry *regstry = aiMini4wdRegistryGet();
+		if (regstry != NULL) {
+			regstry->sdk_data.field.tachometer_threshold = threshold_mv;
+			ret = aiMini4wdRegistryUpdate();
+		}
+	}
+
 	samd51_dac_output(0, dac_out);
 	
-	return AI_OK;
+	return ret;
 }
