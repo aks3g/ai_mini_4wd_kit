@@ -16,8 +16,8 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I../../../library/include/
-INC += -I$(PACKS_PATH)/atmel/SAMD51_DFP/1.0.70/include/
-INC += -I$(PACKS_PATH)/arm/CMSIS/Include/
+INC += -I../../../packs/atmel/SAMD51_DFP/1.0.70/include/
+INC += -I../../../packs/arm/CMSIS/Include/
 
 
 LD = $(CROSS_COMPILE)gcc
