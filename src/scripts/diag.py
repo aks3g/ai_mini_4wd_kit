@@ -8,10 +8,17 @@ m.setGainKp(0.1)
 m.setGainKi(0.02)
 m.setGainKd(0.02)
 
+print ("Start Diagnositic test")
 
+print ("Calibrate Tachometer ... ", end="");
+
+threshold_mv = m.calibrateTachometer();
+m.setTachometerThreshold(threshold_mv);
+print("OK")
 m.led(1)
 
-print ("Start Diagnositic test")
+print (threshold_mv);
+
 print ("Press SW0 ... ", end="")
 while False == m.sw(0):
 	m.led(1)
@@ -61,7 +68,6 @@ while validate == False:
 print ("OK")
 m.led(8)
 
-
 print ("Drive Check ... ");
 m.setSpeed(10);
 
@@ -81,7 +87,7 @@ while cnt < 52 :
 m.led(10)
 
 
-m.setDuty(-255);
+m.setDuty(-150);
 cnt = 0;
 while cnt < 52 :
 	m.grab()
