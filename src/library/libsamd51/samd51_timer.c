@@ -240,7 +240,7 @@ int samd51_tc_initialize_as_pwm(SAMD51_TC tc, uint32_t pheripheral_clock, uint32
 
 	//CTRLA.MODE
 	//CTRLA.PRESCALER
-	uint32_t prescaler_bm = (2 << 8);
+	uint32_t prescaler_bm = (7 << 8);
 	uint32_t mode = (1 << 2);
 	uint32_t enable = (1 << 1);
 	

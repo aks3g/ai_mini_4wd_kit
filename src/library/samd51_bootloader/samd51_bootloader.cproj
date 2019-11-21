@@ -46,10 +46,10 @@
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <AdditionalModules>
       <Module>
-  <File>..\..\..\micro_python\ports\ai_mini4wd\build\firmware.elf</File>
-  <EraseRule>2</EraseRule>
-</Module>
-</AdditionalModules>
+        <File>..\..\..\micro_python\ports\ai_mini4wd\build\firmware.elf</File>
+        <EraseRule>2</EraseRule>
+      </Module>
+    </AdditionalModules>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>

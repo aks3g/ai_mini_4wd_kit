@@ -39,6 +39,7 @@
 
 #define AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER	(0x80000000)
 
+uint32_t gAiMini4wdInitFlags = 0;
 
 typedef struct GlobalParameters_t
 {
@@ -46,7 +47,6 @@ typedef struct GlobalParameters_t
 } GlobalParameters;
 
 static volatile GlobalParameters sGlobalParams;
-
 
 static uint8_t sUartTxBuf[512];
 static uint8_t sUartRxBuf[512];
@@ -63,6 +63,7 @@ int aiMini4wdInitialize(uint32_t flags)
     /* Initialize the SAM system */
     SystemInit();
 
+	gAiMini4wdInitFlags = flags;
 	memset ((void *)&sGlobalParams, 0x00, sizeof(sGlobalParams));
 
 	//J GPIO itialization

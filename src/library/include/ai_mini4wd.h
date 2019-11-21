@@ -17,6 +17,8 @@ extern "C" {
 #endif
 
 #define AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT				(0x00000001)
+#define AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW				(0x00000002)
+#define AI_MINI_4WD_INIT_FLAG_USE_USB_MASS					(0x00000004)
 
 int aiMini4wdInitialize(uint32_t flags);
 void aiMini4wdSetErrorStatus(int status);

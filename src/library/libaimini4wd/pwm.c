@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define	REV2		(1)
+
 #include <samd51_error.h>
 #include <samd51_clock.h>
 #include <samd51_timer.h>
@@ -16,7 +18,12 @@
 #include "include/ai_mini4wd_motor_driver.h"
 #include "include/internal/pwm.h"
 #include "include/internal/clock.h"
+#include "include/ai_mini4wd.h"
 
+extern uint32_t gAiMini4wdInitFlags;
+
+static SAMD51_GPIO_PORT sPwm1Port = SAMD51_GPIO_B14;
+static SAMD51_GPIO_PORT sPwm2Port = SAMD51_GPIO_B15;
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -37,10 +44,15 @@ static int _setDuty(int duty);
 /*--------------------------------------------------------------------------*/
 int aiMini4WdInitializePwm(void)
 {
+	if (gAiMini4wdInitFlags & AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW) {
+		sPwm1Port = SAMD51_GPIO_B15;
+		sPwm2Port = SAMD51_GPIO_B14;
+	}
+
 	samd51_mclk_enable(SAMD51_APBC_TCn4, 1);
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_TC4_TC5, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
 	
-	samd51_tc_initialize_as_pwm(SAMD51_TC4, 48*1000*1000, 100, 0);
+	samd51_tc_initialize_as_pwm(SAMD51_TC4, 48*1000*1000, 50, 0);
 	aiMini4wdMotorDriverDrive(0);
 
 	return 0;
@@ -80,9 +92,8 @@ static int _setDuty(int duty)
 		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
 		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_FUNC_E);
 
-		samd51_gpio_output(SAMD51_GPIO_B14, 1);
-		samd51_gpio_output(SAMD51_GPIO_B15, 0);
-
+		samd51_gpio_output(sPwm1Port, 1);
+		samd51_gpio_output(sPwm2Port, 0);
 		samd51_tc_set_pwm(SAMD51_TC4, 1, duty);
 	}
 	else if(duty < 0) {
@@ -91,9 +102,8 @@ static int _setDuty(int duty)
 		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_FUNC_E);
 		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
 
-		samd51_gpio_output(SAMD51_GPIO_B14, 0);
-		samd51_gpio_output(SAMD51_GPIO_B15, 1);
-		
+		samd51_gpio_output(sPwm1Port, 0);
+		samd51_gpio_output(sPwm2Port, 1);
 		samd51_tc_set_pwm(SAMD51_TC4, 0, -duty);
 	}
 	
