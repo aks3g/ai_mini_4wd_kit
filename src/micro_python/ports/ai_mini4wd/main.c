@@ -14,6 +14,7 @@
 #include <ai_mini4wd_fs.h>
 #include <ai_mini4wd_hid.h>
 #include <ai_mini4wd_timer.h>
+#include <ai_mini4wd_motor_driver.h>
 #include <ai_mini4wd_sensor.h>
 
 #include "samd51.h"
@@ -221,7 +222,13 @@ extern uint32_t _estack;
 /*---------------------------------------------------------------------------*/
 int main(void)
 {
-	int ret = aiMini4wdInitialize(AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT);
+	int ret = 0;
+#ifdef NGAIMINI4WD
+	uint32_t init_flag = AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW | AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW;
+#else
+	uint32_t init_flag = AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW;
+#endif
+	aiMini4wdInitialize(init_flag);
 	if (ret != 0) {
 		aiMini4wdDebugPrintf("Failed to initialize mini4wd ai. ret = %08x\r\n", ret);
 	}
@@ -314,6 +321,10 @@ soft_reset:
 			if ((ret = pyexec_raw_repl()) != 0) {
 				break;
 			}
+
+			//J モーターは止める
+			aiMini4wdMotorDriverDrive(0);
+
 			//J 強制的にFlushする
 			aiMini4wdFsPutsFlush(sConsoleOut);
 			aiMini4wdFsTruncate(sConsoleOut);
