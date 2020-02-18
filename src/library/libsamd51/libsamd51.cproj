@@ -184,6 +184,9 @@ cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="include\samd51_uart.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\samd51_usb_device.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="samd51_ac.c">
       <SubType>compile</SubType>
     </Compile>
@@ -218,6 +221,9 @@ cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="samd51_uart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="samd51_usb_device.c">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

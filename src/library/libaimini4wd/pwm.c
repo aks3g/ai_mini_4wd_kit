@@ -75,6 +75,10 @@ int aiMini4wdMotorDriverGetDuty(void)
 /*--------------------------------------------------------------------------*/
 static int _setDuty(int duty)
 {
+	if (sCurrentDuty == duty) {
+		return 0;
+	}
+	
 	if (duty == 0) {
 		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
 		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
