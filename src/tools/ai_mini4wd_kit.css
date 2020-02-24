@@ -1,0 +1,179 @@
+﻿/*
+ * ai_mini_4wd_kit.css
+ *
+ * Created: 2020/02/24
+ * Copyright 2019 Kiyotaka Akasaka. All rights reserved.
+ */
+html {
+  max-width: 600pt;
+  margin: 0 auto;
+  background: khaki; /* Fills the page */
+}
+.buttons {
+  width: 280pt;
+  display: inline-block;
+}
+.map_range {
+  width: 99%;
+  display: inline-block;
+}
+a {
+  text-decoration: none;
+  color: black;
+}
+a:hover {
+  color: khaki;
+  background: darkorange;
+}
+.header_menu {
+  background-color: gold;
+  position: fixed;
+  top:  0pt;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+.footer_menu {
+  background-color: gold;
+  position: fixed;
+  bottom:  0pt;
+  left: 0;
+  width: 100%;
+  height: 30pt;
+}
+.wrapper {
+  padding-bottom: 40pt;
+  box-sizing: border-box;
+}
+.dash_board {
+  display: inline-block;
+  width: 500px;
+  text-align: left;
+}
+.sub_section {
+  margin-top: 10pt;
+  background-color: gold;
+  width: 100%;
+  font-weight: bold;
+}
+.menu_title {
+  padding-top: 10pt;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  font-size: xx-large;
+}
+.logo_outline {
+  text-shadow: 2px 2px 0px black,
+    -2px  2px 0px black,
+     2px -2px 0px black,
+    -2px -2px 0px black;
+}
+
+.menu_copy {
+  padding-top: 10pt;
+  color: black;
+  text-align: center;
+}
+.top {
+  margin-top: 60pt;
+}
+
+.control_btn{
+  margin-top: 2pt;
+  margin-bottom: 2pt;
+  width: 100pt;
+  text-align: center;
+
+  display: inline-block;
+  padding: 0.5em 1em;
+  text-decoration: none;
+  background: gold;
+  color: black;
+  border-bottom: solid 4px darkgoldenrod;
+  border-radius: 3px;
+
+  float: center;
+}
+.control_btn:active {
+  margin-top: 2pt;
+  margin-bottom: 5pt;
+  width: 100pt;
+  text-align: center;
+
+  -ms-transform: translateY(4px);
+  -webkit-transform: translateY(4px);
+  transform: translateY(4px);/*下に動く*/
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);/*影を小さく*/
+  border-bottom: none;
+}
+
+.wheel_select {
+  margin-top: 10pt;
+  margin-bottom: 10pt;
+}
+
+.check_box_span {
+  width : 190pt;
+  display: inline-block;
+}
+
+.check_box {
+}
+
+.map_canvas {
+}
+
+.canvas_graph{
+  overflow-x:scroll;
+}
+
+.map_array{
+  width:100%;
+}
+
+/* TAB表示に対応するためのあれこれ */
+.tab_labels{
+  width:100%;
+  font-size:0;
+  margin:0 3px;
+}
+/* Tabに使うRadioButtonは不可視にする */
+input[type="radio"].for_tabs {
+  display:none;
+}
+
+.tab_labels label{
+  width:150px;
+  margin:0 3px;
+  display:inline-block;
+  padding:10px 0;
+  color:#999;
+  background:darkkhaki;
+  text-align:center;
+  font-size:15px;
+  cursor:pointer;
+  transition:ease 0.2s opacity;
+}
+.tab_labels label:hover{
+  opacity:0.5;
+}
+.tab_contents{
+  background:beige;
+}
+.tab_content{
+  width:100%;
+  padding:1px 0;
+  display:none;
+}
+
+#tab1:checked ~ .tab_labels .tab1_label{background:beige; color:#000;}
+#tab1:checked ~ .tab_contents #panel1{display:block;}
+#tab2:checked ~ .tab_labels .tab2_label{background:beige; color:#000;}
+#tab2:checked ~ .tab_contents #panel2{display:block;}
+#tab3:checked ~ .tab_labels .tab3_label{background:beige; color:#000;}
+#tab3:checked ~ .tab_contents #panel3{display:block;}
+#tab4:checked ~ .tab_labels .tab4_label{background:beige; color:#000;}
+#tab4:checked ~ .tab_contents #panel4{display:block;}
+#tab5:checked ~ .tab_labels .tab5_label{background:beige; color:#000;}
+#tab5:checked ~ .tab_contents #panel5{display:block;}
