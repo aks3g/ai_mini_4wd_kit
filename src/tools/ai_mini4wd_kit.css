@@ -177,3 +177,57 @@ input[type="radio"].for_tabs {
 #tab4:checked ~ .tab_contents #panel4{display:block;}
 #tab5:checked ~ .tab_labels .tab5_label{background:beige; color:#000;}
 #tab5:checked ~ .tab_contents #panel5{display:block;}
+
+
+.coeff_label {
+  display:inline-block;
+  width : 120px;
+}
+
+.coeff_value {
+  margin-left : 20px;
+}
+
+.policy_list_area {
+  display:inline-block;
+  width : 45%;
+  padding-right:50px;
+}
+
+.policy_list {
+  width : 100%;
+}
+
+.policy_editer_area {
+  display:inline-block;
+}
+
+
+
+.trial_box {
+  display:inline-block;
+  background: eeeeee;
+
+  float: left;
+  width: 200px;
+}
+
+.visual_box {
+  display:inline-block;
+  background: 808080;
+
+  float: right;
+  width: 100%
+  margin-right: -200px;
+  padding-right: 200px;
+  margin-left: -200px;
+  padding-left: 200px;
+}
+
+.property_box {
+  display:inline-block;
+  background: eeeeee;
+
+  float: left;
+  width: 200px;
+}

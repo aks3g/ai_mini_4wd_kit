@@ -183,7 +183,6 @@ function drawEstimatedMachinePosition(canvas, clientWidth, xArr, yArr, lapArr)
   //J キャンパスのサイズを決定
   var x_range = (Math.max(...xArr) + (-1 * Math.min(...xArr))) * 1.05;
   var y_range = (Math.max(...yArr) + (-1 * Math.min(...yArr))) * 1.05;
-//  var scale =  document.getElementById("sensor_visualizer").clientWidth / x_range;
   var scale =  clientWidth / x_range;
 
   canvas.setAttribute("width",  (x_range * scale).toString(10));
@@ -247,7 +246,7 @@ function drawEstimatedMachinePosition(canvas, clientWidth, xArr, yArr, lapArr)
 /*-----------------------------------------------------------------------------
  * 状態空間の描画
  */
-function drawStateSpaceVector(canvas, clientWidth, vec, position)
+function drawStateSpaceVector(canvas, clientWidth, vec, position, focused_lap)
 {
   //J XY座標を表す構造体的なもの
   Position = function(x, y) {
@@ -327,6 +326,10 @@ function drawStateSpaceVector(canvas, clientWidth, vec, position)
     AlphaMap = ["20", "20", "20"];
     AlphaMap[highlite_lap] = "ff";
   }
+  else if (focused_lap != NaN) {
+    AlphaMap = ["20", "20", "20"];
+    AlphaMap[focused_lap] = "ff";
+  }
 
   //J mapのサイズを取得する
   var map_size = checkRectSize(vec);
@@ -353,9 +356,9 @@ function drawStateSpaceVector(canvas, clientWidth, vec, position)
 
   ctx2d.lineWidth = 1.5
   for (var i=0; i<vec.length ; ++i) {
-    if (document.lane_select.lanes[vec[i].lap].checked == false) {
-      continue;
-    }
+//    if (document.lane_select.lanes[vec[i].lap].checked == false) {
+//      continue;
+//    }
 
     ctx2d.beginPath()
     ctx2d.strokeStyle = FeatureColorTable[vec[i].feature] + AlphaMap[vec[i].lap];

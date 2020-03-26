@@ -108,11 +108,12 @@ function loadAndParseSensorFile(file, loaded_cb)
 function sensorDataUpdatedCallback(sensorData)
 {
   SensorData = sensorData;
+  var wheelSize = Number(document.getElementById("wheel_size").value);
 
   //J 距離正規化
-  ResampledSensorData = resampling(SensorData, UNIT_mm);
+  ResampledSensorData = resampling(SensorData, wheelSize, UNIT_mm);
   //J 速度 - 距離推定
-  var [velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel] = estimateVelocityAndOdometory(SensorData);
+  var [velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel] = estimateVelocityAndOdometory(SensorData, wheelSize);
   //J 描画側にデータを渡す
   drawRawDataGraph(document.getElementById("canvas_graph_raw"), SensorData, 52*5, SensorName, SensorUnit);
   drawResampledDataGraph(document.getElementById("canvas_graph_resampling"), ResampledSensorData, 20, SensorName, ResampledSensorUnit);
@@ -121,19 +122,24 @@ function sensorDataUpdatedCallback(sensorData)
   //J 特徴量ヒストグラムと内周、中央周、外周を判断するための閾値を求める
   var distribution = createFeatureValueHistgram(ResampledSensorData,UNIT_mm, -800, 800, 10);
   ThresholdOfCurve = decideThresholdOfFeatures(distribution, 10);
-  SelfPositionEstimater.setThresholdOfCurve(ThresholdOfCurve);
 
   drawFeatureDistributionGraph(document.getElementById("canvas_graph_feature"), distribution, 0, 0, "Feature Value Distribution", -800, 800, 1, ThresholdOfCurve);
 
 
   //J XY座標でコースをプロットする
-  estimateMachinePosition(SensorData, {left:1.0, right:1.0}, "updateEstimatedMachinePosition()");
+  var num_of_laps = estimateMachinePosition(SensorData, {left:1.0, right:1.0}, wheelSize);
+  //J Lapの選択情報も一緒に出力する
+  var selecter_html = "";
+  for (var i=0 ; i<=num_of_laps ; ++i) {
+    selecter_html += "<input type=\"checkbox\" id=\"lap" + i.toString() + "\" checked onChange=" + "\"updateEstimatedMachinePosition()\"" + ">Lap "+ i.toString()
+  }
+  lap_sel = document.getElementById("lap_selecter").innerHTML = selecter_html;
+
   drawEstimatedMachinePosition(document.getElementById("canvas_graph_xy_plot"), document.getElementById("sensor_visualizer").clientWidth, TracingContext.xArr, TracingContext.yArr, TracingContext.lapArr);
 
   //J 3周分のデータを利用して、状態空間を作り出す
-  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, {left:1.0, right:1.0}, ThresholdOfCurve);
+  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, {left:1.0, right:1.0}, wheelSize, ThresholdOfCurve);
 
-  dumpStateSpaceVector(StateSpaceVec);
   drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, -1);
 }
 
@@ -212,7 +218,7 @@ function onSimulaterTimerEvent()
   val++;
 
   if (val < document.getElementById("map_range").max) {
-    var position = updateSimulater(StateSpaceVec, val);
+    var position = updateSimulater(val, TestData);
     drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, position);
     drawExistanceGraph(document.getElementById("canvas_graph_existance"), getExistanceArray());
 
@@ -227,14 +233,14 @@ function onSimulaterTimerEvent()
 var TimerId = NaN;
 function onStartButtonClick()
 {
- console.log(document.getElementById("start_btn").innerHTML);
-
   if (TestData[0].length == 0) {
     return;
   }
 
+  var wheelSize = Number(document.getElementById("wheel_size").value);
+
   if (isNaN(TimerId)) {
-    initializeSimulater(StateSpaceVec, UNIT_mm);
+    initializeSimulater(StateSpaceVec, UNIT_mm,  wheelSize, 1/52.0, ThresholdOfCurve);
     TimerId = setInterval(onSimulaterTimerEvent, 1000/52);
     document.getElementById("start_btn").innerHTML = "STOP";
   }
@@ -250,8 +256,10 @@ function onStartButtonClick()
 //
 function onResetButtonClick()
 {
-  initializeSimulater(StateSpaceVec, UNIT_mm);
-  document.getElementById("map_range").value = document.getElementById("map_range").min;
+  clearInterval(TimerId);
+  TimerId = NaN
+  document.getElementById("start_btn").innerHTML = "START";
+  document.getElementById("map_range").value = 0;
 }
 
 
@@ -268,33 +276,23 @@ function onCoeffUndated()
     left  : document.getElementById("leftCoeff").value
   }
 
-  estimateMachinePosition(SensorData, coeff, "updateEstimatedMachinePosition()");
+  var wheelSize = Number(document.getElementById("wheel_size").value);
+
+  //J XY座標でコースをプロットする
+  var num_of_laps = estimateMachinePosition(SensorData, coeff, wheelSize);
+  //J Lapの選択情報も一緒に出力する
+  var selecter_html = "";
+  for (var i=0 ; i<=num_of_laps ; ++i) {
+    selecter_html += "<input type=\"checkbox\" id=\"lap" + i.toString() + "\" checked onChange=" + "\"updateEstimatedMachinePosition()\"" + ">Lap "+ i.toString()
+  }
+  lap_sel = document.getElementById("lap_selecter").innerHTML = selecter_html;
+
   drawEstimatedMachinePosition(document.getElementById("canvas_graph_xy_plot"), document.getElementById("sensor_visualizer").clientWidth, TracingContext.xArr, TracingContext.yArr, TracingContext.lapArr);
-
-  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, coeff, ThresholdOfCurve);
+  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, coeff, wheelSize, ThresholdOfCurve);
   updateStateSpaceVector();
-
-  dumpStateSpaceVector(StateSpaceVec);
 }
 
 //-----------------------------------------------------------------------------
-// 特徴量マップ情報を出力
-//
-function dumpStateSpaceVector(ssvec)
-{
-  var map_str = "arr_map = [" + ssvec[0].feature.toString();
-
-  var i=0;
-  for(i=1 ; i<ssvec.length ; ++i) {
-    map_str += "," +  ssvec[i].feature.toString();
-  }
-  map_str += "]"
-
-  document.getElementById("map_text").value = map_str;
-}
-
-
-//
 // 特徴量マップの再描画
 //
 function updateStateSpaceVector()

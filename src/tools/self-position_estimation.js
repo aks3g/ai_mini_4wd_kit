@@ -10,41 +10,49 @@ var SelfPositionEstimater = {
   milage_mm : 0,
   milage_index : 0,
   unit_mm : 50,
-  weight: 0.001,
+  wheelSize : 31,
+  interval : 1/52,
+
+  weight: 0.003,
 
   existance: [],
   featureCount: [],
   thresholdOfCurve : {},
 
+  ssv : [],
+
   //J Initialize
-  initialize: function(stateSpaceVec, unit_mm) {
+  initialize: function(stateSpaceVec, unit_mm, wheelSize, interval, thresholdOfCurve) {
+    this.ssv = stateSpaceVec;
     this.unit_mm = unit_mm;
+    this.wheelSize = wheelSize;
+    this.interval = interval;
+    this.thresholdOfCurve = thresholdOfCurve;
 
     //J 移動距離を初期化
     this.milage_mm = 0.0;
     this.milage_index = 0;
 
     //J 存在確率分布の初期値を入れる
-    this.existance = new Array(stateSpaceVec.length);
+    this.existance = new Array(this.ssv.length);
     this.existance.fill(0); //スタート地点に集める
     var lap = 0;
     this.existance[0] = 1.0/3.0;
-    for (var i=1 ; i<stateSpaceVec.length ; ++i) {
-      if (stateSpaceVec[i].lap != lap) {
-        lap = stateSpaceVec[i].lap;
+    for (var i=1 ; i<this.ssv.length ; ++i) {
+      if (this.ssv[i].lap != lap) {
+        lap = this.ssv[i].lap;
         this.existance[i] = 1.0/3.0;
       }
     }
-    this.existance.fill(1.0/stateSpaceVec.length); //一様分布でいんだろうか…。
+    this.existance.fill(1.0/this.ssv.length); //一様分布でいんだろうか…。
 
     //J 特徴量の個数だけ先に求めておく
     this.featureCount = new Array(9); //TODO
     this.featureCount.fill(0);
 
-    for (var i=0 ; i<stateSpaceVec.length ; ++i) {
-      this.featureCount[stateSpaceVec[i].feature]++;
+    for (var i=0 ; i<this.ssv.length ; ++i) {
+      this.featureCount[this.ssv[i].feature]++;
     }
-    console.log(this.featureCount);
   },
 
   //J 存在確率分布を返す
@@ -61,7 +69,7 @@ var SelfPositionEstimater = {
   //J 位置Indexにマシンがいる確率を設定
   setExistance: function(index, val) {this.existance[(this.existance.length + index - Math.round(this.milage_mm/this.unit_mm)) % this.existance.length] = val},
   //J 移動距離、移動中の場所の特徴量から、存在確率をアップデートする
-  estimate: function(stateSpaceVec, delta_mm, feature) {
+  estimate: function(delta_mm, feature) {
     this.milage_mm += delta_mm;
 
     if (this.featureCount[feature] == 0) {
@@ -73,7 +81,7 @@ var SelfPositionEstimater = {
     var weighted_existance = this.weight / this.featureCount[feature];
     for (var i=0 ; i<this.existance.length ; ++i) {
       var prob = this.getExistance(i) * (1-this.weight);
-      if (stateSpaceVec[i].feature == feature) {
+      if (this.ssv[i].feature == feature) {
         prob += weighted_existance;
       }
       this.setExistance(i, prob);
@@ -86,29 +94,18 @@ var SelfPositionEstimater = {
 
     return max_index;
   },
-
-  //J 回転半径の閾値を設定
-  setThresholdOfCurve : function (ThresholdOfCurve) {
-    this.thresholdOfCurve = ThresholdOfCurve
-  }
 }
 
 
 //
 // シミュレータのアップデート処理. 時間ごとの処理を行う
 //
-function updateSimulater(stateSpaceVec, tick)
+function updateSimulater(tick, log)
 {
-  var Interval = 1.0/52.0;
-  var WheelSize = parseFloat(document.getElementById("wheel_size").value);
-  if (WheelSize == NaN) {
-    return;
-  }
+  var delta_mm = SelfPositionEstimater.wheelSize * Math.PI * (log[IDX_RPM][tick] / 60.0) * SelfPositionEstimater.interval;
+  var feature  = featureValue(delta_mm, log[IDX_YAW][tick]*SelfPositionEstimater.interval/1000.0, log[IDX_PITCH][tick]*SelfPositionEstimater.interval/1000.0, SelfPositionEstimater.thresholdOfCurve);
 
-  var delta_mm = WheelSize * Math.PI * (TestData[IDX_RPM][tick] / 60.0) * Interval;
-  var feature  = featureValue(delta_mm, TestData[IDX_YAW][tick]*Interval/1000.0, TestData[IDX_PITCH][tick]*Interval/1000.0, SelfPositionEstimater.thresholdOfCurve);
-
-  var position = SelfPositionEstimater.estimate(stateSpaceVec, delta_mm, feature);
+  var position = SelfPositionEstimater.estimate(delta_mm, feature);
 
   return position;
 }
@@ -125,8 +122,8 @@ function getExistanceArray()
 //
 // シミュレータの初期化処理
 //
-function initializeSimulater(stateSpaceVec, unit_mm)
+function initializeSimulater(stateSpaceVec, unit_mm, wheelSize, interval, thresholdOfCurve)
 {
-  SelfPositionEstimater.initialize(stateSpaceVec, unit_mm);
+  SelfPositionEstimater.initialize(stateSpaceVec, unit_mm, wheelSize, interval, thresholdOfCurve);
 }
 

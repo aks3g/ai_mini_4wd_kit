@@ -20,6 +20,7 @@ var IDX_YAW   = 5;
 var IDX_RPM   = 6;
 var IDX_VBAT  = 7;
 var IDX_IMOT  = 8;
+var IDX_DUTY  = 9;
 
 var Jcjc_CenterRadius = 540;
 var Jcjc_OuterRadius  = Jcjc_CenterRadius + 115;
@@ -42,11 +43,19 @@ var TracingContext = {
   lapArr: [],
 }
 
+//J 状態空間のベクトルを作る時に使う構造体もどき。死にたい
+StateInfo = function(x, y, lap, feature) {
+  this.x = x;
+  this.y = y;
+  this.lap = lap;
+  this.feature = feature;
+}
+
 
 //
 // 回転数、加速度から速度と移動量を割り出す
 //
-function estimateVelocityAndOdometory(data)
+function estimateVelocityAndOdometory(data, wheelSize)
 {
   var velocityArr = [];
   var velocityArrFromAccel = [];
@@ -55,16 +64,12 @@ function estimateVelocityAndOdometory(data)
   var odometryArrFromAccel = [];
 
   var Interval = 1.0/52.0;
-  var WheelSize = parseFloat(document.getElementById("wheel_size").value);
-  if (WheelSize == NaN) {
-    return;
-  }
 
   var odometry = 0;
   var velocity = 0;
   //J タコメータベースの速度と距離
   for (var i=0 ; i<data[IDX_RPM].length ; ++i) {
-    var delta_mm = WheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
+    var delta_mm = wheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
     velocity = (delta_mm / (1000.0 * 1000.0)) / (Interval / 3600.0);
 
     velocityArr.push(velocity)
@@ -85,18 +90,15 @@ function estimateVelocityAndOdometory(data)
   }
 
   return [velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel];
-
-  //J 描画（この処理は再描画が必要ない　と思う）
-//  drawVelocityAndOdometryGraph(velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel);
 }
 
 //
 // Canvas上にミニ四駆の位置を推定する
 //
-function estimateMachinePosition(data, coeff, callback_html_name)
+function estimateMachinePosition(data, coeff, wheelSize)
 {
   if (data.length == 0) {
-    return;
+    return 0;
   }
 
   TracingContext.xArr = [];
@@ -104,10 +106,6 @@ function estimateMachinePosition(data, coeff, callback_html_name)
   TracingContext.lapArr = [];
 
   var Interval = 1.0/52.0;
-  var WheelSize = parseFloat(document.getElementById("wheel_size").value);
-  if (WheelSize == NaN) {
-    return;
-  }
 
   //J タコメータの値とYaw軸の回転を見ながら位置をプロットする
   var direction = 0;
@@ -116,7 +114,7 @@ function estimateMachinePosition(data, coeff, callback_html_name)
   var lap = 0;
 
   for (var i=0 ; i<data[IDX_RPM].length ; ++i) {
-    var delta_mm = WheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
+    var delta_mm = wheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
 
     yaw_corrected = (data[IDX_YAW][i] < 0) ? (data[IDX_YAW][i] * coeff.right) : (data[IDX_YAW][i] * coeff.left)
     direction += getValidAngularVelocity_degree(yaw_corrected) * Interval; //mdegree/sec -> degree
@@ -133,13 +131,7 @@ function estimateMachinePosition(data, coeff, callback_html_name)
     TracingContext.lapArr.push(lap);
   }
 
-  //J Lapの選択情報も一緒に出力する
-  var selecter_html = "";
-  for (var i=0 ; i<=lap ; ++i) {
-    selecter_html += "<input type=\"checkbox\" id=\"lap" + i.toString() + "\" checked onChange=" + callback_html_name + ">Lap "+ i.toString()
-  }
-  lap_sel = document.getElementById("lap_selecter").innerHTML = selecter_html;
-
+  return lap;
 }
 
 //
@@ -204,14 +196,9 @@ function round180(direction)
 //
 // unitで指定された距離ごとにセンサデータをリサンプリングする
 //
-function resampling(data, unit)
+function resampling(data, wheelSize, unit)
 {
   var Interval = 1.0/52.0;
-  var WheelSize = parseFloat(document.getElementById("wheel_size").value);
-  if (WheelSize == NaN) {
-    return;
-  }
-
   var resampled = [[],[],[],[],[],[],[],[],[],[]];
 
   var ax = 0;
@@ -229,7 +216,7 @@ function resampling(data, unit)
   var index = 0;
   var cnt = 0;
   for (var i=0 ; i<data[0].length ; ++i) {
-    var delta_mm = WheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
+    var delta_mm = wheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
 
     if ((delta_mm + distance) > index * unit) {
       //J 未処理の距離
@@ -351,23 +338,9 @@ function featureValue(delta_mm, yaw_deg, pitch_deg, threshold)
 //
 // 特定コースにおける状態空間を作ります
 //
-function createStateSpaceVector(data, unit, coeff, threshold)
+function createStateSpaceVector(data, unit, coeff, wheelSize, threshold)
 {
-  //J 状態空間のベクトルを作る時に使う構造体もどき。死にたい
-  StateInfo = function(x, y, lap, feature) {
-    this.x = x;
-    this.y = y;
-    this.lap = lap;
-    this.feature = feature;
-  }
-
-
   var Interval = 1.0/52.0;
-  var WheelSize = parseFloat(document.getElementById("wheel_size").value);
-  if (WheelSize == NaN) {
-    return;
-  }
-
   var stateSpaceVec = []
 
   var posX = 0;
@@ -383,8 +356,9 @@ function createStateSpaceVector(data, unit, coeff, threshold)
 
   var index = 0;
   var cnt = 0;
+
   for (var i=0 ; i<data[0].length ; ++i) {
-    var delta_mm = WheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
+    var delta_mm = wheelSize * Math.PI * (data[IDX_RPM][i] / 60.0) * Interval;
 
     yaw_corrected = (data[IDX_YAW][i] < 0) ? (data[IDX_YAW][i] * coeff.right) : (data[IDX_YAW][i] * coeff.left)
     direction += getValidAngularVelocity_degree(yaw_corrected) * Interval; //mdegree/sec -> degree
@@ -443,6 +417,7 @@ function createStateSpaceVector(data, unit, coeff, threshold)
     }
     distance = delta_mm + distance;
   }
+
 
   return stateSpaceVec;
 }
@@ -538,7 +513,51 @@ function decideThresholdOfFeatures(distribution, step)
     center_to_outer_right: (threshold_center_to_outer_right - Math.round(distribution.length/2))* step,
   }
 
-  console.log(threshold)
-
   return threshold;
 }
+
+
+//
+//J マップ情報と走行時のログから、各状態での平均速度、平均Dutyを算出します
+//
+function analizeDriveRecord(ssv, log, unit_mm, interval, wheelSize, threshold)
+{
+  var average_velocity = new Array(ssv.length);
+  var average_duty = new Array(ssv.length);
+  var data_cnt = new Array(ssv.length);
+
+  for (var i=0 ; i<ssv.length ; ++i) {
+    average_velocity[i] = 0.0;
+    average_duty[i] = 0.0;
+    data_cnt[i] = 0;
+  }
+
+
+  initializeSimulater(ssv, unit_mm, wheelSize, interval, threshold);
+
+  for (var i=0 ; i<log[0].length ; ++i) {
+    var position = updateSimulater(i, log);
+
+    average_velocity[position]  += log[IDX_RPM][i];
+    average_duty[position] += log[IDX_DUTY][i];
+    data_cnt[position]++;
+  }
+
+  for (var i=0 ; i<ssv.length ; ++i) {
+    if (data_cnt[i] == 0) {
+      average_velocity[i] = NaN;
+      average_duty[i]     = NaN;
+      continue;
+    }
+
+    average_velocity[i]  /= data_cnt[i];
+    var delta_mm = wheelSize * Math.PI * (average_velocity[i] / 60.0) * interval;
+    average_velocity[i] = (delta_mm / (1000.0 * 1000.0)) / (interval / 3600.0);
+
+    average_duty[i] /= data_cnt[i];
+    average_duty[i] = 100.0 * (average_duty[i] / 255.0); 
+  }
+
+  return [average_velocity, average_duty];
+}
+

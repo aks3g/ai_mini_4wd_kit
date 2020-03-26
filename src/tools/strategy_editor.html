@@ -1,0 +1,119 @@
+﻿<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+
+<title> AI mini4wd Kit Log Visualizer </title>
+<link rel="stylesheet" type="text/css" href="ai_mini4wd_edit.css">
+
+<script language="javascript" type="text/javascript" src="libgraph.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="libanalyzer.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="self-position_estimation.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="strategy_editor_canvas_ctrl.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="strategy_editor_ctrl.js" charset="utf-8"></script>
+
+
+</HEAD>
+<BODY>
+<div class="header_menu">
+  <div class="dash_board">
+    <div class="menu_title"> <font class="logo_outline">AI mini4wd Kit</font></div>
+  </div>
+</div>
+<div class="top" id="top"></div>
+
+<div class="file_controls">
+  <span class="buttons">
+    <a href="#" onclick="onFileLoadButtonClick();"  class="control_btn">Learning/Map</a>
+    <text id="sensor_file_name">File not selected</text>
+  </span>
+  <input hidden type="file" id="sensor_file" />
+  <span>
+    <a href="#" onclick="onSaveMapButtonClick();"  class="control_btn">Save Map</a>
+  </span>
+  <input hidden type="file" id="map_file" />
+  <span>
+    <a href="#" onclick="onFileLoadButtonClick();"  class="control_btn">Save Strategy</a>
+  </span>
+  <input hidden type="file" id="sensor_file" />
+</div>
+<div class="controls">
+  <span class="coeff_label">R Turn Coeff</span><input type="range" id="rightCoeff" value="1"  min="0" max="2" step="0.01" oninput="onCoeffUndated()"><span id="rightCoeffValue" class="coeff_value">1</span>
+  <span class="coeff_label">L Turn Coeff</span><input type="range" id="leftCoeff"  value="1"  min="0" max="2" step="0.01" oninput="onCoeffUndated()"><span id="leftCoeffValue" class="coeff_value">1</span><br>
+  <div class="wheel_select">
+  Wheel Size: 
+  <select id="wheel_select" onChange="onWheelSelected()">
+    <option value="31">大径</option>
+    <option value="26">中径</option>
+    <option value="24">小径</option>
+    <option value="31">カスタム</option>
+  </select>
+  <input type="number" id="wheel_size" size="4" maxlength="5" value="31" onChange="onWheelSizeChanged()" class="wheel_size">[mm]</input>
+  <input type="checkbox" onChange="updateMainCanvasAll();" id="enable_course_state" checked="true">State</input>
+  <input type="checkbox" onChange="updateMainCanvasAll();" id="enable_extra" checked="true">Extra</input>
+  <input type="radio" onChange="updateMainCanvasAll();" name="extra_info" value="strategy" checked="true">strategy
+  <input type="radio" onChange="updateMainCanvasAll();" name="extra_info" value="velocity">velocity
+  <input type="radio" onChange="updateMainCanvasAll();" name="extra_info" value="diff">diff
+  <input type="radio" onChange="updateMainCanvasAll();" name="extra_info" value="duty">duty
+  </div>
+</div>
+
+
+
+<!-- 3つの要素を横に並べる -->
+<div class="trial_box">
+  <span class="buttons">
+    <a href="#" onclick="onAddTrialDataButtonClick();"  class="control_btn">Add Trial Data</a>
+    <input hidden type="file" id="trial_data_file" multiple/>
+  </span>
+  <br>
+  <select name="trial_data" size="20" class="trial_data_list" id="trial_data_list"  onChange="onTrialDataSelecterChanged(this);">
+  </select>
+</div>
+<div class="visual_box" id="visual_box">
+  <canvas id="extra_info_canvas" width="100%" height="0pt"></canvas>
+  <canvas id="main_canvas" width="100%" height="0pt"></canvas>
+</div>
+<div class="property_box">
+  <div class="property_list_box">
+    Map
+    <select name="property_list" size="33" class="property_list" id="property_list" onChange="onMapSelecterChanged(this);">
+    </select>
+  </div>
+
+  <div class="property_exitor_box">
+    <div>
+      Feature<br>
+      <select id="course_feature" size="8">
+      <option value="1">Up/Down</option>
+      <option value="2">L turn/outer</option>
+      <option value="3">L turn/center</option>
+      <option value="4">L turn/inner</option>
+      <option value="5">R turn/outer</option>
+      <option value="6">R turn/center</option>
+      <option value="7">R turn/inner</option>
+      <option value="8">Straight</option>
+      </select>
+    </div>
+    <hr>
+    <div>
+      Target Velocity<br>
+      <input type="number" class="strategy_target_velocity" id="strategy_target_velocity" value="15">[km/h]</input>
+    </div>
+    <div>
+      <span class="buttons">
+        <a href="#" onclick="onFileLoadButtonClick();"  class="control_btn">Reset</a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="timeline">
+</div>
+
+<div class="footer_menu">
+<div class="menu_copy">Copyright 2020 aks3g.com All rights reserved.</div>
+</div>
+</BODY>
+</HTML>

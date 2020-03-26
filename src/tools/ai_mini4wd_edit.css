@@ -1,0 +1,266 @@
+﻿/*
+ * ai_mini_4wd_kit.css
+ *
+ * Created: 2020/02/24
+ * Copyright 2019 Kiyotaka Akasaka. All rights reserved.
+ */
+html {
+  color: white;
+  margin: 0 auto;
+  background: #151515; /* Fills the page */
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+select{
+  background: #151515;
+  color: white;
+}
+
+
+::-webkit-scrollbar{
+  width: 10px;
+}
+::-webkit-scrollbar-track{
+  background: #fff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: inset 0 0 2px #777; 
+}
+::-webkit-scrollbar-thumb{
+  background: #ccc;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+/**
+ *J 個別の要素に対する設定
+ */
+.buttons {
+  width: 280pt;
+  display: inline-block;
+}
+
+.header_menu {
+  background-color: #353535;
+  position: fixed;
+  top:  0pt;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+.footer_menu {
+  background-color: #353535;
+  position: fixed;
+  bottom:  0pt;
+  left: 0;
+  width: 100%;
+  height: 30pt;
+}
+
+.dash_board {
+  display: inline-block;
+  width: 500px;
+  text-align: left;
+}
+
+.menu_title {
+  padding-top: 10pt;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  font-size: xx-large;
+}
+
+.logo_outline {
+  text-shadow: 2px 2px 0px black,
+    -2px  2px 0px black,
+     2px -2px 0px black,
+    -2px -2px 0px black;
+}
+
+.menu_copy {
+  padding-top: 10pt;
+  color: black;
+  text-align: center;
+}
+.top {
+  margin-top: 60pt;
+}
+
+.control_btn{
+  margin-top: 2pt;
+  margin-bottom: 2pt;
+  width: 90pt;
+  text-align: center;
+
+  display: inline-block;
+  padding: 0.5em 1em;
+  text-decoration: none;
+  color: white;
+  background: #353535;
+  border-bottom: solid 4px #252525;
+  border-radius: 3px;
+
+  float: center;
+}
+
+a:hover {
+  background: #4f4f4f;
+}
+
+.control_btn:active {
+  margin-bottom: 5pt;
+
+  -ms-transform: translateY(4px);
+  -webkit-transform: translateY(4px);
+  transform: translateY(4px);/*下に動く*/
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);/*影を小さく*/
+  border-bottom: none;
+}
+
+.wheel_select {
+  margin-top: 10pt;
+  margin-bottom: 10pt;
+}
+
+.check_box_span {
+  width : 190pt;
+  display: inline-block;
+}
+
+.check_box {
+}
+
+.map_canvas {
+}
+
+.canvas_graph{
+  overflow-x:scroll;
+}
+
+.map_array{
+  width:100%;
+}
+
+.coeff_label {
+  display:inline-block;
+  width : 120px;
+}
+
+.coeff_value {
+  margin-left  : 20px;
+  margin-right : 50px;
+}
+
+.wheel_size {
+  width : 40px;
+}
+
+.policy_list_area {
+  display:inline-block;
+  width : 45%;
+  padding-right:50px;
+}
+
+.policy_list {
+  width : 100%;
+}
+
+.policy_editer_area {
+  display:inline-block;
+}
+
+.file_controls{
+  float: left;
+  width : -webkit-calc(50% - 10px) ;
+  width : calc(50% - 10px);
+
+  height: 90px;
+
+  padding-left: 10px; 
+}
+
+.controls{
+  float: left;
+  width : -webkit-calc(50% - 10px) ;
+  width : calc(50% - 10px);
+
+  height: 90px;
+
+  padding-left: 10px;
+}
+.trial_box {
+  float: left;
+
+  width: 200px;
+  height: 600px;
+
+  padding-left: 10px; 
+}
+
+.visual_box {
+  float: left;
+
+  width : -webkit-calc(100% - 530px) ;
+  width : calc(100% - 530px);
+  height: 600px;
+
+  padding-left: 10px; 
+
+  position: relative
+}
+
+.visual_box canvas {
+  position: absolute; //J Canvasをレイヤー的に使う
+  top: 0;
+  left: 0;
+}
+
+.property_box {
+  float: left;
+
+  width: 300px;
+  height: 600px;
+
+  padding-left: 10px; 
+}
+
+.trial_data_list {
+  width: 180px;
+}
+
+.timeline {
+  clear: left;
+  width: 100%;
+  height: 170px;
+}
+
+.property_list_box {
+  float: left;
+
+  width: 120px;
+  height: 100%;
+}
+
+.property_list {
+  width:120px;
+}
+
+.property_exitor_box {
+  float: left;
+
+  height: 100%;
+  width : -webkit-calc(100% - 130px) ;
+  width : calc(100% - 130px);
+
+  padding-left: 10px;
+}
+
+.strategy_target_velocity {
+  width:60px;
+}
+
