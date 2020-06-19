@@ -13,19 +13,28 @@
 #include <ai_mini4wd.h>
 #include <ai_mini4wd_error.h>
 #include <ai_mini4wd_sensor.h>
+#include <ai_mini4wd_timer.h>
+
+static volatile int sFlag = 0;
+static void _100ms_cb(void){
+	sFlag = 1;
+}
 
 int main(void)
 {
-	int ret =aiMini4wdInitialize(AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT);
+	int ret =aiMini4wdInitialize(AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT | AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL | AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW);
 	if (ret != AI_OK) {
 		while(1);
 	}
 
-	uint16_t threshold_mv = 0;
-	uint16_t buf[1024];
-	aiMini4wdSensorCalibrateTachoMeter(&threshold_mv, buf, sizeof(buf)/sizeof(buf[0]));
+	aiMini4WdTimerRegister100msCallback(_100ms_cb);
 
-	while(1);
+	while(1) {
+		if (sFlag) {
+			sFlag = 0;
+			aiMini4wdDebugPrintf("Library Test\n");
+		}
+	}
 
 	return 0;
 }

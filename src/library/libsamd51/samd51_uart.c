@@ -85,14 +85,6 @@ static volatile REG_SERCOM_UART *_getRegUart(SAMD51_SERCOM sercom)
 static void _interrupt_handler_txc(SAMD51_SERCOM sercom);
 static void _interrupt_handler_rxc(SAMD51_SERCOM sercom);
 
-static int _samd51_uart_fifo_is_empty(SAMD51_UART_FIFO *fifo);
-static int _samd51_uart_fifo_is_full(SAMD51_UART_FIFO *fifo);
-#if 0
-static uint32_t _samd51_uart_fifo_data_length(SAMD51_UART_FIFO *fifo);
-#endif
-static uint8_t _samd51_uart_fifo_dequeue(SAMD51_UART_FIFO *fifo);
-static void    _samd51_uart_fifo_enqueue(SAMD51_UART_FIFO *fifo, uint8_t data);
-
 /*--------------------------------------------------------------------------*/
 typedef struct UartContext_t
 {
@@ -223,7 +215,7 @@ int samd51_uart_tx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len)
 	//J FIFOにデータを積む
 	SAMD51_UART_FIFO *fifo = sUartCtx[sercom].tx_fifo;
 	while (len--) {
-		_samd51_uart_fifo_enqueue(fifo, *buf++);
+		samd51_uart_fifo_enqueue(fifo, *buf++);
 	}
 	
 	//J 通信が始まっていなければ始める
@@ -232,7 +224,7 @@ int samd51_uart_tx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len)
 	if (sUartCtx[sercom].in_tx_sequence == 0) {
 		sUartCtx[sercom].in_tx_sequence = 1;
 
-		uint8_t data = _samd51_uart_fifo_dequeue(fifo);
+		uint8_t data = samd51_uart_fifo_dequeue(fifo);
 		reg_uart->INTENSET = (1 << 1);
 		
 		reg_uart->DATA = data;
@@ -253,10 +245,10 @@ int samd51_uart_try_rx(SAMD51_SERCOM sercom, uint8_t *buf)
 	}
 	
 	SAMD51_UART_FIFO *fifo = sUartCtx[sercom].rx_fifo;
-	if (_samd51_uart_fifo_is_empty(fifo)) {
+	if (samd51_uart_fifo_is_empty(fifo)) {
 		return AI_ERROR_NOBUF;
 	}
-	*buf = _samd51_uart_fifo_dequeue(fifo);
+	*buf = samd51_uart_fifo_dequeue(fifo);
 
 	return AI_OK;
 }
@@ -272,9 +264,9 @@ int samd51_uart_rx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len)
 	SAMD51_UART_FIFO *fifo = sUartCtx[sercom].rx_fifo;
 	while (len--) {
 		volatile int ret = 0;
-		while ((ret = _samd51_uart_fifo_is_empty(fifo)));
+		while ((ret = samd51_uart_fifo_is_empty(fifo)));
 
-		*buf++ = _samd51_uart_fifo_dequeue(fifo);
+		*buf++ = samd51_uart_fifo_dequeue(fifo);
 	}
 
 	return AI_OK;
@@ -318,13 +310,13 @@ static void _interrupt_handler_txc(SAMD51_SERCOM sercom)
 	
 	volatile REG_SERCOM_UART *reg_uart = _getRegUart(sercom);
 
-	if (_samd51_uart_fifo_is_empty(fifo)) {
+	if (samd51_uart_fifo_is_empty(fifo)) {
 		reg_uart->INTFLAG |= (1<<1); //Clear TXC flag
 		sUartCtx[sercom].in_tx_sequence = 0;
 		return;
 	}
 
-	uint8_t data = _samd51_uart_fifo_dequeue(fifo);
+	uint8_t data = samd51_uart_fifo_dequeue(fifo);
 	reg_uart->DATA = data;
 	
 	return;
@@ -343,15 +335,15 @@ static void _interrupt_handler_rxc(SAMD51_SERCOM sercom)
 
 	uint8_t data = reg_uart->DATA;
 
-	if (!_samd51_uart_fifo_is_full(fifo)) {
-		_samd51_uart_fifo_enqueue(fifo, data);
+	if (!samd51_uart_fifo_is_full(fifo)) {
+		samd51_uart_fifo_enqueue(fifo, data);
 	}
 	
 	return;
 }
 
 /*--------------------------------------------------------------------------*/
-static int _samd51_uart_fifo_is_empty(SAMD51_UART_FIFO *fifo)
+int samd51_uart_fifo_is_empty(SAMD51_UART_FIFO *fifo)
 {
 	if (fifo == NULL) {
 		return 1; //J 
@@ -361,7 +353,7 @@ static int _samd51_uart_fifo_is_empty(SAMD51_UART_FIFO *fifo)
 }
 
 /*--------------------------------------------------------------------------*/
-static int _samd51_uart_fifo_is_full(SAMD51_UART_FIFO *fifo)
+int samd51_uart_fifo_is_full(SAMD51_UART_FIFO *fifo)
 {
 	if (fifo == NULL) {
 		return 1; //J
@@ -375,7 +367,7 @@ static int _samd51_uart_fifo_is_full(SAMD51_UART_FIFO *fifo)
 
 /*--------------------------------------------------------------------------*/
 #if 0
-static uint32_t _samd51_uart_fifo_data_length(SAMD51_UART_FIFO *fifo)
+uint32_t samd51_uart_fifo_data_length(SAMD51_UART_FIFO *fifo)
 {
 	if (fifo == NULL) {
 		return 1; //J
@@ -389,7 +381,7 @@ static uint32_t _samd51_uart_fifo_data_length(SAMD51_UART_FIFO *fifo)
 #endif
 
 /*--------------------------------------------------------------------------*/
-static uint8_t _samd51_uart_fifo_dequeue(SAMD51_UART_FIFO *fifo)
+uint8_t samd51_uart_fifo_dequeue(SAMD51_UART_FIFO *fifo)
 {
 	if (fifo == NULL) {
 		return 0;
@@ -408,7 +400,7 @@ static uint8_t _samd51_uart_fifo_dequeue(SAMD51_UART_FIFO *fifo)
 }
 
 /*--------------------------------------------------------------------------*/
-static void _samd51_uart_fifo_enqueue(SAMD51_UART_FIFO *fifo, uint8_t data)
+void samd51_uart_fifo_enqueue(SAMD51_UART_FIFO *fifo, uint8_t data)
 {
 	if (fifo == NULL) {
 		return;

@@ -96,4 +96,9 @@ int samd51_usb_transfer_bulk_out(int ep);
 //J Control IN‚Í•ÊŠÖ”‚Å“®‚©‚·
 int samd51_usb_transfer_control_in(void *buf, size_t len);
 
+//J IN Transfer‚Ì§ŒäŒ ŠÇ—
+void samd51_usb_lock_in_transfer(void);
+void samd51_usb_unlock_in_transfer(void);
+
+
 #endif /* SAMD51_USB_DEVICE_H_ */

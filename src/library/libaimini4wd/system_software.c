@@ -30,6 +30,7 @@
 #include "include/internal/hids.h"
 #include "include/internal/fs.h"
 #include "include/internal/registry.h"
+#include "include/internal/usb_cdc.h"
 
 #include "include/ai_mini4wd_sensor.h"
 #include "include/ai_mini4wd_motor_driver.h"
@@ -37,6 +38,7 @@
 #include "include/ai_mini4wd_timer.h"
 
 
+#define AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER	(0x80000000)
 #define AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER	(0x80000000)
 
 uint32_t gAiMini4wdInitFlags = 0;
@@ -171,6 +173,15 @@ int aiMini4wdInitialize(uint32_t flags)
 	}
 #endif
 
+	if (flags & AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL) {
+		//J Full SpeedÇ≈ìÆÇ©Ç∑ëOíÒÇ»ÇÃÇ≈48MHzÇìÀÇ¡çûÇﬁ
+		samd51_mclk_enable(SAMD51_AHB_USB, 1);
+		samd51_mclk_enable(SAMD51_APBB_USB, 1);
+		samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_USB, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
+
+		ret = usbCdcInitialize();
+	}
+
 	//J Status OK
 	aiMini4wdSetStatusLed(1);
 	
@@ -212,6 +223,7 @@ int aiMini4wdDebugPrintf(const char *format, ...)
     va_end( ap );
 
 	samd51_uart_puts(SAMD51_SERCOM2, gCommonLineBuf);
+	usbCdc_puts(gCommonLineBuf);
 
 	return len;
 }

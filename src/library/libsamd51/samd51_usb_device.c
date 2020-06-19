@@ -238,7 +238,6 @@ typedef struct Samd51UsbEndpointInfo_t
 //J 8-EP x IN/OUT
 static Samd51UsbEndpointInfo sUsbEpReservedConfig[8][2];
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 int samd51_usb_device_initialize(void)
@@ -306,9 +305,15 @@ int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTran
 
 	sEpDesc[ep][0].addr = (uint32_t)data0;
 	sEpDesc[ep][1].addr = (uint32_t)data1;
-	sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full SpeedŒÅ’è‚È‚Ì‚Å‚±‚ê‚ÅOK
-	sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full SpeedŒÅ’è‚È‚Ì‚Å‚±‚ê‚ÅOK
 
+	if (type == cEpInterrupt) {
+		sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_8B; //Full SpeedŒÅ’è‚È‚Ì‚Å‚±‚ê‚ÅOK
+		sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_8B; //Full SpeedŒÅ’è‚È‚Ì‚Å‚±‚ê‚ÅOK
+	}
+	else {
+		sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full SpeedŒÅ’è‚È‚Ì‚Å‚±‚ê‚ÅOK
+		sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full SpeedŒÅ’è‚È‚Ì‚Å‚±‚ê‚ÅOK
+	}
 
 	return AI_OK;
 }
@@ -397,6 +402,18 @@ int samd51_usb_transfer_bulk_out(int ep)
 	return AI_OK;
 }
 
+/*---------------------------------------------------------------------------*/
+void samd51_usb_lock_in_transfer(void)
+{
+	NVIC_DisableIRQ(USB_3_IRQn);
+}
+
+/*---------------------------------------------------------------------------*/
+void samd51_usb_unlock_in_transfer(void)
+{
+	NVIC_EnableIRQ(USB_3_IRQn);
+}
+
 
 /*---------------------------------------------------------------------------*/
 /*
@@ -418,6 +435,8 @@ int samd51_usb_transfer_bulk_out(int ep)
    USB_TRFAIL0_n,
    USB_TRFAIL1_n,
 */
+
+
 void USB_0_Handler(void)
 {
 	uint16_t intflag = USB_REG.reg.intflag;
@@ -438,7 +457,6 @@ void USB_0_Handler(void)
 		for (i=1 ; i<8 ; ++i) {
 			if (sUsbEpReservedConfig[i][USB_OUT].enabled || sUsbEpReservedConfig[i][USB_IN].enabled) {
 				USB_REG.ep[i].epcfg = sUsbEpReservedConfig[i][USB_OUT].epcfg | sUsbEpReservedConfig[i][USB_IN].epcfg;
-
 				if (sUsbEpReservedConfig[i][USB_IN].enabled) {
 					USB_REG.ep[i].epintenset =	SAMD51_USB_EP_EPINTFLAG_RXSTP | 
 												SAMD51_USB_EP_EPINTFLAG_TRFAIL1 | 
@@ -466,17 +484,18 @@ void USB_0_Handler(void)
 	int i=0;
 	for (i=0 ; i<8 ; ++i) {
 		volatile uint8_t epflag = USB_REG.ep[i].epintflag;
-		USB_REG.ep[i].epintflag = SAMD51_USB_EP_EPINTFLAG_TRFAIL1 | SAMD51_USB_EP_EPINTFLAG_TRFAIL0 | SAMD51_USB_EP_EPINTFLAG_STALL0 | SAMD51_USB_EP_EPINTFLAG_STALL1;
+//		USB_REG.ep[i].epintflag = SAMD51_USB_EP_EPINTFLAG_TRFAIL1 | SAMD51_USB_EP_EPINTFLAG_TRFAIL0 | SAMD51_USB_EP_EPINTFLAG_STALL0 | SAMD51_USB_EP_EPINTFLAG_STALL1;
+		USB_REG.ep[i].epintflag = epflag;
 		if (SAMD51_USB_EP_INTFLAG_RXSTP & epflag) {
 			USB_REG.ep[i].epstatusclr = SAMD51_USB_EP_EPSTATUS_BK0RDY;
 			UsbDeviceRequest *req = (UsbDeviceRequest *)sEpDesc[i][0].addr;
-			if (req->bmRequestType.bm.target == UsbBmRequestTypeStandard) {
+			if (req->bmRequestType.bm.type == UsbBmRequestTypeStandard) {
 				_usb_dispatch_standard_request(req);
 			}
-			else if (req->bmRequestType.bm.target == UsbBmRequestTypeClass) {
+			else if (req->bmRequestType.bm.type == UsbBmRequestTypeClass) {
 				_usb_dispatch_class_request(req);
 			}
-			else if (req->bmRequestType.bm.target == UsbBmRequestTypeVender) {
+			else if (req->bmRequestType.bm.type == UsbBmRequestTypeVender) {
 				_usb_dispatch_vender_request(req);
 			}
 			else {
@@ -696,7 +715,7 @@ static void _usb_std_request_get_interface(UsbDeviceRequest *req)
 
 /*---------------------------------------------------------------------------*/
 static void _usb_std_request_set_interface(UsbDeviceRequest *req)
-{
+{	
 	samd51_usb_transfer_control_in(NULL, 0);
 }
 
@@ -737,7 +756,7 @@ static int _usb_search_descriptor(const uint8_t *descroptor, uint16_t descriptor
 				//J Configuration Descriptor ‚ª‘S’·‚Å—v‹‚³‚ê‚½ê‡‚Í‘S’·‚ð•Ô‚·
 				if (type == 0x02) {
 					uint16_t configuration_descriptor_len = head->desc.bytes[0] | (((uint16_t)head->desc.bytes[1])<< 8);
-					if (configuration_descriptor_len == required_len) {
+					if (configuration_descriptor_len <= required_len) {
 						*len = configuration_descriptor_len;
 					}
 				}

@@ -32,7 +32,13 @@ typedef struct SAMD51_UART_FIFO_t
 } SAMD51_UART_FIFO;
 
 int samd51_uart_fifo_setup(SAMD51_UART_FIFO *fifo, uint8_t *buf, size_t len);
-
+int samd51_uart_fifo_is_empty(SAMD51_UART_FIFO *fifo);
+int samd51_uart_fifo_is_full(SAMD51_UART_FIFO *fifo);
+#if 0
+uint32_t samd51_uart_fifo_data_length(SAMD51_UART_FIFO *fifo);
+#endif
+uint8_t samd51_uart_fifo_dequeue(SAMD51_UART_FIFO *fifo);
+void    samd51_uart_fifo_enqueue(SAMD51_UART_FIFO *fifo, uint8_t data);
 
 int samd51_uart_initialize(SAMD51_SERCOM sercom, uint32_t baudrate, SAMD51_SERCOM_PAD rx, SAMD51_SERCOM_PAD tx, SAMD51_UART_FIFO *tx_fifo, SAMD51_UART_FIFO *rx_fifo);
 void samd51_uart_finalize(SAMD51_SERCOM sercom);
