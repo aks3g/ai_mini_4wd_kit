@@ -24,8 +24,14 @@
 #include "odometer_reg.h"
 
 
+#define READY_Hi()			gpio_output(GPIO_PORTC, GPIO_PIN4, 1);
+#define READY_Lo()			gpio_output(GPIO_PORTC, GPIO_PIN4, 0);
+
 static void gpio_init(void)
 {
+	initialize_gpio(GPIO_PORTC, GPIO_PIN2, GPIO_OUT, GPIO_PUSH_PULL);
+	gpio_output(GPIO_PORTC, GPIO_PIN4, 0);
+
 	initialize_gpio(GPIO_PORTC, GPIO_PIN4, GPIO_OUT, GPIO_PUSH_PULL);
 	initialize_gpio(GPIO_PORTC, GPIO_PIN5, GPIO_OUT, GPIO_PUSH_PULL);
 	initialize_gpio(GPIO_PORTC, GPIO_PIN6, GPIO_IN,  GPIO_PUSH_PULL);
@@ -65,6 +71,8 @@ int main(void)
 
 	gpio_init();
  
+	READY_Lo();
+ 
  	initialize_uart(USART0_ON_PORTD_0, 115200, systemClock);
 
 	//J stdout‚ð•t‚¯‘Ö‚¦‚é
@@ -82,7 +90,17 @@ int main(void)
 	Enable_Int();
 
 	reg_initialize();
-	
+
+/*
+	I2C_INIT_OPT i2c_opt = {
+		.ownAddress,
+		.startCB,
+		.stopCB,
+		.masterRxCB,
+		.masterTxCB
+	};
+	initialize_i2c(400000, systemClock, I2C_SLAVE, &i2c_opt);
+*/
 
 	printf("\n");
 	printf("\n");
@@ -93,6 +111,8 @@ int main(void)
 
 	adns9800_initialize();
 	led_set(LED0, 1);
+	READY_Hi();
+
 	console_update('\n');
 
 	uint8_t cnt = 0;	

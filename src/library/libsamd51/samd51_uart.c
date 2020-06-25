@@ -274,13 +274,13 @@ int samd51_uart_rx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len)
 
 
 /*--------------------------------------------------------------------------*/
-int samd51_uart_putc(SAMD51_SERCOM sercom, char c)
+int samd51_uart_putc(SAMD51_SERCOM sercom, const char c)
 {
 	return samd51_uart_tx(sercom, (uint8_t *)&c, sizeof(c));
 }
 
 /*--------------------------------------------------------------------------*/
-int samd51_uart_puts(SAMD51_SERCOM sercom, char *str)
+int samd51_uart_puts(SAMD51_SERCOM sercom, const char *str)
 {
 	if (str == NULL) {
 		return AI_ERROR_NULL;

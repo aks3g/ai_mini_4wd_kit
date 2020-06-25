@@ -35,6 +35,7 @@
 
 #include "../libaimini4wd/include/internal/registry.h"
 
+#include "console.h"
 
 #define FLASH_HEAD					(0x1E000)
 
@@ -93,12 +94,24 @@ int main(void)
 {
 	uint8_t buf[512];
 
-	int ret =aiMini4wdInitialize(0x80000000 | AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT);
+	int ret =aiMini4wdInitialize(0x80000000 | AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT | AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL);
 	if (ret != AI_OK) {
 		goto ERROR;
 	}
 
+	//J USBÇ™ê⁄ë±Ç≥ÇÍÇƒÇ¢ÇÈèÍçáConosleÉÇÅ[ÉhÇ…à⁄çsÇ∑ÇÈ
+	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
+		while (1) {
+			int rx = aiMini4wdDebugTryGetc();
+			if (rx <= 0) continue;
+			
+			char c = (char)(rx & 0xff);
+			console_update(c);
+		}
+	}
+
 	aiMini4WdTimerRegister100msCallback(_timerCb);
+
 
 	AiMini4wdFile *hex_file;
 	hex_file = aiMini4wdFsOpen("MINI4WD.AUP", "r");

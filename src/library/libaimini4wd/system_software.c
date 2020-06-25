@@ -234,7 +234,22 @@ int aiMini4wdDebugPuts(const char *str, size_t len)
 		return 0;
 	}
 
-	return samd51_uart_tx(SAMD51_SERCOM2, (uint8_t *)str, len);
+	int ret = samd51_uart_puts(SAMD51_SERCOM2, str);
+	usbCdc_puts(str);
+
+	return ret;
+}
+
+int aiMini4wdDebugPutc(const char c)
+{
+	if (!sGlobalParams.enabledPrintf) {
+		return 0;
+	}
+
+	int ret = samd51_uart_putc(SAMD51_SERCOM2, c);
+	usbCdc_putc(c);
+
+	return ret;
 }
 
 int aiMini4wdDebugTryGetc(void)
@@ -244,7 +259,14 @@ int aiMini4wdDebugTryGetc(void)
 	}
 
 	char c = 0;
-	int ret = samd51_uart_try_rx(SAMD51_SERCOM2, (uint8_t *)&c);
+	int ret = 0;
+	if (usbCdc_isLinkedUp()) {
+		ret = usbCdc_try_rx((uint8_t *)&c);
+	}
+	else {
+		ret = samd51_uart_try_rx(SAMD51_SERCOM2, (uint8_t *)&c);
+	}
+	
 	if (ret == 0) {
 		ret = ((int)c & 0xff);
 	}
@@ -259,7 +281,14 @@ int aiMini4wdDebugGetc(void)
 	}
 
 	char c = 0;
-	int ret = samd51_uart_rx(SAMD51_SERCOM2, (uint8_t *)&c, 1);
+	int ret = 0;
+	if (usbCdc_isLinkedUp()) {
+		ret = usbCdc_rx((uint8_t *)&c, 1);
+	}
+	else {
+		ret = samd51_uart_rx(SAMD51_SERCOM2, (uint8_t *)&c, 1);
+	}
+
 	if (ret == 0) {
 		ret = ((int)c & 0xff);
 	}

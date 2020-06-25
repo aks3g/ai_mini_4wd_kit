@@ -71,11 +71,17 @@ typedef void (*UsbOutTranferDoneCb)(uint8_t *buf, uint32_t size);
 //J IN Transfer 割り込みが入ったときの処理
 typedef void (*UsbInTransferDoneCb)(int error);
 
+//J Hostからの切断時に呼ばれる処理
+typedef void (*UsbCleanupCb)(void);
+
 /*--------------------------------------------------------------------------*/
 // USBデバイス実装用関数
 /*--------------------------------------------------------------------------*/
 //J MCU内のUSBモジュールを初期化する
 int samd51_usb_device_initialize(void);
+
+//J HOSTとの切断時に呼ばれる関数を登録する
+int samd51_register_cleanup_func(UsbCleanupCb cb);
 
 //J USBデバイスをバスに接続する
 int samd51_usb_device_attach(int attach);

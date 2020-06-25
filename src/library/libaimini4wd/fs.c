@@ -20,6 +20,7 @@
 #include "include/ai_mini4wd_fs.h"
 #include "include/ai_mini4wd_timer.h"
 
+#define MAX_DIRS		(1)
 #define MAX_FILES		(4)
 
 #pragma pack(1)
@@ -29,21 +30,25 @@ typedef struct AiMini4wdFilePointers_t
 	FIL file;
 } AiMini4wdFilePointers;
 
+typedef struct AiMini4wdDirPointers_t
+{
+	volatile int used;
+	DIR dir;
+} AiMini4wdDirPointers;
+
 static FATFS sFatFs;
-
-static FIL sFiles[MAX_FILES];
-static int sUsed[MAX_FILES];
-
+static AiMini4wdFilePointers sFiles[MAX_FILES];
+static AiMini4wdDirPointers  sDirs[MAX_DIRS];
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 static AiMini4wdFile *_getUnusedFileDescriptor(void)
 {
 	for (int i=0 ; i<MAX_FILES ; ++i) {
-		if (sUsed[i]== 0) {
-			sUsed[i] = 1;
+		if (sFiles[i].used== 0) {
+			sFiles[i].used = 1;
 
-			return (AiMini4wdFile *)&(sFiles[i]);
+			return (AiMini4wdFile *)&(sFiles[i].file);
 		}
 	}
 	
@@ -54,8 +59,34 @@ static AiMini4wdFile *_getUnusedFileDescriptor(void)
 static void _destroyFileDescriptor(AiMini4wdFile *file)
 {
 	for (int i=0 ; i<MAX_FILES ; ++i) {
-		if (((AiMini4wdFile *)&(sFiles[i])) == file) {
-			sUsed[i] = 0;
+		if (((AiMini4wdFile *)&(sFiles[i].file)) == file) {
+			sFiles[i].used = 0;
+		}
+	}
+
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+static AiMini4wdDir *_getUnusedDirDescriptor(void)
+{
+	for (int i=0 ; i<MAX_DIRS ; ++i) {
+		if (sDirs[i].used== 0) {
+			sDirs[i].used = 1;
+
+			return (AiMini4wdDir *)&(sDirs[i].dir);
+		}
+	}
+	
+	return NULL;
+}
+
+/*--------------------------------------------------------------------------*/
+static void _destroyDirDescriptor(AiMini4wdDir *dir)
+{
+	for (int i=0 ; i<MAX_DIRS ; ++i) {
+		if (((AiMini4wdDir *)&(sDirs[i].dir)) == dir) {
+			sDirs[i].used = 0;
 		}
 	}
 
@@ -101,7 +132,8 @@ static int _aiMini4wdFsErrorCodeConvert(FRESULT res)
 int aiMini4wdFsInitialize(void)
 {
 	//J ˆê’U‚·‚×‚Ä‰Šú‰»‚·‚é
-	memset ((void *)sFiles, 0, sizeof(AiMini4wdFilePointers)*4);	
+	memset ((void *)sFiles, 0, sizeof(AiMini4wdFilePointers)*MAX_FILES);	
+	memset ((void *)sDirs , 0, sizeof(AiMini4wdDirPointers) *MAX_DIRS);
 	
 	//J SDC ‰Šú‰»
 	samd51_mclk_enable(SAMD51_AHB_SDHCn0, 1);
@@ -291,6 +323,7 @@ int aiMini4wdFsPuts(AiMini4wdFile *file, const char *str, size_t len)
 	return 0;
 }
 
+/*--------------------------------------------------------------------------*/
 int aiMini4wdFsPutsFlush(AiMini4wdFile *file)
 {
 	UINT written = 0;
@@ -310,3 +343,46 @@ char *aiMini4wdFsGets(AiMini4wdFile *file, char *buf, size_t len)
 }
 
 
+/*--------------------------------------------------------------------------*/
+AiMini4wdDir *aiMini4wdFsOpenDir(const char *path)
+{
+	DIR *dir = (DIR *)_getUnusedDirDescriptor();
+	if (dir == NULL) {
+		return NULL;
+	}
+
+	FRESULT res =  _f_opendir(dir, path);
+	if (res != FR_OK) {
+		_destroyDirDescriptor((AiMini4wdDir *)dir);
+		return NULL;
+	}
+
+	return (AiMini4wdDir *)dir;
+}
+
+/*--------------------------------------------------------------------------*/
+void aiMini4wdFsCloseDir(AiMini4wdDir *dir)
+{
+	_f_closedir((DIR*)dir);
+	_destroyDirDescriptor(dir);
+}
+
+/*--------------------------------------------------------------------------*/
+int aiMini4wdFsReadDir(AiMini4wdDir *dir, AiMini4wdFileInfo *file)
+{
+	if (dir == NULL || file == NULL) {
+		return AI_ERROR_NULL;
+	}
+
+	FILINFO info;
+	FRESULT res = _f_readdir((DIR *)dir, &info);
+	if (res != FR_OK) {
+		return _aiMini4wdFsErrorCodeConvert(res);
+	}
+
+	file->attr = info.fattrib;
+	strncpy(file->name, info.fname, sizeof(file->name));
+	file->size = info.fsize;
+	
+	return AI_OK;
+}

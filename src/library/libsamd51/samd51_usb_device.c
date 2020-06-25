@@ -104,8 +104,8 @@ typedef struct REG_USB_DEVICE_t
 #define USB_REG					(*(volatile REG_USB_DEVICE *)0x41000000UL)
 
 static REG_USB_DEVICE_EP_DESCRIPTOR sEpDesc[8][2];
-static uint8_t sEp0OutDatapool[64];
-static uint8_t sEp0InDatapool[64];
+static uint8_t sEp0OutDatapool[128];
+static uint8_t sEp0InDatapool[128];
 
 #define SAMD51_USB_CTRLA_SWRST					(1 << 0)
 #define SAMD51_USB_CTRLA_ENABLE					(1 << 1)
@@ -235,6 +235,8 @@ typedef struct Samd51UsbEndpointInfo_t
 	UsbInTransferDoneCb in_cb;
 } Samd51UsbEndpointInfo;
 
+static UsbCleanupCb sCleanupCb = NULL;
+
 //J 8-EP x IN/OUT
 static Samd51UsbEndpointInfo sUsbEpReservedConfig[8][2];
 
@@ -242,9 +244,13 @@ static Samd51UsbEndpointInfo sUsbEpReservedConfig[8][2];
 /*---------------------------------------------------------------------------*/
 int samd51_usb_device_initialize(void)
 {
-	memset(&sUsbEpReservedConfig, 0, sizeof(sUsbEpReservedConfig));
-	memset(&sCtx, 0x00, sizeof(sCtx));
-	memset(sEpDesc, 0x00, sizeof(sEpDesc));
+	static int restart = 0;
+	if (restart == 0) {
+		memset(&sUsbEpReservedConfig, 0, sizeof(sUsbEpReservedConfig));
+		memset(&sCtx, 0x00, sizeof(sCtx));
+		memset(sEpDesc, 0x00, sizeof(sEpDesc));
+		restart = 1;
+	}
 
 	USB_REG.reg.descadd = (uint32_t)sEpDesc;
 	
@@ -254,7 +260,8 @@ int samd51_usb_device_initialize(void)
 	NVIC_EnableIRQ(USB_3_IRQn);
 
 	//J Reset終了時に割込みかけてコンテキストの初期化をやらせる
-	USB_REG.reg.intenset = SAMD51_USB_INT_EORST;
+	//J Suspend時に割込みをかけてDriverのCleanupを実施する
+	USB_REG.reg.intenset = SAMD51_USB_INT_EORST | SAMD51_USB_INT_SUSPEND;
 
 	// Setup EP0
 	sEpDesc[0][0].addr = (uint32_t)sEp0OutDatapool;
@@ -267,7 +274,7 @@ int samd51_usb_device_initialize(void)
 	USB_REG.reg.padcal = (0x6 << 12) | (0x9 << 6) | (0x19 << 0);
 
 	//J Full Speed設定
-//	USB_REG.reg.status |= (1 << 2);
+	USB_REG.reg.status |= (1 << 2);
 
 	//J Enable USB Device
 	USB_REG.reg.ctrla |=  (SAMD51_USB_CTRLA_ENABLE);
@@ -287,6 +294,7 @@ int samd51_usb_setup_device(const uint8_t *desc, size_t desc_len, UsbControlTans
 	return AI_OK;	
 }
 
+/*---------------------------------------------------------------------------*/
 int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTransferDoneCb in_cb, uint8_t *data0, uint8_t *data1, size_t data0_len, size_t data1_len)
 {
 	if (ep >= 8 || ep < 1) {
@@ -306,14 +314,10 @@ int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTran
 	sEpDesc[ep][0].addr = (uint32_t)data0;
 	sEpDesc[ep][1].addr = (uint32_t)data1;
 
-	if (type == cEpInterrupt) {
-		sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_8B; //Full Speed固定なのでこれでOK
-		sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_8B; //Full Speed固定なのでこれでOK
-	}
-	else {
-		sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
-		sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
-	}
+	sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
+	sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
+
+	sEpDesc[ep][1].pcksize.bf.auto_zlp = 1;
 
 	return AI_OK;
 }
@@ -344,6 +348,14 @@ int samd51_usb_device_setup_OUT_endpoint(int ep, Samd51UsbEpType type, UsbOutTra
 }
 
 /*---------------------------------------------------------------------------*/
+int samd51_register_cleanup_func(UsbCleanupCb cb)
+{
+	sCleanupCb = cb;
+	return AI_OK;
+}
+
+
+/*---------------------------------------------------------------------------*/
 int samd51_usb_device_attach(int attach)
 {
 	if (attach) {
@@ -362,6 +374,7 @@ int samd51_usb_transfer_control_in(void *buf, size_t len)
 	if (buf != NULL && len > 0) {
 		memcpy((void *)sEpDesc[0][1].addr, buf, len);
 	}
+	sEpDesc[0][1].pcksize.bf.multi_packet_size = 0;
 	sEpDesc[0][1].pcksize.bf.byte_count = len;
 
 	USB_REG.ep[0].epintflag = 0xff;
@@ -384,6 +397,7 @@ int samd51_usb_transfer_bulk_in(int ep, void *buf, size_t len)
 	}
 
 	memcpy((void *)sEpDesc[ep][1].addr, buf, len);
+	sEpDesc[ep][1].pcksize.bf.multi_packet_size = 0;
 	sEpDesc[ep][1].pcksize.bf.byte_count = len;
 
 	USB_REG.ep[ep].epintflag = 0xff;
@@ -405,13 +419,13 @@ int samd51_usb_transfer_bulk_out(int ep)
 /*---------------------------------------------------------------------------*/
 void samd51_usb_lock_in_transfer(void)
 {
-	NVIC_DisableIRQ(USB_3_IRQn);
+	__disable_irq();
 }
 
 /*---------------------------------------------------------------------------*/
 void samd51_usb_unlock_in_transfer(void)
 {
-	NVIC_EnableIRQ(USB_3_IRQn);
+	__enable_irq();
 }
 
 
@@ -461,11 +475,10 @@ void USB_0_Handler(void)
 					USB_REG.ep[i].epintenset =	SAMD51_USB_EP_EPINTFLAG_RXSTP | 
 												SAMD51_USB_EP_EPINTFLAG_TRFAIL1 | 
 //												SAMD51_USB_EP_EPINTFLAG_TRFAIL0 | 
-//												SAMD51_USB_EP_EPINTFLAG_TRCPT1 | 
+												SAMD51_USB_EP_EPINTFLAG_TRCPT1 
 //												SAMD51_USB_EP_EPINTFLAG_TRCPT0;
-												SAMD51_USB_EP_EPINTFLAG_TRCPT1;
+												;
 					USB_REG.ep[i].epstatusclr = SAMD51_USB_EP_EPSTATUS_BK1RDY;
-//					USB_REG.ep[i].epintflag  = SAMD51_USB_EP_EPINTFLAG_TRFAIL1; // NAK
 				}
 				// OUT
 				else {
@@ -480,12 +493,28 @@ void USB_0_Handler(void)
 		}
 	}
 
+	if (intflag & SAMD51_USB_INT_SUSPEND) {
+		if (sCleanupCb != NULL) sCleanupCb();
+
+		if (USB_REG.reg.dadd != 0) {
+			USB_REG.reg.ctrla =  (SAMD51_USB_CTRLA_SWRST);
+			while ((USB_REG.reg.syncbusy & SAMD51_USB_CTRLA_SWRST) != 0);
+
+			USB_REG.reg.ctrla =  0;
+			while ((USB_REG.reg.syncbusy & SAMD51_USB_CTRLA_SWRST) != 0);
+
+			samd51_usb_device_initialize();
+			samd51_usb_device_attach(1);
+		}
+
+		return;
+	}
+
 	//J コントロール転送の処理 / 転送失敗時の処理
 	int i=0;
 	for (i=0 ; i<8 ; ++i) {
 		volatile uint8_t epflag = USB_REG.ep[i].epintflag;
-//		USB_REG.ep[i].epintflag = SAMD51_USB_EP_EPINTFLAG_TRFAIL1 | SAMD51_USB_EP_EPINTFLAG_TRFAIL0 | SAMD51_USB_EP_EPINTFLAG_STALL0 | SAMD51_USB_EP_EPINTFLAG_STALL1;
-		USB_REG.ep[i].epintflag = epflag;
+		USB_REG.ep[i].epintflag = SAMD51_USB_EP_INTFLAG_RXSTP | SAMD51_USB_EP_EPINTFLAG_TRFAIL1 | SAMD51_USB_EP_EPINTFLAG_TRFAIL0 | SAMD51_USB_EP_EPINTFLAG_STALL0 | SAMD51_USB_EP_EPINTFLAG_STALL1;
 		if (SAMD51_USB_EP_INTFLAG_RXSTP & epflag) {
 			USB_REG.ep[i].epstatusclr = SAMD51_USB_EP_EPSTATUS_BK0RDY;
 			UsbDeviceRequest *req = (UsbDeviceRequest *)sEpDesc[i][0].addr;
@@ -503,6 +532,7 @@ void USB_0_Handler(void)
 			}
 		}
 		else if (SAMD51_USB_EP_EPINTFLAG_TRFAIL1 & epflag) {
+			//J IN EPではこのフラグはハンドルしない？		
 		}
 		else if (SAMD51_USB_EP_EPINTFLAG_TRFAIL0 & epflag) {
 		}

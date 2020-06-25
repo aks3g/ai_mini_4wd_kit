@@ -18,6 +18,13 @@ extern "C" {
 
 
 typedef void AiMini4wdFile;
+typedef void AiMini4wdDir;
+
+#define	AI_MINI4WD_FS_RDO	0x01	/* Read only */
+#define	AI_MINI4WD_FS_HID	0x02	/* Hidden    */
+#define	AI_MINI4WD_FS_SYS	0x04	/* System    */
+#define AI_MINI4WD_FS_DIR	0x10	/* Directory */
+#define AI_MINI4WD_FS_ARC	0x20	/* Archive   */
 
 typedef struct AiMini4wdFileInfo_t {
 	size_t size;
@@ -43,6 +50,10 @@ int aiMini4wdFsPrintf(AiMini4wdFile *file, const char *str, ...);
 int aiMini4wdFsPuts(AiMini4wdFile *file, const char *str, size_t len);
 int aiMini4wdFsPutsFlush(AiMini4wdFile *file);
 char *aiMini4wdFsGets(AiMini4wdFile *file, char *buf, size_t len);
+
+AiMini4wdDir *aiMini4wdFsOpenDir(const char *path);
+void aiMini4wdFsCloseDir(AiMini4wdDir *dir);
+int aiMini4wdFsReadDir(AiMini4wdDir *dir, AiMini4wdFileInfo *file);
 
 #ifdef __cplusplus
 }

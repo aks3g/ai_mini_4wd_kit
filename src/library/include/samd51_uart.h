@@ -47,8 +47,8 @@ int samd51_uart_tx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len);
 int samd51_uart_try_rx(SAMD51_SERCOM sercom, uint8_t *buf);
 int samd51_uart_rx(SAMD51_SERCOM sercom, uint8_t *buf, size_t len);
 
-int samd51_uart_putc(SAMD51_SERCOM sercom, char c);
-int samd51_uart_puts(SAMD51_SERCOM sercom, char *str);
+int samd51_uart_putc(SAMD51_SERCOM sercom, const char c);
+int samd51_uart_puts(SAMD51_SERCOM sercom, const char *str);
 
 
 #endif /* SAMD51_UART_H_ */

@@ -69,6 +69,7 @@
       <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
       <Value>../../include</Value>
+      <Value>../include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -124,6 +125,7 @@
       <Value>%24(PackRepoDir)\ARM\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
       <Value>%24(PackRepoDir)\Atmel\SAMD51_DFP\1.2.139\samd51a\include</Value>
       <Value>../../include</Value>
+      <Value>../include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
@@ -164,6 +166,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="console\console.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="console\console_cmd.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Device_Startup\startup_samd51.c">
       <SubType>compile</SubType>
     </Compile>
@@ -173,12 +181,20 @@
     <Compile Include="Device_Startup\system_samd51.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\console.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\console_cmd.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="_main.c">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Device_Startup\" />
+    <Folder Include="console" />
+    <Folder Include="include" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Device_Startup\samd51j20a_flash.ld">
