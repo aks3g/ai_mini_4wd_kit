@@ -144,9 +144,25 @@ int aiMini4wdFsInitialize(void)
 	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
 	while ((tick + 2000) > aiMini4WdTimerGetSystemtick());
 
-	FRESULT res = _f_mount(&sFatFs, "", 1);
+	return aiMini4wdFsMountDrive(1);	
+}
 
-	return _aiMini4wdFsErrorCodeConvert(res);	
+/*--------------------------------------------------------------------------*/
+int aiMini4wdFsMountDrive(int mnt)
+{
+	FRESULT res = 0;
+	if (mnt) {
+		scsiDiskEnable(0);
+		res = _f_mount(&sFatFs, "", 1);
+	}
+	else {
+		res = _f_mount(NULL, "", 0);
+		memset (&sFatFs, 0, sizeof(sFatFs));
+
+		scsiDiskEnable(1);
+	}
+
+	return _aiMini4wdFsErrorCodeConvert(res);
 }
 
 /*--------------------------------------------------------------------------*/

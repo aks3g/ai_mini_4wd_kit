@@ -30,7 +30,9 @@
 #include "include/internal/hids.h"
 #include "include/internal/fs.h"
 #include "include/internal/registry.h"
+#include "include/internal/usb.h"
 #include "include/internal/usb_cdc.h"
+#include "include/internal/usb_mass_storage.h"
 
 #include "include/ai_mini4wd_sensor.h"
 #include "include/ai_mini4wd_motor_driver.h"
@@ -179,7 +181,9 @@ int aiMini4wdInitialize(uint32_t flags)
 		samd51_mclk_enable(SAMD51_APBB_USB, 1);
 		samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_USB, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
 
-		ret = usbCdcInitialize();
+		ret = initialize_usb();
+
+		aiMini4wdFsMountDrive(0);
 	}
 
 	//J Status OK

@@ -102,11 +102,14 @@ int main(void)
 	//J USB‚ªÚ‘±‚³‚ê‚Ä‚¢‚éê‡Conosleƒ‚[ƒh‚ÉˆÚs‚·‚é
 	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
 		while (1) {
+			usbMassStorageUpdate();
+
 			int rx = aiMini4wdDebugTryGetc();
 			if (rx <= 0) continue;
 			
 			char c = (char)(rx & 0xff);
 			console_update(c);
+			
 		}
 	}
 

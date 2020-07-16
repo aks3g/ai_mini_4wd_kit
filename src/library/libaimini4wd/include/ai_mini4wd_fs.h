@@ -32,6 +32,8 @@ typedef struct AiMini4wdFileInfo_t {
 	char name[256];
 } AiMini4wdFileInfo;
 
+int aiMini4wdFsMountDrive(int mnt);
+
 AiMini4wdFile *aiMini4wdFsOpen(const char *path, const char *mode);
 void aiMini4wdFsClose(AiMini4wdFile *file);
 

@@ -339,6 +339,7 @@ int samd51_sdhc_card_initialization_and_identification(SAMD51_SDHC sdhc, Samd51_
 		memset (&ctx->cid, 0, sizeof(ctx->cid));
 	}
 
+
 	volatile uint32_t rca = (ctx->type == SAMD51_SDHC_MMC) ? (0x1 << 16) : 0;
 	ret = samd51_sdhc_send_cmd_blocing(SAMD51_SDHC0, SDHC_CMD3, rca, (void *)sSdhcCtx.resp_buffer, sizeof(sSdhcCtx.resp_buffer));
 	if (ret == AI_OK) {
@@ -347,6 +348,15 @@ int samd51_sdhc_card_initialization_and_identification(SAMD51_SDHC sdhc, Samd51_
 	}
 	else {
 		_recover_cmd_line(sdhc);
+	}
+
+	ret = samd51_sdhc_send_cmd_blocing(SAMD51_SDHC0, SDHC_CMD9, ((uint32_t)ctx->rca)  << 16, (void *)sSdhcCtx.resp_buffer, sizeof(sSdhcCtx.resp_buffer));
+	if (ret == AI_OK) {
+		memcpy (&ctx->csd, (void *)sSdhcCtx.resp_buffer, sizeof(ctx->csd));
+	}
+	else {
+		_recover_cmd_line(sdhc);
+		memset (&ctx->csd, 0, sizeof(ctx->csd));
 	}
 	
 	//J Card‚ª“Á’è‚Å‚«‚Ä‚¢‚éŽ–‚ðˆÈ‚ÄA‰Šú‰»‚ªo—ˆ‚Ä‚¢‚é‚Æ”FŽ¯

@@ -158,7 +158,13 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="driver\lsm6ds3h.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="driver\usb.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="driver\usb_cdc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="driver\usb_mass_storage.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="file_system\diskio.c">
@@ -171,6 +177,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="file_system\ffunicode.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="file_system\scsi.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="file_system\sdhc_diskio.c">
@@ -239,6 +248,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="include\internal\registry.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\internal\scsi.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\internal\sdhc_diskio.h">
       <SubType>compile</SubType>
     </Compile>
@@ -248,7 +260,13 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="include\internal\timer.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\internal\usb.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\internal\usb_cdc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\usb_mass_storage.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\sdk_version.h">

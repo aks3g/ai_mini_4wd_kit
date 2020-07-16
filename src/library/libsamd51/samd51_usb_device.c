@@ -233,9 +233,12 @@ typedef struct Samd51UsbEndpointInfo_t
 	uint8_t epcfg;
 	UsbOutTranferDoneCb out_cb;
 	UsbInTransferDoneCb in_cb;
+	
+	uint32_t default_buf;	
 } Samd51UsbEndpointInfo;
 
 static UsbCleanupCb sCleanupCb = NULL;
+static UsbResetCb sResetCb[8] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 //J 8-EP x IN/OUT
 static Samd51UsbEndpointInfo sUsbEpReservedConfig[8][2];
@@ -295,14 +298,14 @@ int samd51_usb_setup_device(const uint8_t *desc, size_t desc_len, UsbControlTans
 }
 
 /*---------------------------------------------------------------------------*/
-int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTransferDoneCb in_cb, uint8_t *data0, uint8_t *data1, size_t data0_len, size_t data1_len)
+int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTransferDoneCb in_cb, uint8_t *default_buf, size_t default_buf_len)
 {
 	if (ep >= 8 || ep < 1) {
 		return AI_ERROR_INVALID;
 	}
 
-	if (data1_len < 64 || data0_len < 64) {
-//		return AI_ERROR_NOBUF;
+	if (default_buf_len < 64) {
+		return AI_ERROR_NOBUF;
 	}
 
 	//J EPの状態はUSB Resetで初期化されるので一旦RAMで保持する
@@ -311,25 +314,23 @@ int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTran
 	sUsbEpReservedConfig[ep][USB_IN].out_cb = NULL;
 	sUsbEpReservedConfig[ep][USB_IN].in_cb = in_cb;
 
-	sEpDesc[ep][0].addr = (uint32_t)data0;
-	sEpDesc[ep][1].addr = (uint32_t)data1;
+	sUsbEpReservedConfig[ep][USB_IN].default_buf = (uint32_t)default_buf;
 
-	sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
-	sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
-
-	sEpDesc[ep][1].pcksize.bf.auto_zlp = 1;
+	sEpDesc[ep][USB_IN].addr = (uint32_t)default_buf;
+	sEpDesc[ep][USB_IN].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
+	sEpDesc[ep][USB_IN].pcksize.bf.auto_zlp = 1;
 
 	return AI_OK;
 }
 
-int samd51_usb_device_setup_OUT_endpoint(int ep, Samd51UsbEpType type, UsbOutTranferDoneCb out_cb, uint8_t *data0, uint8_t *data1, size_t data0_len, size_t data1_len)
+int samd51_usb_device_setup_OUT_endpoint(int ep, Samd51UsbEpType type, UsbOutTranferDoneCb out_cb, uint8_t *default_buf, size_t default_buf_len)
 {
 	if (ep >= 8 || ep < 1) {
 		return AI_ERROR_INVALID;
 	}
 
-	if (data1_len < 64 || data0_len < 64) {
-//		return AI_ERROR_NOBUF;
+	if (default_buf_len < 64) {
+		return AI_ERROR_NOBUF;
 	}
 
 	//J EPの状態はUSB Resetで初期化されるので一旦RAMで保持する
@@ -338,11 +339,11 @@ int samd51_usb_device_setup_OUT_endpoint(int ep, Samd51UsbEpType type, UsbOutTra
 	sUsbEpReservedConfig[ep][USB_OUT].out_cb = out_cb;
 	sUsbEpReservedConfig[ep][USB_OUT].in_cb = NULL;
 
-	sEpDesc[ep][0].addr = (uint32_t)data0;
-	sEpDesc[ep][1].addr = (uint32_t)data1;
-	sEpDesc[ep][0].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
-	sEpDesc[ep][1].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
+	sUsbEpReservedConfig[ep][USB_OUT].default_buf = (uint32_t)default_buf;
 
+
+	sEpDesc[ep][USB_OUT].addr = (uint32_t)default_buf;
+	sEpDesc[ep][USB_OUT].pcksize.bf.size = SAMD51_USB_EP_SIZE_64B; //Full Speed固定なのでこれでOK
 
 	return AI_OK;	
 }
@@ -353,6 +354,20 @@ int samd51_register_cleanup_func(UsbCleanupCb cb)
 	sCleanupCb = cb;
 	return AI_OK;
 }
+
+/*---------------------------------------------------------------------------*/
+int samd51_usb_device_register_reset_callback(UsbResetCb resetCb)
+{
+	for (int i=0 ; i<(sizeof(sResetCb)/sizeof(sResetCb[0])) ; ++i) {
+		if (sResetCb[i] == NULL) {
+			sResetCb[i] = resetCb;
+			return AI_OK;
+		}
+	}
+
+	return AI_ERROR_NOBUF;
+}
+
 
 
 /*---------------------------------------------------------------------------*/
@@ -396,15 +411,41 @@ int samd51_usb_transfer_bulk_in(int ep, void *buf, size_t len)
 		return AI_ERROR_NOBUF;
 	}
 
-	memcpy((void *)sEpDesc[ep][1].addr, buf, len);
+	memcpy((void *)sUsbEpReservedConfig[ep][1].default_buf, buf, len);
+	sEpDesc[ep][1].addr = sUsbEpReservedConfig[ep][1].default_buf;
 	sEpDesc[ep][1].pcksize.bf.multi_packet_size = 0;
 	sEpDesc[ep][1].pcksize.bf.byte_count = len;
+	sEpDesc[ep][1].pcksize.bf.auto_zlp = 1;
 
 	USB_REG.ep[ep].epintflag = 0xff;
 	USB_REG.ep[ep].epstatusset = SAMD51_USB_EP_EPSTATUS_BK1RDY;
 
 	return AI_OK;
 }
+
+/*---------------------------------------------------------------------------*/
+int samd51_usb_transfer_bulk_in_with_own_buf(int ep, void *buf, size_t len)
+{
+	if (ep < 1 || ep >= 8) {
+		return AI_ERROR_INVALID;
+	}
+	if (buf == NULL) {
+		return AI_ERROR_NULL;
+	}
+
+	sEpDesc[ep][1].addr = (uint32_t)buf;
+	sEpDesc[ep][1].pcksize.bf.multi_packet_size = 0;
+	sEpDesc[ep][1].pcksize.bf.byte_count = len;
+		
+	sEpDesc[ep][1].pcksize.bf.auto_zlp = 0;
+
+	USB_REG.ep[ep].epintflag = 0xff;
+	USB_REG.ep[ep].epstatusset = SAMD51_USB_EP_EPSTATUS_BK1RDY;
+
+	return AI_OK;
+}
+
+
 
 
 
@@ -458,7 +499,13 @@ void USB_0_Handler(void)
 
 	//J USBリセット終了後の処理
 	if (intflag & SAMD51_USB_INT_EORST) {
-	
+		int i=0;
+		for (int i=0 ; i<(sizeof(sResetCb)/sizeof(sResetCb[0])) ; ++i) {
+			if (sResetCb[i] != NULL) {
+				sResetCb[i]();
+			}
+		}
+
 		//J 各種エンドポイントの初期化をここでやっとく
 		USB_REG.ep[0].epcfg = (cEpControl << SAMD51_USB_EP_EPCFG_EPTYPE_IN_pos) | (cEpControl << SAMD51_USB_EP_EPCFG_EPTYPE_OUT_pos);
 		USB_REG.ep[0].epintenset =  SAMD51_USB_EP_EPINTFLAG_RXSTP | 
@@ -467,7 +514,6 @@ void USB_0_Handler(void)
 									SAMD51_USB_EP_EPINTFLAG_TRCPT1 | 
 									SAMD51_USB_EP_EPINTFLAG_TRCPT0;
 		USB_REG.ep[0].epstatusclr = SAMD51_USB_EP_EPSTATUS_BK1RDY;
-		int i=1;
 		for (i=1 ; i<8 ; ++i) {
 			if (sUsbEpReservedConfig[i][USB_OUT].enabled || sUsbEpReservedConfig[i][USB_IN].enabled) {
 				USB_REG.ep[i].epcfg = sUsbEpReservedConfig[i][USB_OUT].epcfg | sUsbEpReservedConfig[i][USB_IN].epcfg;
@@ -535,6 +581,7 @@ void USB_0_Handler(void)
 			//J IN EPではこのフラグはハンドルしない？		
 		}
 		else if (SAMD51_USB_EP_EPINTFLAG_TRFAIL0 & epflag) {
+			sEpDesc[i][0].status_bk = 0x00;
 		}
 	}
 
@@ -558,7 +605,7 @@ void USB_2_Handler(void)
 		volatile uint8_t epflag = USB_REG.ep[i].epintflag;
 		if (SAMD51_USB_EP_EPINTFLAG_TRCPT0 & epflag) {
 			USB_REG.ep[i].epintflag = SAMD51_USB_EP_EPINTFLAG_TRCPT0;
-			
+
 			if (sUsbEpReservedConfig[i][USB_OUT].out_cb != NULL) {
 				sUsbEpReservedConfig[i][USB_OUT].out_cb((uint8_t *)sEpDesc[i][0].addr, sEpDesc[i][0].pcksize.bf.byte_count);
 			}
@@ -566,7 +613,6 @@ void USB_2_Handler(void)
 			if (i == 0) {
 				USB_REG.ep[i].epstatusclr = SAMD51_USB_EP_EPSTATUS_BK0RDY;
 			}
-			USB_REG.ep[i].epstatusclr = SAMD51_USB_EP_EPSTATUS_BK0RDY;
 		}
 	 }
 }

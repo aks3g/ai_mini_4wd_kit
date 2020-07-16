@@ -141,6 +141,7 @@ void *buff		/* Buffer to send/receive control data */
 			size_t card_size = 0;
 			if (sCardCtx.type == SAMD51_SDHC_SDv2) {
 				card_size = sCardCtx.csd.v2.device_size + 1;
+				card_size = card_size * 1024;
 			}
 			else if (sCardCtx.type == SAMD51_SDHC_SDv1 || sCardCtx.type == SAMD51_SDHC_MMC) {
 				size_t block_len = 1 << sCardCtx.csd.v1.max_read_data_block_length;
@@ -164,7 +165,7 @@ void *buff		/* Buffer to send/receive control data */
 				block_size = sCardCtx.csd.v1.erase_sector_size;
 			}
 			else if (sCardCtx.type == SAMD51_SDHC_MMC) {
-				//			block_size = sCardCtx.csd.mmc.erase_sector_size;
+				//	block_size = sCardCtx.csd.mmc.erase_sector_size;
 			}
 			memcpy(buff, &block_size, sizeof(block_size));
 		}

@@ -74,6 +74,9 @@ typedef void (*UsbInTransferDoneCb)(int error);
 //J Hostからの切断時に呼ばれる処理
 typedef void (*UsbCleanupCb)(void);
 
+//J USB Resetがかかったときに呼ばれる処理
+typedef void (*UsbResetCb)(void);
+
 /*--------------------------------------------------------------------------*/
 // USBデバイス実装用関数
 /*--------------------------------------------------------------------------*/
@@ -90,11 +93,12 @@ int samd51_usb_device_attach(int attach);
 int samd51_usb_setup_device(const uint8_t *desc, size_t desc_len, UsbControlTansferCallback class_request_cb);
 
 //J Endpointを初期化する. IN/OUTで別関数
-int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTransferDoneCb in_cb, uint8_t *data0, uint8_t *data1, size_t data0_len, size_t data1_len);
-int samd51_usb_device_setup_OUT_endpoint(int ep, Samd51UsbEpType type, UsbOutTranferDoneCb out_cb,  uint8_t *data0, uint8_t *data1, size_t data0_len, size_t data1_len);
+int samd51_usb_device_setup_IN_endpoint (int ep, Samd51UsbEpType type, UsbInTransferDoneCb in_cb, uint8_t *default_buf, size_t default_buf_len);
+int samd51_usb_device_setup_OUT_endpoint(int ep, Samd51UsbEpType type, UsbOutTranferDoneCb out_cb, uint8_t *default_buf, size_t default_buf_len);
 
 //J 次のINトークンで流す情報を登録する
 int samd51_usb_transfer_bulk_in(int ep, void *buf, size_t len);
+int samd51_usb_transfer_bulk_in_with_own_buf(int ep, void *buf, size_t len);
 
 //J 次のOUT転送を許可する
 int samd51_usb_transfer_bulk_out(int ep);
@@ -105,6 +109,9 @@ int samd51_usb_transfer_control_in(void *buf, size_t len);
 //J IN Transferの制御権管理
 void samd51_usb_lock_in_transfer(void);
 void samd51_usb_unlock_in_transfer(void);
+
+
+int samd51_usb_device_register_reset_callback(UsbResetCb resetCb);
 
 
 #endif /* SAMD51_USB_DEVICE_H_ */
