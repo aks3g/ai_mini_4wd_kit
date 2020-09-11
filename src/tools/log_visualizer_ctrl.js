@@ -223,6 +223,9 @@ function onSimulaterTimerEvent()
     drawExistanceGraph(document.getElementById("canvas_graph_existance"), getExistanceArray());
 
     document.getElementById("map_range").value = val;
+
+    document.getElementById("map_text").value += position.toString() + '\n';
+
   }
 }
 

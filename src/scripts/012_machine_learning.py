@@ -15,7 +15,7 @@ arr_policy=[]
 
 
 UNIT_mm = 100;
-TIRE_SIZE_mm = 31
+TIRE_SIZE_mm = 26
 INTERVAL_sec = 1.0/52.0
 COEFF_DELTA  = (1.0 / 60.0) * INTERVAL_sec * TIRE_SIZE_mm * 3.14
 COEFF_DEGREE = (1.0 / 1000.0) * INTERVAL_sec
@@ -161,9 +161,11 @@ while milage < 105000 and lap < 3 :
 	evaluation = evaluation_value(m.getAz(), m.getRoll());
 
 	pos = spe.estimate(delta_mm, feature);
+
 	ml.set_reward(pos, evaluation, m.getSpeed());
 	m.setSpeed(ml.get_policy(pos));
 
+	print ('pos = %d'%(pos), end='');
 	print (m);
 	cnt = cnt + 1;
 	milage = milage + delta_mm;

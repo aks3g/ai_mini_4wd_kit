@@ -286,6 +286,19 @@ int samd51_usb_device_initialize(void)
 	return AI_OK;
 }
 
+/*--------------------------------------------------------------------------*/
+void samd51_usb_finalize(void)
+{
+	NVIC_DisableIRQ(USB_0_IRQn);
+	NVIC_DisableIRQ(USB_1_IRQn);
+	NVIC_DisableIRQ(USB_2_IRQn);
+	NVIC_DisableIRQ(USB_3_IRQn);
+	
+	USB_REG.reg.ctrla = SAMD51_USB_CTRLA_SWRST;
+	while(USB_REG.reg.syncbusy & SAMD51_USB_CTRLA_SWRST);
+}
+
+
 /*---------------------------------------------------------------------------*/
 int samd51_usb_setup_device(const uint8_t *desc, size_t desc_len, UsbControlTansferCallback class_request_cb)
 {

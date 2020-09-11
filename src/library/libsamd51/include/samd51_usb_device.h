@@ -82,6 +82,7 @@ typedef void (*UsbResetCb)(void);
 /*--------------------------------------------------------------------------*/
 //J MCU“à‚ÌUSBƒ‚ƒWƒ…[ƒ‹‚ğ‰Šú‰»‚·‚é
 int samd51_usb_device_initialize(void);
+void samd51_usb_finalize(void);
 
 //J HOST‚Æ‚ÌØ’f‚ÉŒÄ‚Î‚ê‚éŠÖ”‚ğ“o˜^‚·‚é
 int samd51_register_cleanup_func(UsbCleanupCb cb);

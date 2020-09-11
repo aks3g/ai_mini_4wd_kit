@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -22,11 +23,16 @@ typedef struct _machine_learning_obj_t {
 	int len;
 	float *policy_of_velocity;
 	float *score_table;
+	float *ave_velocity;
+
+	int *velocity_cnt;
+	int *score_table_cnt;
 
 	float leaning_step;
 	int propagation_window;
 	float time_constant_s;
 	int unit_mm;
+	float sigma;
 } machine_learning_obj_t;
 
 /*---------------------------------------------------------------------------*/
@@ -46,12 +52,21 @@ STATIC mp_obj_t machine_learning_make_new(const mp_obj_type_t *type_in, size_t n
 	o->time_constant_s = mp_obj_get_float(args[3]);
 	o->unit_mm = mp_obj_get_int(args[4]);
 	float init_velocity = mp_obj_get_float(args[5]);
+	o->sigma = mp_obj_get_float(args[6]);
 
 	o->policy_of_velocity = m_new(float,   o->len);
-	o->score_table = m_new(float,   o->len);
+
+	o->velocity_cnt       = m_new(int,     o->len);
+	o->ave_velocity       = m_new(float,   o->len);
+
+	o->score_table_cnt    = m_new(int,     o->len);
+	o->score_table        = m_new(float,   o->len);
 
 	for (int i=0 ; i<o->len ; ++i) {
 		o->policy_of_velocity[i] = init_velocity;
+		o->score_table_cnt[i] = 0;
+		o->velocity_cnt[i] = 0;
+		o->ave_velocity[i] = 0;
 		o->score_table[i] = 0;
 	}
 
@@ -62,12 +77,12 @@ STATIC mp_obj_t machine_learning_make_new(const mp_obj_type_t *type_in, size_t n
 STATIC mp_obj_t ml_set_reward(size_t n, const mp_obj_t *args)
 {
 	machine_learning_obj_t *o = (machine_learning_obj_t *)args[0];
-	
+
 //	mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
 	int pos = mp_obj_get_int(args[1]);
 	float evaluation_value = mp_obj_get_float(args[2]);
-	float velocity = mp_obj_get_float(args[3]);
+	float velocity         = mp_obj_get_float(args[3]);
 
 	float delta_mm = o->time_constant_s * velocity * (1000000.0f / 3600.0f);
 	int idx = delta_mm / o->unit_mm;
@@ -76,7 +91,14 @@ STATIC mp_obj_t ml_set_reward(size_t n, const mp_obj_t *args)
 		nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Out of range."));
 	}
 
-	o->score_table[(o->len + pos - idx) % o->len] = evaluation_value  + (1.0f - (velocity / o->policy_of_velocity[pos]));
+	for (int i=0;i<o->propagation_window ; ++i) {
+		int p = (o->len + pos - idx - i) % o->len;
+		o->score_table[p] += evaluation_value;
+		o->score_table_cnt[p]++;
+	}
+
+	o->ave_velocity[pos] += velocity;
+	o->velocity_cnt[pos]++;
 
 	return mp_const_none;
 }
@@ -121,42 +143,27 @@ STATIC mp_obj_t ml_update(mp_obj_t self_in, mp_obj_t algorithm)
 {
 	machine_learning_obj_t *o = (machine_learning_obj_t *)self_in;
 	int _algorithm = mp_obj_get_int(algorithm);
+	(void)_algorithm;
 
-	if (_algorithm == 0) {
-		for (int i=0 ; i<o->len ; ++i) {
-			if (o->score_table[i] != 0) {
-				float shared_score = o->score_table[i] / o->propagation_window;
-				for (int j=0 ; j<o->propagation_window ; ++j) {
-					int idx = ((i-j) + o->len) % o->len;
-					o->policy_of_velocity[idx] += shared_score;
-				}
-			}
-			
-			o->policy_of_velocity[i] += o->leaning_step;
-		}
-	}
-	else if (_algorithm == 1) {
-		for (int i=0 ; i<o->len ; ++i) {
-			if (o->score_table[i] != 0) {
-				float shared_score = o->score_table[i] / o->propagation_window;
-				for (int j=0 ; j<o->propagation_window ; ++j) {
-					int idx = ((i-j) + o->len) % o->len;
-					o->score_table[idx] += shared_score;
-				}
-			}
-			o->policy_of_velocity[i] += o->leaning_step;
-		}
-		for (int i=0 ; i<o->len ; ++i) {
-			if (o->score_table[i] == 0) {
-				o->policy_of_velocity[i] += o->leaning_step;
-			}
-		}
+	for (int i=0 ; i<o->len ; ++i) {
+		o->ave_velocity[i] = o->ave_velocity[i] / o->velocity_cnt[i];
+		o->score_table[i] = o->score_table[i] / o->score_table_cnt[i];
 	}
 
 	for (int i=0 ; i<o->len ; ++i) {
-		o->score_table[i] = 0;
+		if (o->velocity_cnt[i] == 0 || o->score_table_cnt[i] == 0) {
+		}
+		else {
+			float delta = (o->policy_of_velocity[i] - o->ave_velocity[i]);
+			o->policy_of_velocity[i] = o->policy_of_velocity[i] + 
+				(float)exp(-(double)(delta * delta)/(double)(2*o->sigma*o->sigma)) * (o->score_table[i] + o->leaning_step);
+		}
 	}
 
+	memset(o->ave_velocity, 0x00, sizeof(o->ave_velocity[0])*o->len);
+	memset(o->velocity_cnt, 0x00, sizeof(o->velocity_cnt[0])*o->len);
+	memset(o->score_table,  0x00, sizeof(o->score_table[0])*o->len);
+	memset(o->score_table_cnt, 0x00, sizeof(o->score_table_cnt[0])*o->len);
 
 	return mp_const_none;
 }

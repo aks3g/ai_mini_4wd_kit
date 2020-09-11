@@ -101,6 +101,8 @@ int main(void)
 
 	//J USB‚ªÚ‘±‚³‚ê‚Ä‚¢‚éê‡Conosleƒ‚[ƒh‚ÉˆÚs‚·‚é
 	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
+		aiMini4wdFsMountDrive(0);
+
 		while (1) {
 			usbMassStorageUpdate();
 
@@ -179,6 +181,7 @@ ENSURE:
 	__disable_irq();
 
 	// Reset all pheripherals
+	samd51_usb_finalize();
 	samd51_ac_finalize();
 	samd51_adc_finalize(0);
 	samd51_adc_finalize(1);

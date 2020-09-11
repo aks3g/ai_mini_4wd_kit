@@ -13,7 +13,7 @@ var SelfPositionEstimater = {
   wheelSize : 31,
   interval : 1/52,
 
-  weight: 0.003,
+  weight: 0.001,
 
   existance: [],
   featureCount: [],
@@ -35,15 +35,6 @@ var SelfPositionEstimater = {
 
     //J 存在確率分布の初期値を入れる
     this.existance = new Array(this.ssv.length);
-    this.existance.fill(0); //スタート地点に集める
-    var lap = 0;
-    this.existance[0] = 1.0/3.0;
-    for (var i=1 ; i<this.ssv.length ; ++i) {
-      if (this.ssv[i].lap != lap) {
-        lap = this.ssv[i].lap;
-        this.existance[i] = 1.0/3.0;
-      }
-    }
     this.existance.fill(1.0/this.ssv.length); //一様分布でいんだろうか…。
 
     //J 特徴量の個数だけ先に求めておく
@@ -92,6 +83,8 @@ var SelfPositionEstimater = {
       }
     }
 
+    console.log(this.existance.length, max_index)
+
     return max_index;
   },
 }
@@ -103,7 +96,14 @@ var SelfPositionEstimater = {
 function updateSimulater(tick, log)
 {
   var delta_mm = SelfPositionEstimater.wheelSize * Math.PI * (log[IDX_RPM][tick] / 60.0) * SelfPositionEstimater.interval;
-  var feature  = featureValue(delta_mm, log[IDX_YAW][tick]*SelfPositionEstimater.interval/1000.0, log[IDX_PITCH][tick]*SelfPositionEstimater.interval/1000.0, SelfPositionEstimater.thresholdOfCurve);
+
+  var yaw_deg = log[IDX_YAW][tick]*SelfPositionEstimater.interval/1000.0;;
+  if (log[IDX_YAW][tick] < 10000.0 && log[IDX_YAW][tick] > -10000.0) {
+    yaw_deg = 0.0
+  }
+
+  var pitch_deg = log[IDX_PITCH][tick]*SelfPositionEstimater.interval/1000.0;
+  var feature  = featureValue(delta_mm, yaw_deg, pitch_deg, SelfPositionEstimater.thresholdOfCurve);
 
   var position = SelfPositionEstimater.estimate(delta_mm, feature);
 

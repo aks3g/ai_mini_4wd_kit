@@ -182,8 +182,6 @@ int aiMini4wdInitialize(uint32_t flags)
 		samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_USB, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
 
 		ret = initialize_usb();
-
-		aiMini4wdFsMountDrive(0);
 	}
 
 	//J Status OK
