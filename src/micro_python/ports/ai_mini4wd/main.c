@@ -226,7 +226,7 @@ int main(void)
 {
 	int ret = 0;
 #ifdef NGAIMINI4WD
-	uint32_t init_flag = AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW | AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW;
+	uint32_t init_flag = AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW | AI_MINI_4WD_INIT_FLAG_USE_ODOMETER ;
 #else
 	uint32_t init_flag = AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW;
 #endif

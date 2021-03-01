@@ -358,21 +358,41 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 /*---------------------------------------------------------------------------*/
 void machine_state_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind)
 {
-	mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d",
-		sSensorCount,
-		sSensorData.imu.accel_f[0],
-		sSensorData.imu.accel_f[1],
-		sSensorData.imu.accel_f[2],
-		sSensorData.imu.gyro_f[0],
-		sSensorData.imu.gyro_f[1],
-		sSensorData.imu.gyro_f[2],
-		sSensorData.rpm,
-		
-		sBatteryVoltage,
-		sMotorCurrent,
-		sCurrentDuty);
+	if (aiMini4wdOdometerEnabled()) {
+		mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%.3f",
+			sSensorCount,
+			sSensorData.imu.accel_f[0],
+			sSensorData.imu.accel_f[1],
+			sSensorData.imu.accel_f[2],
+			sSensorData.imu.gyro_f[0],
+			sSensorData.imu.gyro_f[1],
+			sSensorData.imu.gyro_f[2],
+			sSensorData.rpm,
+			
+			sBatteryVoltage,
+			sMotorCurrent,
+			sCurrentDuty,
+			
+			sSensorData.odometry.delta_x_mm,
+			sSensorData.odometry.delta_y_mm
+			);
+	}
+	else {
+		mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d",
+			sSensorCount,
+			sSensorData.imu.accel_f[0],
+			sSensorData.imu.accel_f[1],
+			sSensorData.imu.accel_f[2],
+			sSensorData.imu.gyro_f[0],
+			sSensorData.imu.gyro_f[1],
+			sSensorData.imu.gyro_f[2],
+			sSensorData.rpm,
+			
+			sBatteryVoltage,
+			sMotorCurrent,
+			sCurrentDuty);
+	}
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
