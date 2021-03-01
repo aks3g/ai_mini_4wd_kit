@@ -63,6 +63,50 @@ static void _sTimerCB(void)
 	sReadReq = 1;
 }
 
+static volatile uint8_t sAddress = 0;
+static volatile uint8_t sAddressSelected = 0; 
+static uint8_t _i2cStartCb(uint8_t mode)
+{
+	if (mode == I2C_MASTER_READ) {
+	}
+	else if (mode == I2C_MASTER_WRITE) {
+		sAddressSelected = 0;
+	}
+
+	return 0;
+}
+
+static uint8_t _i2cStopCb(void)
+{
+	return 0;
+}
+
+static uint8_t _masterRxCb(uint8_t ack)
+{
+	uint8_t data = 0;
+
+	// Register Read
+	reg_read(sAddress, &data);
+	sAddress = (sAddress + 1);
+
+//	return sAddress;
+	return data;
+}
+
+static uint8_t _masterTxCb(uint8_t data)
+{
+	if (sAddressSelected == 0) {
+		sAddressSelected = 1;
+		sAddress = data;
+	}
+	else {
+		//Register Write
+		reg_write(sAddress, data);
+		sAddress = (sAddress + 1);
+	}
+
+	return 0;
+}
 
 
 int main(void)
@@ -91,16 +135,15 @@ int main(void)
 
 	reg_initialize();
 
-/*
+	//J I2C Slave I/FÇê›íË
 	I2C_INIT_OPT i2c_opt = {
-		.ownAddress,
-		.startCB,
-		.stopCB,
-		.masterRxCB,
-		.masterTxCB
+		.ownAddress  = 0x33,
+		.startCB     = _i2cStartCb,
+		.stopCB      = _i2cStopCb,
+		.masterRxCB  = _masterRxCb,
+		.masterTxCB  = _masterTxCb
 	};
 	initialize_i2c(400000, systemClock, I2C_SLAVE, &i2c_opt);
-*/
 
 	printf("\n");
 	printf("\n");

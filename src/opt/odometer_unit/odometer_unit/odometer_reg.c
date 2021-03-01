@@ -12,6 +12,8 @@
 
 #include "drivers/adns9800.h"
 
+
+
 typedef void (*reg_write_cb)(uint8_t);
 static uint8_t sReg[REG_SIZE];
 
@@ -51,6 +53,8 @@ static reg_write_cb sRegWriteCbSet[REG_SIZE] =
 /* 1F */	NULL,
 };
 
+dword_byte gDeltaX_mm = {.dword = 0};
+dword_byte gDeltaY_mm = {.dword = 0};
 
 uint8_t reg_initialize(void)
 {
@@ -70,7 +74,8 @@ uint8_t reg_initialize(void)
 	return 0;
 }
 
-
+static dword_byte sDeltaX_mm_shadow;
+static dword_byte sDeltaY_mm_shadow;
 uint8_t reg_read(uint8_t offset, uint8_t *data)
 {
 	if (offset >= REG_SIZE) {
@@ -78,6 +83,24 @@ uint8_t reg_read(uint8_t offset, uint8_t *data)
 	}
 
 	*data = sReg[offset];
+
+	//J ˜A‘±‚Å“Ç‚Ü‚ê‚é‚±‚Æ‚ðŠú‘Ò
+	if (offset == REG_DELTAX_0) {
+		sDeltaX_mm_shadow.dword = gDeltaX_mm.dword;
+		gDeltaX_mm.dword = 0;
+	}
+	if (REG_DELTAX_0 <= offset && offset <= REG_DELTAX_3) {
+		*data = sDeltaX_mm_shadow.bytes[offset - REG_DELTAX_0];
+	}
+
+	if (offset == REG_DELTAY_0) {
+		sDeltaY_mm_shadow.dword = gDeltaY_mm.dword;
+		gDeltaY_mm.dword = 0;
+	}
+	if (REG_DELTAY_0 <= offset && offset <= REG_DELTAY_3) {
+		*data = sDeltaY_mm_shadow.bytes[offset - REG_DELTAY_0];
+	}
+
 	return 0;
 }
 

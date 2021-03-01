@@ -40,4 +40,13 @@ uint8_t reg_initialize(void);
 uint8_t reg_read(uint8_t offset, uint8_t *data);
 uint8_t reg_write(uint8_t offset, uint8_t data);
 
+typedef union dword_byte_t
+{
+	uint32_t dword;
+	uint8_t  bytes[4];
+} dword_byte;
+
+extern dword_byte gDeltaX_mm;
+extern dword_byte gDeltaY_mm;
+
 #endif /* ODOMETER_REG_H_ */

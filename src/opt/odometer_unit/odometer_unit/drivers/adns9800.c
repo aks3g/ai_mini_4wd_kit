@@ -13,11 +13,13 @@
 
 #include <spi_driver.h>
 #include <gpio_driver.h>
+#include <utils.h>
 
 #include "drivers/adns9800_reg.h"
 #include "drivers/adns9800_fw.h"
 #include "drivers/adns9800.h"
 #include "odometer_reg.h"
+
 
 extern const  uint8_t adns9800_firmware_a4[];
 extern const  uint8_t adns9800_firmware_a5[];
@@ -29,7 +31,7 @@ static int32_t sDeltaX = 0;
 static int32_t sDeltaY = 0;
 static int32_t sDeltaX_mm = 0;
 static int32_t sDeltaY_mm = 0;
-static uint16_t sCPIx10 = 2000;
+static float   sMMpC = 0.0141f;
 
 static uint8_t sDebugPrintEnabled = 0;
 
@@ -115,7 +117,7 @@ int adns9800_initialize(void)
 	_delay(200 * 1000L);
 
 
-	uint8_t config1 = 0x01;
+	uint8_t config1 = 0x09;
 	adns9800_write(ADNS9800_REG_CONFIGURATION_I, config1);
 
 	//J 7200fpsÇ…ê›íË
@@ -168,11 +170,13 @@ int adns9800_update(void)
 
 	gpio_output(GPIO_PORTC, GPIO_PIN4, 1);
 
-	sDeltaX += data.delta_x;
-	sDeltaY += data.delta_y;
+	sDeltaX = data.delta_x;
+	sDeltaY = data.delta_y;
 
-	sDeltaX_mm = sDeltaX * 254 / sCPIx10;
-	sDeltaY_mm = sDeltaY * 254 / sCPIx10;
+	sDeltaX_mm = (int32_t)(sDeltaX * sMMpC);
+	sDeltaY_mm = (int32_t)(sDeltaY * sMMpC);
+	gDeltaX_mm.dword += sDeltaX;
+	gDeltaY_mm.dword += sDeltaY;
 
 	reg_write(REG_MOTION,    ptr[0]);
 	reg_write(REG_SQUAL,     ptr[6]);
@@ -183,6 +187,7 @@ int adns9800_update(void)
 	reg_write(REG_DELTAX_1, ptr[1]);
 	reg_write(REG_DELTAX_2, ptr[2]);
 	reg_write(REG_DELTAX_3, ptr[3]);
+
 	ptr = (uint8_t *)&sDeltaY_mm;
 	reg_write(REG_DELTAY_0, ptr[0]);
 	reg_write(REG_DELTAY_1, ptr[1]);
@@ -194,8 +199,7 @@ int adns9800_update(void)
 
 int adns9800_set_cpi(uint16_t cpi)
 {
-	sCPIx10 = 10 * cpi;
-	
+	sMMpC = 25.4f / (float)cpi;
 	return 0;
 }
 
