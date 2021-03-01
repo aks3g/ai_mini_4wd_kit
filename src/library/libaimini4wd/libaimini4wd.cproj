@@ -158,6 +158,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="driver\lsm6ds3h.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="driver\odometer.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="driver\usb.c">
       <SubType>compile</SubType>
     </Compile>
@@ -237,6 +240,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\internal\lsm6ds3h.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\odometer.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\internal\pwm.h">

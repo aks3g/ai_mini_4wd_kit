@@ -21,8 +21,9 @@
 #include <samd51_sercom.h>
 #include <samd51_clock.h>
 
-#include "include//internal/lsm6ds3h.h"
-#include "include//internal/sensor.h"
+#include "include/internal/lsm6ds3h.h"
+#include "include/internal/odometer.h"
+#include "include/internal/sensor.h"
 #include "include/internal/clock.h"
 #include "include/internal/timer.h"
 #include "include/internal/registry.h"
@@ -120,6 +121,18 @@ static int _initialize_i2c(void)
 }
 
 /*--------------------------------------------------------------------------*/
+static int _initialize_ext_i2c(void)
+{
+	samd51_mclk_enable(SAMD51_APBB_SERCOM2, 1);
+	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SERCOM2_CORE, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
+
+	samd51_i2c_initialize(SAMD51_SERCOM2, 400000);
+
+	return AI_OK;
+}
+
+
+/*--------------------------------------------------------------------------*/
 static int _initialize_sensor_interrupt(void)
 {
 	samd51_mclk_enable(SAMD51_APBA_EIC, 1);
@@ -191,6 +204,17 @@ int aiMini4wdSensorsInitialize(void)
 }
 
 /*--------------------------------------------------------------------------*/
+int aiMini4wdSensorsInitializeOdometer(void)
+{
+	_initialize_ext_i2c();
+	
+	odometer_probe();
+	
+	return AI_OK;
+}
+
+
+/*--------------------------------------------------------------------------*/
 int aiMini4wdSensorGrabLastData(AiMini4wdSensorData *sensor_data)
 {
 	memcpy (sensor_data, &sCurrentData, sizeof(AiMini4wdSensorData));
@@ -240,6 +264,15 @@ int aiMini4wdUpdateSensorData(AiMini4wdImuRawData *imu)
 	if (sSensorCapturedCb) {
 		sSensorCapturedCb(&sCurrentData);
 	}
+
+	return AI_OK;
+}
+
+/*--------------------------------------------------------------------------*/
+int aiMini4wdUpdateOdometerData(OdometerData *odometer)
+{
+	sCurrentData.odometry.delta_x_mm = odometer->delta_x_count * gMMpCnt;
+	sCurrentData.odometry.delta_y_mm = odometer->delta_y_count * gMMpCnt;
 
 	return AI_OK;
 }

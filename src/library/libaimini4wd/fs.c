@@ -16,6 +16,7 @@
 
 #include "include/internal/clock.h"
 #include "include/internal/ff.h"
+#include "internal/scsi.h"
 
 #include "include/ai_mini4wd_fs.h"
 #include "include/ai_mini4wd_timer.h"

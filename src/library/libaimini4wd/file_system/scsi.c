@@ -451,6 +451,7 @@ static int8_t _scsi_process_read_capacity10(uint8_t *cdb, size_t cdb_len, uint8_
 static int8_t _scsi_process_read_capacity16(uint8_t *cdb, size_t cdb_len, uint8_t *buf, size_t buf_len, size_t *transfer_len)
 {
 	ScsiCdb16 *cdb16 = (ScsiCdb16 *)cdb;
+	(void)cdb16;
 	
 	return SCSI_OK;
 }

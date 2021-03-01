@@ -20,6 +20,10 @@ typedef struct AiMini4wdSensorData_t
 		float accel_f[3];
 		float gyro_f[3];
 	} imu;
+	struct {
+		float delta_x_mm;
+		float delta_y_mm;
+	} odometry;
 	float rpm;
 } AiMini4wdSensorData;
 

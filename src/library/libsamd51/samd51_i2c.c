@@ -114,7 +114,7 @@ typedef struct SAMD51_I2C_COMMUNICATION_CONTEXT_t
 } SAMD51_I2C_COMMUNICATION_CONTEXT;
 
 static SAMD51_I2C_COMMUNICATION_CONTEXT sI2cCtx[5];
-static volatile int sI2cInterfaceIsBusy = 0;
+static volatile int sI2cInterfaceIsBusy[5] = {0, 0, 0, 0, 0};
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -154,7 +154,7 @@ static void _i2c_master_intterupt_handler(SAMD51_SERCOM sercom)
 	if (reg->STATUS & (1 << SAMD51_SERCOM_I2C_RXNACK_POS)) {
 		//J NAKを受け取ったらSTOP Conditionを出して終わる
 		reg->CTRLB = (3 << SAMD51_SERCOM_I2C_CMD_POS);
-		sI2cInterfaceIsBusy = 0;
+		sI2cInterfaceIsBusy[(int)sercom] = 0;
 		if (ctx->callback) {
 			ctx->callback(AI_ERROR_I2C_NACK);
 		}
@@ -182,7 +182,7 @@ static void _i2c_master_intterupt_handler(SAMD51_SERCOM sercom)
 	else {
 		//J 全ての処理が終わった後はStopコンディションを出してコールバックを叩く
 		reg->CTRLB = (3 << SAMD51_SERCOM_I2C_CMD_POS);
-		sI2cInterfaceIsBusy = 0;
+		sI2cInterfaceIsBusy[(int)sercom] = 0;
 		if (ctx->callback) {
 			ctx->callback(AI_OK);
 		}
@@ -205,7 +205,7 @@ static void _i2c_slave_intterupt_handler(SAMD51_SERCOM sercom)
 		if (ctx->index == ctx->rx_size) {
 			//J 全ての処理が終わった後はStopコンディションを出してコールバックを叩く
 			reg->CTRLB = (1 << SAMD51_SERCOM_I2C_ACKACT_POS) | (3 << SAMD51_SERCOM_I2C_CMD_POS);
-			sI2cInterfaceIsBusy = 0;
+			sI2cInterfaceIsBusy[(int)sercom] = 0;
 			if (ctx->callback) {
 				ctx->callback(AI_OK);
 			}
@@ -218,7 +218,7 @@ static void _i2c_slave_intterupt_handler(SAMD51_SERCOM sercom)
 	else {
 		//J 全ての処理が終わった後はStopコンディションを出してコールバックを叩く
 		reg->CTRLB = (3 << SAMD51_SERCOM_I2C_CMD_POS);
-		sI2cInterfaceIsBusy = 0;
+		sI2cInterfaceIsBusy[(int)sercom] = 0;
 		if (ctx->callback) {
 			ctx->callback(AI_OK);
 		}
@@ -236,6 +236,12 @@ int samd51_i2c_initialize(SAMD51_SERCOM sercom, uint32_t i2c_clock)
 	volatile REG_SERCOM_I2C *reg = _getRegI2C(sercom);
 	if (reg == NULL) {
 		return AI_ERROR_NODEV;
+	}
+
+	if (reg->CTRLA & (1 << SAMD51_SERCOM_I2C_ENABLE_POS)) {
+		reg->CTRLA |= (1 << SAMD51_SERCOM_I2C_SWRST_POS);
+		
+		while ((reg->SYNCBUSY & (1 << SAMD51_SERCOM_I2C_SWRST_POS)));	
 	}
 
 	//J Interrupt のEnable	
@@ -258,7 +264,7 @@ int samd51_i2c_initialize(SAMD51_SERCOM sercom, uint32_t i2c_clock)
 	//Enable Interrupt
 	reg->INTENSET = (1 << SAMD51_SERCOM_I2C_INTFLAG_MB_POS) | (1 << SAMD51_SERCOM_I2C_INTFLAG_SB_POS);
 
-	memset (&sI2cCtx, 0x00, sizeof(sI2cCtx));
+	memset (&(sI2cCtx[(int)sercom]), 0x00, sizeof(sI2cCtx[0]));
 
 	//J BUS StateがUnknown抜けるのを待つ
 	while ((reg->STATUS & (3 << SAMD51_SERCOM_I2C_BUSSTATE_POS)) == 0);
@@ -289,11 +295,11 @@ int samd51_i2c_txrx(SAMD51_SERCOM sercom, const uint8_t slave_addr, const uint8_
 		return AI_ERROR_NODEV;
 	}
 
-	if (sI2cInterfaceIsBusy) {
+	if (sI2cInterfaceIsBusy[(int)sercom]) {
 		return AI_ERROR_I2C_BUSY;
 	}
 	
-	sI2cInterfaceIsBusy = 1;
+	sI2cInterfaceIsBusy[(int)sercom] = 1;
 
 	//J トランザクションの内容を保存
 	sI2cCtx[sercom].index    = 0;
@@ -312,7 +318,7 @@ int samd51_i2c_txrx(SAMD51_SERCOM sercom, const uint8_t slave_addr, const uint8_
 	}
 
 	if (callback == NULL) {
-		while (sI2cInterfaceIsBusy);
+		while (sI2cInterfaceIsBusy[(int)sercom]);
 	}
 	
 	return AI_OK;

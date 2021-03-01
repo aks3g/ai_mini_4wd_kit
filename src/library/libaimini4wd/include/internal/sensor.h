@@ -9,6 +9,8 @@
 #ifndef SENSOR_H_
 #define SENSOR_H_
 
+#include "../include/internal/odometer.h"
+
 typedef union AiMini4wdImuRawData_t
 {
 	uint8_t bytes[12];
@@ -19,7 +21,9 @@ typedef union AiMini4wdImuRawData_t
 } AiMini4wdImuRawData;
 
 int aiMini4wdSensorsInitialize(void);
-
+int aiMini4wdSensorsInitializeOdometer(void);
+ 
 int aiMini4wdUpdateSensorData(AiMini4wdImuRawData *imu);
+int aiMini4wdUpdateOdometerData(OdometerData *odometer);
 
 #endif /* SENSOR_H_ */

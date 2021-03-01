@@ -48,6 +48,7 @@ uint32_t gAiMini4wdInitFlags = 0;
 typedef struct GlobalParameters_t
 {
 	uint8_t enabledPrintf;
+	uint8_t enableOdometer;
 } GlobalParameters;
 
 static volatile GlobalParameters sGlobalParams;
@@ -129,7 +130,13 @@ int aiMini4wdInitialize(uint32_t flags)
 	//J Sensor 関係処理の初期化
 	//J 加速度センサ、タコメータ
 	aiMini4wdSensorsInitialize();
-	
+
+	//J Odometerの初期化
+	if ((flags & AI_MINI_4WD_INIT_FLAG_USE_ODOMETER) && !(flags & AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT)) {
+		sGlobalParams.enableOdometer = 1;
+		aiMini4wdSensorsInitializeOdometer();
+	}
+
 	//J Motor Driver
 	aiMini4WdInitializePwm();
 	
@@ -296,4 +303,9 @@ int aiMini4wdDebugGetc(void)
 	}
 
 	return ret;
+}
+
+int aiMini4wdOdometerEnabled(void)
+{
+	return sGlobalParams.enableOdometer;
 }

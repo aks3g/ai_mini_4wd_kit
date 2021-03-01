@@ -32,8 +32,10 @@
 #include <samd51_ac.h>
 #include <samd51_dac.h>
 #include <samd51_interrupt.h>
+#include <samd51_usb_device.h>
 
 #include "../libaimini4wd/include/internal/registry.h"
+#include "../libaimini4wd/include/internal/usb_mass_storage.h"
 
 #include "console.h"
 
