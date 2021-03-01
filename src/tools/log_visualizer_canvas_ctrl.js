@@ -113,11 +113,20 @@ function drawRawDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name, s
 //
 // RAWセンサデータの再描画
 //
-function updateRawDataGraph(canvas)
+function updateRawDataGraph(raw_data_canvas, info_canvas)
 {
-  drawRawDataGraph(canvas, SensorData, 52*5, SensorName, SensorUnit);
+  drawRawDataGraph(raw_data_canvas, SensorData, 52*5, SensorName, SensorUnit);
+  drawInitInfoLayerOfRawDataGraph(raw_data_canvas, info_canvas);
 }
 
+function drawInitInfoLayerOfRawDataGraph(raw_data_canvas, info_canvas)
+{
+  // Info Canvasのサイズを追従させる
+  var w = raw_data_canvas.getAttribute("width");
+  var h = raw_data_canvas.getAttribute("height");
+  info_canvas.setAttribute("width", w);
+  info_canvas.setAttribute("height", h);
+}
 
 /*-----------------------------------------------------------------------------
  * 回転数、加速度をソースとした移動距離と速度グラフの描画
@@ -166,10 +175,10 @@ function drawVelocityAndOdometryGraph(canvas, velocityArr, odometryArr, velocity
 //
 // 回転数、加速度をソースとした移動距離と速度グラフの再描画
 //
-function updateVelocityAndOdometryGraph(canvas)
+function updateVelocityAndOdometryGraph(canvas, wheelSize)
 {
   //J 再描画のためには推定からやり直す必要がある
-  var [velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel] = estimateVelocityAndOdometory(SensorData);
+  var [velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel] = estimateVelocityAndOdometory(SensorData, wheelSize);
   drawVelocityAndOdometryGraph(canvas, velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel);
 
 }
@@ -509,4 +518,54 @@ function drawExistanceGraph(canvas, arr)
   var ctx2d = canvas.getContext("2d");
 
   _drawGraph(GraphTypeLine, ctx2d, arr, margin_x, 0, width, height, 100, 0, 0, Math.max(...arr), "Existance");
+}
+
+/*
+ * 比較用ラインの描画
+ */
+function drawHighLightLine(canvas, x)
+{
+  var h = canvas.getAttribute("height");
+  var w = canvas.getAttribute("width");
+
+  var margin_left   = 50;
+  var margin_right  = 10;
+
+  if (margin_left < x && x < (w - margin_right)) {
+    _drawLine(canvas, x, 0, 0, h);
+  }
+}
+
+function drawClearAll(canvas)
+{
+  _drawClearAll(canvas);
+}
+
+function drawDataPointerAndLabel(canvas, data, selecter, x)
+{
+  var height = 150;
+  var margin_left = 50;
+  var margin_right  = 10;
+  var margin_top = 5;
+  var margin_bottom = 5;
+  var w = canvas.getAttribute("width");
+
+  if (!(margin_left < x && x < (w - margin_right))) {
+    return;
+  }
+
+  var data_idx = x - margin_left;
+
+  var i = 0;
+  var j = 0;
+  for (i=0 ; i<9 ; ++i) {
+    if (selecter.sensors[i].checked) {
+      var scale = height / (Math.max(...data[i]) - Math.min(...data[i]))
+      var y = j*(height + margin_top + margin_bottom) + height - ((data[i][data_idx] - Math.min(...data[i])) * scale);
+      _drawPointer(canvas, x, y, 5);
+      _drawLabel(canvas, x+5, y, data[i][data_idx].toString())
+      j++;
+    }
+  }
+
 }

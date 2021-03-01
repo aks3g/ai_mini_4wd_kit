@@ -114,7 +114,7 @@ a:hover {
 }
 
 .check_box_span {
-  width : 190pt;
+  width : 180pt;
   display: inline-block;
 }
 
@@ -127,6 +127,17 @@ a:hover {
 .canvas_graph{
   overflow-x:scroll;
 }
+
+.raw_graph {
+  position: relative;
+}
+
+.raw_graph canvas {
+  position: absolute; //J Canvasをレイヤー的に使う
+  top: 0;
+  left: 0;
+}
+
 
 .map_array{
   width:100%;

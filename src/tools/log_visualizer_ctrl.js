@@ -16,12 +16,17 @@ var ThresholdOfCurve = [];
 
 var UNIT_mm = 100;
 
+var AuxiliaryLines = [];
+
 /*-----------------------------------------------------------------------------
  * HTML Form まわりの挙動を記載
  */
 window.onload = function() {
-  var canvas = document.getElementById("canvas_graph_raw");
+  var canvas = document.getElementById("canvas_graph_info");
   canvas.addEventListener('click', canvasOnClick, false);
+  canvas.addEventListener('dblclick', canvasOnDoubleClick, false);
+  canvas.addEventListener('mousemove', canvasOnMove, false);
+  canvas.addEventListener('mouseleave', canvasOnLeave, false);
 }
 
 //J Re-size時には描画をやり直す
@@ -33,12 +38,51 @@ function canvasOnClick(evt)
 {
   //J Canvas上の点を求める
   var rect = evt.target.getBoundingClientRect();
-  x = evt.clientX - rect.left;
-  y = evt.clientY - rect.top;
+  x = Math.floor((evt.clientX - rect.left) / (evt.target.clientWidth / evt.target.width));
+
+  AuxiliaryLines.push(x)
 
   return;
 }
 
+//J Canvas右クリック時の挙動を入れる（TODO）
+function canvasOnDoubleClick(evt)
+{
+  AuxiliaryLines = []
+
+  return;
+}
+
+//J Canvas上のマウス移動
+function canvasOnMove(evt)
+{
+  //J Canvas上の点を求める
+  var rect = evt.target.getBoundingClientRect();
+  x = Math.floor((evt.clientX - rect.left) / (evt.target.clientWidth / evt.target.width));
+
+  drawClearAll(evt.target);
+  drawHighLightLine(evt.target, x);
+
+  //J 参照線とグラフとの交点にポインタを置く
+  drawDataPointerAndLabel(evt.target, SensorData, document.data_select_form, x);
+
+  AuxiliaryLines.forEach( function(x) {
+    drawHighLightLine(evt.target, x);
+    drawDataPointerAndLabel(evt.target, SensorData, document.data_select_form, x);
+  });
+
+  return;
+}
+
+//J Canvas上からのマウス離脱
+function canvasOnLeave(evt) {
+  drawClearAll(evt.target)
+
+  AuxiliaryLines.forEach( function(x) {
+    drawHighLightLine(evt.target, x);
+    drawDataPointerAndLabel(evt.target, SensorData, document.data_select_form, x);
+  });
+}
 
 
 //-----------------------------------------------------------------------------
@@ -94,6 +138,8 @@ function loadAndParseSensorFile(file, loaded_cb)
       }
     });
 
+    console.log(sensorData[IDX_AX].length)
+
     //J 読み込んだデータ返す
     loaded_cb(sensorData);
   }
@@ -116,8 +162,13 @@ function sensorDataUpdatedCallback(sensorData)
   var [velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel] = estimateVelocityAndOdometory(SensorData, wheelSize);
   //J 描画側にデータを渡す
   drawRawDataGraph(document.getElementById("canvas_graph_raw"), SensorData, 52*5, SensorName, SensorUnit);
+  drawInitInfoLayerOfRawDataGraph(document.getElementById("canvas_graph_raw"), document.getElementById("canvas_graph_info"));
   drawResampledDataGraph(document.getElementById("canvas_graph_resampling"), ResampledSensorData, 20, SensorName, ResampledSensorUnit);
   drawVelocityAndOdometryGraph(document.getElementById("canvas_graph_velocity"), velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel);
+
+  // canvas_graph の高さを描画内容に合わせる
+  var h = document.getElementById("canvas_graph_raw").getAttribute("height")
+  document.getElementById("raw_graph").style.height = h.toString() ;
 
   //J 特徴量ヒストグラムと内周、中央周、外周を判断するための閾値を求める
   var distribution = createFeatureValueHistgram(ResampledSensorData,UNIT_mm, -800, 800, 10);
@@ -146,7 +197,7 @@ function sensorDataUpdatedCallback(sensorData)
 //
 // ミニ四駆の位置をXYで再プロットする
 //
-function updateEstimatedMachinePosition(canvas, clientWidth)
+function updateEstimatedMachinePosition()
 {
   drawEstimatedMachinePosition(document.getElementById("canvas_graph_xy_plot"), document.getElementById("sensor_visualizer").clientWidth, TracingContext.xArr, TracingContext.yArr, TracingContext.lapArr);
 }
@@ -194,7 +245,9 @@ function onWheelSelected()
 {
   document.getElementById("wheel_size").value = document.getElementById("wheel_select").options[document.getElementById("wheel_select").selectedIndex].value;
 
-  updateVelocityAndOdometryGraph(document.getElementById("canvas_graph_velocity"));
+  updateVelocityAndOdometryGraph(document.getElementById("canvas_graph_velocity"), document.getElementById("wheel_size").value);
+  onCoeffUndated();
+  updateEstimatedMachinePosition();
 }
 
 //
@@ -202,7 +255,9 @@ function onWheelSelected()
 //
 function onWheelSizeChanged()
 {
-  updateVelocityAndOdometryGraph(document.getElementById("canvas_graph_velocity"));
+  updateVelocityAndOdometryGraph(document.getElementById("canvas_graph_velocity"), document.getElementById("wheel_size").value);
+  onCoeffUndated();
+  updateEstimatedMachinePosition();
 }
 
 //-----------------------------------------------------------------------------
@@ -301,4 +356,20 @@ function onCoeffUndated()
 function updateStateSpaceVector()
 {
   drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, -1);
+}
+
+
+//-----------------------------------------------------------------------------
+// Raw Data種別の選択が変更されたときの処理
+//
+function updateRawDataSelecter()
+{
+  var raw_data_canvas = document.getElementById('canvas_graph_raw');
+  var info_canvas = document.getElementById('canvas_graph_info');
+
+  updateRawDataGraph(raw_data_canvas, info_canvas);
+
+  // canvas_graph の高さを描画内容に合わせる
+  var h = document.getElementById("canvas_graph_raw").getAttribute("height")
+  document.getElementById("raw_graph").style.height = h.toString() ;
 }

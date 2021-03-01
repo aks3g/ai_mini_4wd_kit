@@ -69,22 +69,25 @@
   </div>
   <div class="tab_contents">
     <div id="panel1" class="tab_content">
-      <div class = "canvas_graph">
+      <div id = "canvas_graph" class = "canvas_graph">
         <form name="data_select_form">
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="ax" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">X軸加速度[mg]</span>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="ay" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">Y軸加速度[mg]</span>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="az" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">Z軸加速度[mg]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="ax" checked ="1" onChange="updateRawDataSelecter()">X軸加速度[mg]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="ay" checked ="1" onChange="updateRawDataSelecter()">Y軸加速度[mg]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="az" checked ="1" onChange="updateRawDataSelecter()">Z軸加速度[mg]</span>
           <br>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="pitch" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">pitch[mdegree/sec]</span>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="roll" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">roll[mdegree/sec]</span>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="yaw" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">yaw[mdegree/sec]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="pitch" checked ="1" onChange="updateRawDataSelecter()">pitch[mdegree/sec]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="roll" checked ="1" onChange="updateRawDataSelecter()">roll[mdegree/sec]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="yaw" checked ="1" onChange="updateRawDataSelecter()">yaw[mdegree/sec]</span>
           <br>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="rpm" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">車軸回転数[rpm]</span>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="vbat" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">バッテリ電圧[mV]</span>
-          <span class="check_box_span"><input type="checkbox" name="sensors" value="imon" checked ="1" onChange="updateRawDataGraph(document.getElementById('canvas_graph_raw'))">モーター電流[mA]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="rpm" checked ="1" onChange="updateRawDataSelecter()">車軸回転数[rpm]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="vbat" checked ="1" onChange="updateRawDataSelecter()">バッテリ電圧[mV]</span>
+          <span class="check_box_span"><input type="checkbox" name="sensors" value="imon" checked ="1" onChange="updateRawDataSelecter()">モーター電流[mA]</span>
         </form>
         X軸補助線は5秒毎
-        <canvas id="canvas_graph_raw" width="100%" height="0pt"></canvas><br>
+        <div class = "raw_graph" id = "raw_graph">
+          <canvas id="canvas_graph_raw" width="100%" height="0pt"></canvas>
+          <canvas id="canvas_graph_info" width="100%" height="0pt"></canvas>
+        </div>
       </div>
     </div>
     <div id="panel2" class="tab_content">

@@ -165,3 +165,52 @@ function _drawGraph(graph_type, ctx2d, arr, x, y, w, h, sub_x, sub_y, min, max, 
     _drawBarGraph(ctx2d, arr, x, y, w, h, sub_x, sub_y, min, max, label)
   }
 }
+
+//
+function _drawLine(canvas, x, y, w, h)
+{
+  var ctx2d = canvas.getContext("2d");
+
+  ctx2d.beginPath()
+  {
+    ctx2d.strokeStyle = "rgba(0,0,0,1)"
+    ctx2d.moveTo(x, y);
+    ctx2d.lineTo(x+w, y+h);
+  }
+  ctx2d.stroke();
+}
+
+function _drawClearAll(canvas)
+{
+  var ctx2d = canvas.getContext("2d");
+
+  ctx2d.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+}
+
+function _drawPointer(canvas, x, y, r)
+{
+  var ctx2d = canvas.getContext("2d");
+
+  ctx2d.beginPath();
+  {
+    ctx2d.fillStyle = "rgba(80,80,80,0.8)"
+    ctx2d.strokeStyle = "rgba(0,0,0,0.8)"
+    ctx2d.arc( x, y+r, r, 0, 2 * Math.PI, false) ;
+  }
+  ctx2d.stroke();
+}
+
+function _drawLabel(canvas, x, y, label)
+{
+  var ctx2d = canvas.getContext("2d");
+  var w = ctx2d.measureText(label).width;
+  ctx2d.beginPath();
+  {
+    ctx2d.fillStyle = "rgba(200,200,200,0.5)"
+    ctx2d.fillRect(x+3, y, w, -15)
+
+    ctx2d.textAlign="left";
+    ctx2d.strokeText(label, x, y);
+  }
+  ctx2d.stroke();
+}
