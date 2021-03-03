@@ -49,6 +49,7 @@ typedef struct REG_USB_GENERAL_DEVICE_t
 	uint16_t padcal;		// 0x28 - 0x29
 	uint8_t padding1[0xff - 0x29];
 } REG_USB_GENERAL_DEVICE;
+#pragma pack()
 
 #pragma pack(1)
 typedef struct REG_USB_DEVICE_EP_t
@@ -64,6 +65,7 @@ typedef struct REG_USB_DEVICE_EP_t
 	uint8_t reserved2[2];
 	uint8_t padding[20];
 } REG_USB_DEVICE_EP;
+#pragma pack()
 
 
 #define SAMD51_USB_EP_SIZE_8B							(0)
@@ -78,7 +80,7 @@ typedef struct REG_USB_DEVICE_EP_t
 #pragma pack(1)
 typedef struct REG_USB_DEVICE_EP_DESCRIPTOR_t
 {
-	uint32_t addr;
+	volatile uint32_t addr;
 	union{
 		struct {
 			uint32_t byte_count : 14;
@@ -92,20 +94,23 @@ typedef struct REG_USB_DEVICE_EP_DESCRIPTOR_t
 	uint8_t status_bk;
 	uint8_t reserved[5];
 } REG_USB_DEVICE_EP_DESCRIPTOR;
+#pragma pack()
 
 
+#pragma pack(1)
 typedef struct REG_USB_DEVICE_t
 {
 	REG_USB_GENERAL_DEVICE reg;
 	REG_USB_DEVICE_EP ep[8];
 } REG_USB_DEVICE;
+#pragma pack()
 
 
 #define USB_REG					(*(volatile REG_USB_DEVICE *)0x41000000UL)
 
-static REG_USB_DEVICE_EP_DESCRIPTOR sEpDesc[8][2];
-static uint8_t sEp0OutDatapool[128];
-static uint8_t sEp0InDatapool[128];
+static volatile REG_USB_DEVICE_EP_DESCRIPTOR sEpDesc[8][2];
+static volatile uint8_t sEp0OutDatapool[128];
+static volatile uint8_t sEp0InDatapool[128];
 
 #define SAMD51_USB_CTRLA_SWRST					(1 << 0)
 #define SAMD51_USB_CTRLA_ENABLE					(1 << 1)
@@ -214,6 +219,7 @@ static int _usb_search_descriptor(const uint8_t *descroptor, uint16_t descriptor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#pragma pack(1)
 typedef struct Samd51UsbDeviceContext_t
 {
 	const uint8_t *desc;
@@ -222,11 +228,14 @@ typedef struct Samd51UsbDeviceContext_t
 	UsbControlTansferCallback vender_request_cb;
 	
 	uint8_t reserved_device_address;
+	uint8_t reserved[3];
 } Samd51UsbDeviceContext;
+#pragma pack()
 
 
 static Samd51UsbDeviceContext sCtx;
 
+#pragma pack(1)
 typedef struct Samd51UsbEndpointInfo_t
 {
 	uint8_t enabled;
@@ -236,6 +245,7 @@ typedef struct Samd51UsbEndpointInfo_t
 	
 	uint32_t default_buf;	
 } Samd51UsbEndpointInfo;
+#pragma pack()
 
 static UsbCleanupCb sCleanupCb = NULL;
 static UsbResetCb sResetCb[8] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
@@ -251,7 +261,7 @@ int samd51_usb_device_initialize(void)
 	if (restart == 0) {
 		memset(&sUsbEpReservedConfig, 0, sizeof(sUsbEpReservedConfig));
 		memset(&sCtx, 0x00, sizeof(sCtx));
-		memset(sEpDesc, 0x00, sizeof(sEpDesc));
+		memset((void *)sEpDesc, 0x00, sizeof(sEpDesc));
 		restart = 1;
 	}
 
@@ -569,6 +579,7 @@ void USB_0_Handler(void)
 		return;
 	}
 
+
 	//J ƒRƒ“ƒgƒ[ƒ‹“]‘—‚Ìˆ— / “]‘—Ž¸”sŽž‚Ìˆ—
 	int i=0;
 	for (i=0 ; i<8 ; ++i) {
@@ -576,15 +587,15 @@ void USB_0_Handler(void)
 		USB_REG.ep[i].epintflag = SAMD51_USB_EP_INTFLAG_RXSTP | SAMD51_USB_EP_EPINTFLAG_TRFAIL1 | SAMD51_USB_EP_EPINTFLAG_TRFAIL0 | SAMD51_USB_EP_EPINTFLAG_STALL0 | SAMD51_USB_EP_EPINTFLAG_STALL1;
 		if (SAMD51_USB_EP_INTFLAG_RXSTP & epflag) {
 			USB_REG.ep[i].epstatusclr = SAMD51_USB_EP_EPSTATUS_BK0RDY;
-			UsbDeviceRequest *req = (UsbDeviceRequest *)sEpDesc[i][0].addr;
+			volatile UsbDeviceRequest *req = (UsbDeviceRequest *)sEpDesc[i][0].addr;
 			if (req->bmRequestType.bm.type == UsbBmRequestTypeStandard) {
-				_usb_dispatch_standard_request(req);
+				_usb_dispatch_standard_request((UsbDeviceRequest *)req);
 			}
 			else if (req->bmRequestType.bm.type == UsbBmRequestTypeClass) {
-				_usb_dispatch_class_request(req);
+				_usb_dispatch_class_request((UsbDeviceRequest *)req);
 			}
 			else if (req->bmRequestType.bm.type == UsbBmRequestTypeVender) {
-				_usb_dispatch_vender_request(req);
+				_usb_dispatch_vender_request((UsbDeviceRequest *)req);
 			}
 			else {
 			
@@ -761,9 +772,9 @@ static void _usb_std_request_set_address(UsbDeviceRequest *req)
 static void _usb_std_request_get_descriptor(UsbDeviceRequest *req)
 {
 
-	uint16_t descriptor_type  = (req->wValue >> 8) & 0xff;
-	uint16_t descriptor_index = (req->wValue >> 0) & 0xff;
-	uint16_t required_len  = req->wLength;
+	volatile uint16_t descriptor_type  = (req->wValue >> 8) & 0xff;
+	volatile uint16_t descriptor_index = (req->wValue >> 0) & 0xff;
+	volatile uint16_t required_len  = req->wLength;
 
 	uint8_t *desc = NULL;
 	uint16_t actual_descriptor_len = 0;

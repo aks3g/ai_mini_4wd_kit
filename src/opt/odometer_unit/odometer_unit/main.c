@@ -98,6 +98,10 @@ static uint8_t _masterTxCb(uint8_t data)
 	if (sAddressSelected == 0) {
 		sAddressSelected = 1;
 		sAddress = data;
+
+		if (sAddress == REG_DELTAX_0) {
+			reg_update_delta();
+		}
 	}
 	else {
 		//Register Write
@@ -108,6 +112,7 @@ static uint8_t _masterTxCb(uint8_t data)
 	return 0;
 }
 
+extern uint8_t gI2cSlaveStatus;
 
 int main(void)
 { 
@@ -158,7 +163,6 @@ int main(void)
 
 	console_update('\n');
 
-	uint8_t cnt = 0;	
     while (1) {
 		while (uart_get_rxlen() > 0) {
 			char c = 0;
@@ -166,18 +170,11 @@ int main(void)
 			uart_rx_n((uint8_t *)&c, 1, &len);
 			console_update(c);
 		}
-		
+
 		if (sReadReq) {
 			sReadReq = 0;
 			adns9800_update();
-
-			cnt++;
-			if (cnt == 50) {
-				cnt = 0;
-				adns9800_debug_print();
-			}
-		}
-		
+		}		
     }
 }
 

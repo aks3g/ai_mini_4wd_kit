@@ -173,15 +173,13 @@ int adns9800_update(void)
 	sDeltaX = data.delta_x;
 	sDeltaY = data.delta_y;
 
-	sDeltaX_mm = (int32_t)(sDeltaX * sMMpC);
-	sDeltaY_mm = (int32_t)(sDeltaY * sMMpC);
-	gDeltaX_mm.dword += sDeltaX;
-	gDeltaY_mm.dword += sDeltaY;
+	sDeltaX_mm += (int32_t)(sDeltaX * sMMpC);
+	sDeltaY_mm += (int32_t)(sDeltaY * sMMpC);
 
 	reg_write(REG_MOTION,    ptr[0]);
 	reg_write(REG_SQUAL,     ptr[6]);
 	reg_write(REG_PIXEL_SUM, ptr[7]);
-
+/*
 	ptr = (uint8_t *)&sDeltaX_mm;
 	reg_write(REG_DELTAX_0, ptr[0]);
 	reg_write(REG_DELTAX_1, ptr[1]);
@@ -193,6 +191,11 @@ int adns9800_update(void)
 	reg_write(REG_DELTAY_1, ptr[1]);
 	reg_write(REG_DELTAY_2, ptr[2]);
 	reg_write(REG_DELTAY_3, ptr[3]);
+*/
+	Disable_Int();
+	gDeltaX_mm.dword += sDeltaX;
+	gDeltaY_mm.dword += sDeltaY;
+	Enable_Int();
 
 	return 0;
 }

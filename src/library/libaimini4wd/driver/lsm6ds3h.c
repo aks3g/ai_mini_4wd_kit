@@ -440,7 +440,6 @@ static void _checkDataReadyAndRead(void)
 		//J Odometerを使用する場合には、ここでデータ読み込みのKickを行う
 		if (aiMini4wdOdometerEnabled()) {
 			ret = odometer_grab();
-			if (ret != 0) while(1);
 		}
 		
 		sTxbuf[0] = LSM6DS3H_OUTX_L_G;
@@ -459,7 +458,9 @@ static void _capture_done_cb(int status)
 {
 	if (status == AI_OK) {
 		//J Odometerを使用している場合、データが読み込まれるのを待つ
-		if (aiMini4wdOdometerEnabled() && !odometer_is_busy()) {
+		if (aiMini4wdOdometerEnabled() && !(odometer_is_busy())) {
+//			while (odometer_is_busy());
+
 			aiMini4wdUpdateOdometerData(odometer_get_latest_data());
 		}
 

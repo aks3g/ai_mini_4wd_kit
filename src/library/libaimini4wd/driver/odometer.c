@@ -121,10 +121,14 @@ int odometer_grab(void)
 	static uint8_t txbuf[1] = {ODOMETER_REG_MOTION};
 
 	sOdometerBusy = 1;
-	txbuf[0] = ODOMETER_REG_MOTION;
+	txbuf[0] = ODOMETER_REG_DELTAX_0;
 	memset(&sOdometerData, 0, sizeof(sOdometerData));
 
-	return samd51_i2c_txrx(SAMD51_SERCOM2, ODOMETER_ADR, txbuf, 1, (uint8_t *)&sOdometerData, sizeof(sOdometerData), _odometry_data_done);
+	int ret =  samd51_i2c_txrx(SAMD51_SERCOM2, ODOMETER_ADR, txbuf, 1, (uint8_t *)&sOdometerData, sizeof(sOdometerData), _odometry_data_done);
+
+	if (ret) while(1);
+
+	return ret;
 }
 
 OdometerData *odometer_get_latest_data(void)

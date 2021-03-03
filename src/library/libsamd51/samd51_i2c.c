@@ -302,12 +302,12 @@ int samd51_i2c_txrx(SAMD51_SERCOM sercom, const uint8_t slave_addr, const uint8_
 	sI2cInterfaceIsBusy[(int)sercom] = 1;
 
 	//J トランザクションの内容を保存
-	sI2cCtx[sercom].index    = 0;
-	sI2cCtx[sercom].tx_buf   = txbuf;
-	sI2cCtx[sercom].tx_size  = txlen;
-	sI2cCtx[sercom].rx_buf   = rxbuf;
-	sI2cCtx[sercom].rx_size  = rxlen;
-	sI2cCtx[sercom].callback = callback;
+	sI2cCtx[(int)sercom].index    = 0;
+	sI2cCtx[(int)sercom].tx_buf   = txbuf;
+	sI2cCtx[(int)sercom].tx_size  = txlen;
+	sI2cCtx[(int)sercom].rx_buf   = rxbuf;
+	sI2cCtx[(int)sercom].rx_size  = rxlen;
+	sI2cCtx[(int)sercom].callback = callback;
 	
 	//J ADDRレジスタに書き込むことでStart Conditionを発行する
 	if (txlen) {

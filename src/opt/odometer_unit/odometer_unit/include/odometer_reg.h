@@ -40,6 +40,8 @@ uint8_t reg_initialize(void);
 uint8_t reg_read(uint8_t offset, uint8_t *data);
 uint8_t reg_write(uint8_t offset, uint8_t data);
 
+void reg_update_delta(void);
+
 typedef union dword_byte_t
 {
 	uint32_t dword;

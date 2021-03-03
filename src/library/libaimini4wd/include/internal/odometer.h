@@ -12,7 +12,6 @@
 #pragma pack(1)
 typedef struct OdometerData_t
 {
-	uint8_t  motion;
 	int32_t delta_x_count;
 	int32_t delta_y_count;
 	uint8_t  quality;
