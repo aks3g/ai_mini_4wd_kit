@@ -33,7 +33,7 @@ static void gpio_init(void)
 	initialize_gpio(GPIO_PORTC, GPIO_PIN6, GPIO_OUT, GPIO_PUSH_PULL);
 	initialize_gpio(GPIO_PORTC, GPIO_PIN7, GPIO_OUT, GPIO_PUSH_PULL);
 
-	gpio_output(GPIO_PORTA, GPIO_PIN0, 1);
+	gpio_output(GPIO_PORTA, GPIO_PIN0, 0);
 	gpio_output(GPIO_PORTA, GPIO_PIN1, 0);
 	gpio_output(GPIO_PORTA, GPIO_PIN2, 0);
 	gpio_output(GPIO_PORTA, GPIO_PIN3, 0);
@@ -42,7 +42,7 @@ static void gpio_init(void)
 	gpio_output(GPIO_PORTA, GPIO_PIN6, 0);
 	gpio_output(GPIO_PORTA, GPIO_PIN7, 0);
 
-	gpio_output(GPIO_PORTC, GPIO_PIN5, 1);
+	gpio_output(GPIO_PORTC, GPIO_PIN5, 0);
 	gpio_output(GPIO_PORTC, GPIO_PIN6, 0);
 	gpio_output(GPIO_PORTC, GPIO_PIN7, 0);
 
@@ -51,7 +51,7 @@ static void gpio_init(void)
 
 static void _display_led(uint16_t num, uint8_t sep)
 {
-	if (sep) {
+	if (sep != 0) {
 		gpio_output(GPIO_PORTA, GPIO_PIN0, 1);
 		gpio_output(GPIO_PORTC, GPIO_PIN5, 1);
 	}
@@ -181,7 +181,7 @@ int main(void)
 
 	while (1) {
 		if (sUpdateReq) {
-			_display_led(sValue, 1);
+			_display_led(sValue & 0x7fff, (sValue & 0x8000) != 0 ? 1 : 0);
 		}
 	}
 }
