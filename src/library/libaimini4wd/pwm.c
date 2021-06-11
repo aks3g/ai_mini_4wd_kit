@@ -127,18 +127,21 @@ typedef struct AiMini4wdPidControlContext_t
 	
 	float target_rpm;
 	
-	float error_n_1;
-	float error_n_2;
+	float e_sum;
+	float e_1;
 
-	int last_duty;	
 } AiMIni4wdPidControlContext;
 
 static AiMIni4wdPidControlContext sPidCtx =
 {
-	0.05, 0.01, 0.0,
-	0.0,
-	0.0, 0.0,
-	0
+	.Kp = 0.05, 
+	.Ki = 0.01, 
+	.Kd = 0.0,
+
+	.target_rpm = 0.0,
+
+	.e_sum = 0.0,
+	.e_1 = 0.0,
 };
 
 /*--------------------------------------------------------------------------*/
@@ -146,9 +149,11 @@ int aiMini4wdMotorDriverSetRpm(int rpm)
 {
 	sDriveMode = DRIVE_MODE_RPM;
 
-	sPidCtx.target_rpm  = rpm;
-	sPidCtx.error_n_1 = 0.0;
-	sPidCtx.error_n_2 = 0.0;
+	if (sPidCtx.target_rpm != rpm) {
+		sPidCtx.target_rpm  = rpm;
+		sPidCtx.e_sum = 0.0;
+		sPidCtx.e_1 = 0.0;
+	}
 
 	return AI_OK;
 }
@@ -170,27 +175,37 @@ int aiMini4wdMotorDriverUpdateRpm(float rpm)
 		return AI_OK;
 	}
 	
+	static uint32_t sMinusCnt = 0;
 	
 	float error = sPidCtx.target_rpm - rpm; 
-	
-	int delta =  (error - sPidCtx.error_n_1) * sPidCtx.Kp + 
-				 (error * sPidCtx.Ki) + 
-				((error - sPidCtx.error_n_1) - (sPidCtx.error_n_1 - sPidCtx.error_n_2)) * sPidCtx.Kd;	
-	
-//	aiMini4wdLitePrintf("%f -> %f. %d + %d\r\n", sPidCtx.target_rpm ,rpm, sPidCtx.last_duty, delta);
+	int u =  (error * sPidCtx.Kp) + 
+			 (sPidCtx.e_sum * sPidCtx.Ki) + 
+			 ((error - sPidCtx.e_1) * sPidCtx.Kd);
 
-	sPidCtx.last_duty = sPidCtx.last_duty + delta;
-	sPidCtx.error_n_2 = sPidCtx.error_n_1;
-	sPidCtx.error_n_1 = error;
+	sPidCtx.e_1 = error;
+	sPidCtx.e_sum += error;
 	
-	if (sPidCtx.last_duty > 255) {
-		sPidCtx.last_duty = 255;
+	if (u> 255) {
+		u = 255;
 	}
-	else if (sPidCtx.last_duty < -255) {
-		sPidCtx.last_duty = -255;
+	
+	if (u > 0) {
+		sMinusCnt = 0;
+	}
+	
+	if (sMinusCnt < 5) {
+		sMinusCnt++;
+		if (u < -255) {
+			u = -255;
+		}
+	}
+	else {
+		if (u < 0) {
+			u = 0;
+		}
 	}
 
-	_setDuty(sPidCtx.last_duty);
+	_setDuty(u);
 	
 	return AI_OK;
 }

@@ -21,6 +21,7 @@ extern "C" {
 #define AI_MINI_4WD_INIT_FLAG_USE_USB_MASS					(0x00000004)
 #define AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL				(0x00000008)
 #define AI_MINI_4WD_INIT_FLAG_USE_ODOMETER					(0x00000010)
+#define AI_MINI_4WD_INIT_FLAG_USE_LED_INDICATOR				(0x00000020)
 
 int aiMini4wdInitialize(uint32_t flags);
 void aiMini4wdSetErrorStatus(int status);
@@ -37,6 +38,8 @@ int aiMini4wdDebugGetc(void);
 
 int aiMini4wdRegistryUpdateTachometerThreshold_mv(uint16_t mv);
 int aiMini4wdOdometerEnabled(void);
+
+int aiMini4wdSetLedIndicator(uint16_t value, uint8_t sep);
 
 #ifdef __cplusplus
 }

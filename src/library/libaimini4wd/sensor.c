@@ -97,6 +97,9 @@ static void _ac_callback(void)
 		sOnStartCb();
 	}
 
+//	aiMini4wdClearLedPattern(1);
+//	aiMini4wdToggleLedPattern(2);
+
 	_update_rpm(counter);
 }
 
@@ -104,6 +107,10 @@ static void _ac_callback(void)
 static void _pulse_width_overflow(void)
 {
 	uint16_t counter = samd51_tc_start_onshot(SAMD51_TC2);
+	
+
+//	aiMini4wdClearLedPattern(2);
+//	aiMini4wdToggleLedPattern(1);
 
 	_update_rpm(counter);
 }
@@ -166,13 +173,11 @@ static int _initialize_tachometer(void)
 	} else {
 		aiMini4wdSensorSetTachometerThreshold(1200, 0);
 	}
-	
-
 
 	//J Enable AC
 	samd51_mclk_enable(SAMD51_APBC_AC, 1);
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_AC, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
-	samd51_ac_initialize(0, SAMD51_AC_POS_PIN1, SAMD51_AC_NEG_DAC0, SAMD51_AC_INT_RISING, SAMD51_AC_OUTPUT_SYNC, SAMD51_AC_FILTER_NO, SAMD52_AC_HYST50mV, 0, _ac_callback);
+	samd51_ac_initialize(0, SAMD51_AC_POS_PIN1, SAMD51_AC_NEG_DAC0, SAMD51_AC_INT_RISING, SAMD51_AC_OUTPUT_OFF, SAMD51_AC_FILTER_NO, SAMD52_AC_HYST50mV, 0, _ac_callback);
 
 	return AI_OK;
 }
@@ -324,7 +329,7 @@ int aiMini4wdSensorCalibrateTachoMeter(uint16_t *threshold_mv, uint16_t *work_bu
 	aiMini4wdCurrentVoltageMonitorControl(0);
 
 	//J モーターをある程度の時間回す
-	aiMini4wdMotorDriverDrive(150);
+	aiMini4wdMotorDriverDrive(255);
 	
 	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
 	while ((tick+500) > aiMini4WdTimerGetSystemtick());

@@ -85,6 +85,14 @@ typedef struct REG_AC_t
 #define SAMD51_AC_COMP_FLEN_pos					(24)
 #define SAMD51_AC_COMP_OUT_pos					(28)
 
+/* SYNCBUSY */
+#define SAMD51_AC_SYNCBUSY_SWRST_pos			(0)
+#define SAMD51_AC_SYNCBUSY_ENABLE_pos			(1)
+#define SAMD51_AC_SYNCBUSY_WINCTRL_pos			(2)
+#define SAMD51_AC_SYNCBUSY_COMPCTRL0_pos		(3)
+#define SAMD51_AC_SYNCBUSY_COMPCTRL1_pos		(4)
+
+
 
 #define SAMD51_AC_BASE							(0x42002000L)
 
@@ -118,7 +126,7 @@ int samd51_ac_initialize(
 	uint32_t compctrl = (output_type << SAMD51_AC_COMP_OUT_pos) |
 						(filter << SAMD51_AC_COMP_FLEN_pos) |
 						(hysteresis << SAMD51_AC_COMP_HYST_pos) |
-						(1 << SAMD51_AC_COMP_HYSEN_pos) |
+						(0 << SAMD51_AC_COMP_HYSEN_pos) |
 						(3 << SAMD51_AC_COMP_SPEED_pos) |
 						(positive_input<< SAMD51_AC_COMP_MUXPOS_pos) |
 						(negative_input << SAMD51_AC_COMP_MUXNEG_pos) |
@@ -132,6 +140,7 @@ int samd51_ac_initialize(
 		
 		reg_ac->INTENSET = (1 << SAMD51_AC_INT_COMP0_pos);
 		reg_ac->COMPCTRL0 = compctrl;
+		while(reg_ac->SYNCBUSY & (1 << SAMD51_AC_SYNCBUSY_COMPCTRL0_pos));
 	}
 	else
 	{
@@ -139,10 +148,12 @@ int samd51_ac_initialize(
 
 		reg_ac->INTENSET = (1 << SAMD51_AC_INT_COMP1_pos);
 		reg_ac->COMPCTRL1 = compctrl;
+		while(reg_ac->SYNCBUSY & (1 << SAMD51_AC_SYNCBUSY_COMPCTRL1_pos));
 	}
 	
 	reg_ac->CTRLA = (1 << SAMD51_AC_ENABLE);
-	
+	while(reg_ac->SYNCBUSY & (1 << SAMD51_AC_SYNCBUSY_ENABLE_pos));
+
 	return AI_OK;
 }
 

@@ -49,6 +49,7 @@ typedef struct GlobalParameters_t
 {
 	uint8_t enabledPrintf;
 	uint8_t enableOdometer;
+	uint8_t enableLedIndicator;
 } GlobalParameters;
 
 static volatile GlobalParameters sGlobalParams;
@@ -135,6 +136,16 @@ int aiMini4wdInitialize(uint32_t flags)
 	if ((flags & AI_MINI_4WD_INIT_FLAG_USE_ODOMETER) && !(flags & AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT)) {
 		sGlobalParams.enableOdometer = 1;
 		aiMini4wdSensorsInitializeOdometer();
+	}
+
+	if ((flags & AI_MINI_4WD_INIT_FLAG_USE_LED_INDICATOR) && !(flags & AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT)) {
+		sGlobalParams.enableLedIndicator = 1;
+
+		// Enable Ext I2c
+		samd51_mclk_enable(SAMD51_APBB_SERCOM2, 1);
+		samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SERCOM2_CORE, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
+		samd51_i2c_initialize(SAMD51_SERCOM2, 400000);
+
 	}
 
 	//J Motor Driver
@@ -308,4 +319,25 @@ int aiMini4wdDebugGetc(void)
 int aiMini4wdOdometerEnabled(void)
 {
 	return sGlobalParams.enableOdometer;
+}
+
+static void _led_indicator_txrx_done(int error) {
+	(void)error;
+	
+	return;
+}
+
+int aiMini4wdSetLedIndicator(uint16_t value, uint8_t sep)
+{
+	static uint16_t svalue;
+	int ret = 0;
+	if (!sGlobalParams.enableLedIndicator) {
+		return AI_ERROR_NODEV;
+	}
+
+	svalue = (value & 0x7fff) | ((sep != 0) ? 0x8000 : 0x0000);
+	(void)sep;
+	ret = samd51_i2c_txrx(SAMD51_SERCOM2, 0x34, (const uint8_t *)&svalue, 2, NULL, 0, _led_indicator_txrx_done);
+
+	return ret;
 }
