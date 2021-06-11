@@ -5,6 +5,7 @@
  * Copyright 2019 Kiyotaka Akasaka. All rights reserved.
  */ 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -27,6 +28,10 @@ static float sKp = 0.3f;
 static float sKi = 0.01f;
 static float sKd = 0.01f;
 static int sCurrentDuty = 0;
+
+static float sKpArr[26] = {0.3f};
+static float sKiArr[26] = {0.01f};
+static float sKdArr[26] = {0.01f};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -238,6 +243,10 @@ STATIC mp_obj_t mini4wd_setSpeed(mp_obj_t self_in, mp_obj_t speed_kmph)
 	float rpm = (speed_kmph_f * 1000000.0) / (sTireSize * 3.14159f * 60);
 	int rpm_i = (int)rpm;
 
+	int idx = abs((int)(speed_kmph_f+0.5f));
+	idx = idx < (sizeof(sKpArr) / sizeof(sKpArr[0])) ? idx : (sizeof(sKpArr) / sizeof(sKpArr[0])) - 1;
+
+	aiMini4wdMotorDriverSetPidGain(sKpArr[idx], sKiArr[idx], sKdArr[idx]);
 	aiMini4wdMotorDriverSetRpm(rpm_i);
 
     return mp_const_none;
@@ -266,6 +275,10 @@ STATIC mp_obj_t mini4wd_setGainKp(mp_obj_t self_in, mp_obj_t Kp)
 
 	aiMini4wdMotorDriverSetPidGain(sKp, sKi, sKd);
 
+	for (int i=0 ; i < (sizeof(sKpArr) / sizeof(sKpArr[0])) ; ++i) {
+		sKpArr[i] = sKp;
+	}
+
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setGainKp_obj, mini4wd_setGainKp);
@@ -276,6 +289,10 @@ STATIC mp_obj_t mini4wd_setGainKi(mp_obj_t self_in, mp_obj_t Ki)
 	sKi = mp_obj_get_float(Ki);
 
 	aiMini4wdMotorDriverSetPidGain(sKp, sKi, sKd);
+
+	for (int i=0 ; i < (sizeof(sKiArr) / sizeof(sKiArr[0])) ; ++i) {
+		sKiArr[i] = sKi;
+	}
 
    return mp_const_none;
 }
@@ -288,9 +305,38 @@ STATIC mp_obj_t mini4wd_setGainKd(mp_obj_t self_in, mp_obj_t Kd)
 
 	aiMini4wdMotorDriverSetPidGain(sKp, sKi, sKd);
 
+	for (int i=0 ; i < (sizeof(sKdArr) / sizeof(sKdArr[0])) ; ++i) {
+		sKdArr[i] = sKd;
+	}
+
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setGainKd_obj, mini4wd_setGainKd);
+
+
+/*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_setGain(size_t n, const mp_obj_t *args)
+{
+//	mp_arg_check_num(n_args, n_kw, 3, 3, false);
+
+	float Kp = mp_obj_get_float(args[1]);
+	float Ki = mp_obj_get_float(args[2]);
+	float Kd = mp_obj_get_float(args[3]);
+	int idx = mp_obj_get_int(args[4]);
+
+	if (0 <= idx && idx < (sizeof(sKdArr) / sizeof(sKdArr[0]))) {
+		sKpArr[idx] = Kp;
+		sKiArr[idx] = Ki;
+		sKiArr[idx] = Kd;
+	}
+
+	aiMini4wdMotorDriverSetPidGain(Kp, Ki, Kd);
+
+   return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mini4wd_setGain_obj, 5, mini4wd_setGain);
+
 
 
 /*---------------------------------------------------------------------------*/
@@ -332,6 +378,7 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_setGainKp),		MP_ROM_PTR(&mini4wd_setGainKp_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setGainKi),		MP_ROM_PTR(&mini4wd_setGainKi_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setGainKd),		MP_ROM_PTR(&mini4wd_setGainKd_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_setGain),			MP_ROM_PTR(&mini4wd_setGain_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setTachometerThreshold),		MP_ROM_PTR(&mini4wd_setTachometerThreshold_obj) },
 
 	{ MP_ROM_QSTR(MP_QSTR_grab),			MP_ROM_PTR(&mini4wd_grab_sensor_obj) },

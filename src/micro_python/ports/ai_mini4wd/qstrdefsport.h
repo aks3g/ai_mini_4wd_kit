@@ -37,6 +37,7 @@ Q(getMotorCurrent)
 Q(waitIntTrig)
 Q(waitExtTrig)
 Q(checkExtTrig)
+Q(setGain)
 
 Q(calibrateTachometer)
 Q(setTachometerThreshold)

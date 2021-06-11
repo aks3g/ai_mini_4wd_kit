@@ -174,6 +174,8 @@ STATIC mp_obj_t spe_estimate(mp_obj_t self_in, mp_obj_t delta_mm, mp_obj_t featu
 
 	}
 
+	aiMini4wdSetLedIndicator((uint16_t)max_idx, 1);
+
 	o->latest_pos = max_idx;
 	return MP_OBJ_NEW_SMALL_INT(max_idx);
 }
