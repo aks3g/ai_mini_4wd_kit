@@ -106,6 +106,7 @@ int consoleExecute(char *line)
 	while (ptr != NULL) {
 		if (ptr->name != NULL && 0 == strcmp(cmd, ptr->name)) {
 			ret = ptr->func(argn, (const char **)argv);
+			consolePutc('\n');
 			break;
 		}
 		
@@ -140,6 +141,7 @@ static char *replace_next_space_to_null(char *str)
 /*---------------------------------------------------------------------------*/
 static char *skip_white_space(char *str)
 {
+	if (str == NULL) return str;
 	while (*str == ' ') str++;
 
 	return str;

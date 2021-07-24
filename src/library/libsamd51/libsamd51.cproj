@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>7.0</ProjectVersion>
     <ToolchainName>com.Atmel.ARMGCC.C</ToolchainName>
-    <ProjectGuid>dce6c7e3-ee26-4d79-826b-08594b9ad897</ProjectGuid>
+    <ProjectGuid>{5a8b9400-c7b7-43e0-b409-d8bbd18f5330}</ProjectGuid>
     <avrdevice>ATSAMD51J20A</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>StaticLibrary</OutputType>
@@ -87,8 +87,8 @@
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(SolutionDir)\include
-cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
+    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(MSBuildProjectDirectory)\..\include
+cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEvent>
     <OutputFileName>libsamd51</OutputFileName>
     <OutputFileExtension>.a</OutputFileExtension>
   </PropertyGroup>
@@ -139,8 +139,8 @@ cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
 </ArmGcc>
     </ToolchainSettings>
-    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(SolutionDir)\include
-cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
+    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(MSBuildProjectDirectory)\..\include
+cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEvent>
     <OutputFileName>libsamd51</OutputFileName>
     <OutputFileExtension>.a</OutputFileExtension>
   </PropertyGroup>
@@ -176,6 +176,9 @@ cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\samd51_sercom.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\samd51_spi.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\samd51_timer.h">
@@ -215,6 +218,9 @@ cp $(OutputDirectory)\libsamd51.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="samd51_sercom.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="samd51_spi.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="samd51_timer.c">

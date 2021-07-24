@@ -74,6 +74,9 @@ typedef void (*UsbInTransferDoneCb)(int error);
 //J Host‚©‚ç‚ÌØ’f‚ÉŒÄ‚Î‚ê‚éˆ—
 typedef void (*UsbCleanupCb)(void);
 
+//J Wakeup‚ÉŒÄ‚Î‚ê‚éˆ—
+typedef void (*UsbWakeupCb)(void);
+
 //J USB Reset‚ª‚©‚©‚Á‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚éˆ—
 typedef void (*UsbResetCb)(void);
 
@@ -86,6 +89,9 @@ void samd51_usb_finalize(void);
 
 //J HOST‚Æ‚ÌØ’f‚ÉŒÄ‚Î‚ê‚éŠÖ”‚ğ“o˜^‚·‚é
 int samd51_register_cleanup_func(UsbCleanupCb cb);
+
+//J USB Wakeup‚ÉŒÄ‚Î‚ê‚éŠÖ”‚ğ“o˜^‚·‚é
+int samd51_register_wakeup_func(UsbWakeupCb cb);
 
 //J USBƒfƒoƒCƒX‚ğƒoƒX‚ÉÚ‘±‚·‚é
 int samd51_usb_device_attach(int attach);

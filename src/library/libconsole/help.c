@@ -21,6 +21,8 @@ static int _help_function(const int argc, const char **argv)
 				consolePuts(ptr->name);
 				consolePutc('\n');
 			}
+			
+			ptr = ptr->link;
 		}
 	}
 	else {
@@ -30,6 +32,8 @@ static int _help_function(const int argc, const char **argv)
 				consolePuts(ptr->help());
 				consolePutc('\n');
 			}
+
+			ptr = ptr->link;
 		}
 	}
 

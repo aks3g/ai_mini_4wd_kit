@@ -73,6 +73,8 @@
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
     </ToolchainSettings>
+    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(MSBuildProjectDirectory)\..\include
+cp $(OutputDirectory)\libconsole.a $(MSBuildProjectDirectory)\..\lib</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
@@ -119,6 +121,13 @@
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
 </ArmGcc>
     </ToolchainSettings>
+    <PostBuildEvent>echo cp $(MSBuildProjectDirectory)\include\*.h $(MSBuildProjectDirectory)\..\include
+echo cp $(OutputDirectory)\libconsole.a $(MSBuildProjectDirectory)\..\lib
+
+cp $(MSBuildProjectDirectory)\include\*.h $(MSBuildProjectDirectory)\..\include
+cp $(OutputDirectory)\libconsole.a $(MSBuildProjectDirectory)\..\lib</PostBuildEvent>
+    <OutputFileName>libconsole</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="include" />
