@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Atmel Studio Solution File, Format Version 11.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "ChassisDynamometer", "ChassisDynamometer\ChassisDynamometer.cproj", "{DCE6C7E3-EE26-4D79-826B-08594B9AD897}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5A8B9400-C7B7-43E0-B409-D8BBD18F5330} = {5A8B9400-C7B7-43E0-B409-D8BBD18F5330}
+		{CC7D556F-D86A-41CA-9291-52AAACA31606} = {CC7D556F-D86A-41CA-9291-52AAACA31606}
+	EndProjectSection
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "libsamd51", "..\..\library\libsamd51\libsamd51.cproj", "{5A8B9400-C7B7-43E0-B409-D8BBD18F5330}"
+EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "libconsole", "..\..\library\libconsole\libconsole.cproj", "{CC7D556F-D86A-41CA-9291-52AAACA31606}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.ActiveCfg = Debug|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Debug|ARM.Build.0 = Debug|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Release|ARM.ActiveCfg = Release|ARM
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Release|ARM.Build.0 = Release|ARM
+		{5A8B9400-C7B7-43E0-B409-D8BBD18F5330}.Debug|ARM.ActiveCfg = Debug|ARM
+		{5A8B9400-C7B7-43E0-B409-D8BBD18F5330}.Debug|ARM.Build.0 = Debug|ARM
+		{5A8B9400-C7B7-43E0-B409-D8BBD18F5330}.Release|ARM.ActiveCfg = Release|ARM
+		{5A8B9400-C7B7-43E0-B409-D8BBD18F5330}.Release|ARM.Build.0 = Release|ARM
+		{CC7D556F-D86A-41CA-9291-52AAACA31606}.Debug|ARM.ActiveCfg = Debug|ARM
+		{CC7D556F-D86A-41CA-9291-52AAACA31606}.Debug|ARM.Build.0 = Debug|ARM
+		{CC7D556F-D86A-41CA-9291-52AAACA31606}.Release|ARM.ActiveCfg = Release|ARM
+		{CC7D556F-D86A-41CA-9291-52AAACA31606}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
