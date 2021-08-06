@@ -52,7 +52,7 @@ int aiMini4WdInitializePwm(void)
 	samd51_mclk_enable(SAMD51_APBC_TCn4, 1);
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_TC4_TC5, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
 	
-	samd51_tc_initialize_as_pwm(SAMD51_TC4, 48*1000*1000, 50, 0);
+	samd51_tc_initialize_as_pwm(SAMD51_TC4, SAMD51_TC_PRESCALE_DIV256);
 	aiMini4wdMotorDriverDrive(0);
 
 	return 0;

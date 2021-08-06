@@ -284,6 +284,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="registry.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="reset.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="sensor.c">
       <SubType>compile</SubType>
     </Compile>

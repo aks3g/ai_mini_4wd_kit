@@ -142,10 +142,6 @@ static int _initialize_ext_i2c(void)
 /*--------------------------------------------------------------------------*/
 static int _initialize_sensor_interrupt(void)
 {
-	samd51_mclk_enable(SAMD51_APBA_EIC, 1);
-	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_EIC, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
-	samd51_external_interrupt_initialize(0);
-
 	samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL2, SAMD51_EIC_SENSE_RISE, 0, _int0_cb);
 	samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL3, SAMD51_EIC_SENSE_RISE, 0, _int1_cb);
 

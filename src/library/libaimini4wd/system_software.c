@@ -19,6 +19,7 @@
 #include <samd51_i2c.h>
 #include <samd51_sdhc.h>
 #include <samd51_adc.h>
+#include <samd51_interrupt.h>
 
 #include "include/ai_mini4wd.h"
 #include "include/internal/gpio.h"
@@ -50,6 +51,7 @@ typedef struct GlobalParameters_t
 	uint8_t enabledPrintf;
 	uint8_t enableOdometer;
 	uint8_t enableLedIndicator;
+	uint8_t enableUsb;
 } GlobalParameters;
 
 static volatile GlobalParameters sGlobalParams;
@@ -114,6 +116,7 @@ int aiMini4wdInitialize(uint32_t flags)
 		samd51_uart_initialize(SAMD51_SERCOM2, 115200, SAMD51_SERCOM_PAD1, SAMD51_SERCOM_PAD0, &sUartTxFifo, &sUartRxFifo);
 	}
 
+
 	//J Timers
 	aiMini4WdInitializeTimer();
 	
@@ -122,11 +125,15 @@ int aiMini4wdInitialize(uint32_t flags)
   
 	//J レジストリロード
 	aiMini4wdRegistryLoad();
-
 	if (flags & AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER) {
 		//J Status OK
 		aiMini4wdSetStatusLed(1);
 	}
+
+	//J 外部割込みを有効化
+	samd51_mclk_enable(SAMD51_APBA_EIC, 1);
+	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_EIC, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
+	samd51_external_interrupt_initialize(0);
 
 	//J Sensor 関係処理の初期化
 	//J 加速度センサ、タコメータ
@@ -194,6 +201,8 @@ int aiMini4wdInitialize(uint32_t flags)
 #endif
 
 	if (flags & AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL) {
+		sGlobalParams.enableUsb = 1;
+		
 		//J Full Speedで動かす前提なので48MHzを突っ込む
 		samd51_mclk_enable(SAMD51_AHB_USB, 1);
 		samd51_mclk_enable(SAMD51_APBB_USB, 1);
@@ -321,6 +330,21 @@ int aiMini4wdOdometerEnabled(void)
 	return sGlobalParams.enableOdometer;
 }
 
+int aiMini4wdDebugUartEnabled(void)
+{
+	return sGlobalParams.enabledPrintf;
+}
+
+int aiMini4wdLedIndicatorEnabled(void)
+{
+	return sGlobalParams.enableLedIndicator;
+}
+
+int aiMini4wdusbEnabled(void)
+{
+	return sGlobalParams.enableUsb;
+}
+
 static void _led_indicator_txrx_done(int error) {
 	(void)error;
 	
@@ -340,4 +364,27 @@ int aiMini4wdSetLedIndicator(uint16_t value, uint8_t sep)
 	ret = samd51_i2c_txrx(SAMD51_SERCOM2, 0x34, (const uint8_t *)&svalue, 2, NULL, 0, _led_indicator_txrx_done);
 
 	return ret;
+}
+
+
+static void _vbus_det(void);
+static AiMini4wdOnVbusChanged sVbusChangedCb = NULL;
+int aiMini4wdRegisterOnVbusChangedCb(AiMini4wdOnVbusChanged cb)
+{
+	if (cb == NULL) return AI_ERROR_NULL;
+
+	// VBUS DETを割込み駆動させる
+	samd51_gpio_configure(SAMD51_GPIO_A23, SAMD51_GPIO_IN, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_FUNC_A);
+	samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL7, SAMD51_EIC_SENSE_BOTH, 0, _vbus_det);
+	
+	sVbusChangedCb = cb;
+	return AI_OK;
+}
+
+static void _vbus_det(void)
+{
+	int vbus = samd51_gpio_input(SAMD51_GPIO_A23);
+	if (sVbusChangedCb != NULL) sVbusChangedCb(vbus);
+
+	return;
 }

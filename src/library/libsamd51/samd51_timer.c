@@ -303,6 +303,7 @@ int samd51_tc_initialize_as_timer(SAMD51_TC tc, uint32_t peripheral_clock, uint3
 	}
 
 	NVIC_EnableIRQ(TC0_IRQn + (int)tc);
+	reg->INTENSET = (1 << 4);
 
 	//J Set callback
 	_set_callback(tc, cb);
@@ -321,13 +322,13 @@ int samd51_tc_initialize_as_timer(SAMD51_TC tc, uint32_t peripheral_clock, uint3
 	uint32_t mode = (SAMD51_TC_MODE_16BIT << 2);
 	uint32_t enable = (1 << 1);
 	
-	reg->CTRLA = prescaler_bm | mode | enable;
-
-	//
-	reg->INTENSET = (1 << 4);
+	reg->CTRLA = prescaler_bm | mode;
+	reg->CTRLA |= enable;
+	while (reg->SYNCBUSY & (1 << 1));
 
 	// 48.7.1.3
 	reg->CTRLBSET = (SAMD51_TC_CMD_RETRIGGER);
+	while (reg->SYNCBUSY & (1 << 2));
 
 	return AI_OK;
 }
@@ -357,6 +358,7 @@ int samd51_tc_initialize_as_freerun_counter(SAMD51_TC tc, SAMD51_TC_PRESCALE sca
 
 	// 48.7.1.3
 	reg->CTRLBSET = (SAMD51_TC_CMD_RETRIGGER);
+	while (reg->SYNCBUSY & (1 << 2));
 
 	return AI_OK;
 }

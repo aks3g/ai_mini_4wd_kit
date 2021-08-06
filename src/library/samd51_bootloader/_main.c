@@ -37,20 +37,11 @@
 #include "../libaimini4wd/include/internal/registry.h"
 #include "../libaimini4wd/include/internal/usb_mass_storage.h"
 
-#include "console.h"
+#include "include/console.h"
 
 #define FLASH_HEAD					(0x1E000)
 
-void RESTART (volatile uint32_t *entry_addr, volatile uint32_t *stack_addr)
-{
-	volatile uint32_t stack_ptr = *stack_addr;
-	volatile uint32_t start_adr = *entry_addr;
 
-	__asm__ volatile ("MOV	r0, %[in]" : : [in] "r" (stack_ptr) : "r0");
-	__asm__ volatile ("MOV	r1, %[in]" : : [in] "r" (start_adr) : "r1");
-	__asm__ volatile ("MSR	MSP, r0");
-	__asm__ volatile ("BX	r1");
-}
 
 static int sTgl = 0;
 static volatile uint32_t sProgress = 0;
@@ -91,6 +82,15 @@ void _timerCb(void)
 	}
 }
 
+static volatile int sUsbDetatched = 0;
+static void _vbus_changed_cb(int vbus)
+{	
+	if (vbus == 0) {
+		sUsbDetatched = 1;
+	}
+	
+	return;
+}
 
 int main(void)
 {
@@ -103,22 +103,28 @@ int main(void)
 
 	//J USBÇ™ê⁄ë±Ç≥ÇÍÇƒÇ¢ÇÈèÍçáConosleÉÇÅ[ÉhÇ…à⁄çsÇ∑ÇÈ
 	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
+		aiMini4wdRegisterOnVbusChangedCb(_vbus_changed_cb);
 		aiMini4wdFsMountDrive(0);
 
 		while (1) {
 			usbMassStorageUpdate();
+
+			// VBUSÇ™î≤ÇØÇΩÇÁResetÇ∑ÇÈ
+			if (sUsbDetatched != 0) {
+				break;
+			}
 
 			int rx = aiMini4wdDebugTryGetc();
 			if (rx <= 0) continue;
 			
 			char c = (char)(rx & 0xff);
 			console_update(c);
-			
 		}
+		
+		aiMini4wdFsMountDrive(1);
 	}
 
 	aiMini4WdTimerRegister100msCallback(_timerCb);
-
 
 	AiMini4wdFile *hex_file;
 	hex_file = aiMini4wdFsOpen("MINI4WD.AUP", "r");
@@ -179,50 +185,8 @@ int main(void)
 	aiMini4wdRegistryUpdate();
 
 ENSURE:
-
-	__disable_irq();
-
-	// Reset all pheripherals
-	samd51_usb_finalize();
-	samd51_ac_finalize();
-	samd51_adc_finalize(0);
-	samd51_adc_finalize(1);
-	samd51_dac_finalize();
-	samd51_external_interrupt_finalize();
-	samd51_i2c_finalize(SAMD51_SERCOM3);
-	samd51_sdhc_finalize(SAMD51_SDHC0);
-	samd51_tc_finalize(SAMD51_TC0);
-	samd51_tc_finalize(SAMD51_TC2);
-	samd51_tc_finalize(SAMD51_TC4);
-	samd51_uart_finalize(SAMD51_SERCOM2);
-
-	NVIC->ICER[0] = 0xFFFFFFFFUL;
-	NVIC->ICER[1] = 0xFFFFFFFFUL;
-	NVIC->ICER[2] = 0xFFFFFFFFUL;
-	NVIC->ICER[3] = 0xFFFFFFFFUL;
-	NVIC->ICER[4] = 0xFFFFFFFFUL;
-	NVIC->ICER[5] = 0xFFFFFFFFUL;
-	NVIC->ICER[6] = 0xFFFFFFFFUL;
-	NVIC->ICER[7] = 0xFFFFFFFFUL;
-
-	NVIC->ICPR[0] = 0xFFFFFFFFUL;
-	NVIC->ICPR[1] = 0xFFFFFFFFUL;
-	NVIC->ICPR[2] = 0xFFFFFFFFUL;
-	NVIC->ICPR[3] = 0xFFFFFFFFUL;
-	NVIC->ICPR[4] = 0xFFFFFFFFUL;
-	NVIC->ICPR[5] = 0xFFFFFFFFUL;
-	NVIC->ICPR[6] = 0xFFFFFFFFUL;
-	NVIC->ICPR[7] = 0xFFFFFFFFUL;
-
-	//J Escape from Boot loader.
-	SCB->VTOR = FLASH_HEAD;
-	__DSB();
-  
-	__enable_irq();
-
-	RESTART((uint32_t *)(FLASH_HEAD+4), (uint32_t *)FLASH_HEAD);
-
-	return 0;
+	aiMini4wdSetLedPattern(0x5);
+	aiMini4wdReset(FLASH_HEAD); // Never return.
 
 ERROR:
 	aiMini4wdDebugPrintf("ERROR ret = %d\n", ret);

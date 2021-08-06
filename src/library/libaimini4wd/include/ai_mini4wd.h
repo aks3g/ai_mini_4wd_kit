@@ -38,8 +38,17 @@ int aiMini4wdDebugGetc(void);
 
 int aiMini4wdRegistryUpdateTachometerThreshold_mv(uint16_t mv);
 int aiMini4wdOdometerEnabled(void);
+int aiMini4wdDebugUartEnabled(void);
+int aiMini4wdLedIndicatorEnabled(void);
+int aiMini4wdusbEnabled(void);
 
 int aiMini4wdSetLedIndicator(uint16_t value, uint8_t sep);
+
+typedef void (*AiMini4wdOnVbusChanged)(int vbus);
+int aiMini4wdRegisterOnVbusChangedCb(AiMini4wdOnVbusChanged cb);
+
+void aiMini4wdReset(uint32_t reset_addr);
+
 
 #ifdef __cplusplus
 }
