@@ -136,6 +136,16 @@ static void _internalTrigger(void)
 	sInternalTriggerFlag = 1;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+static volatile int sResetReq = 0;
+static void _on_vbus_changed(int vbus)
+{
+	if (vbus != 0) {
+		sResetReq = 1;
+	}
+}
+
 
 static char *_skipWhiteSpace(char *str)
 {
@@ -237,6 +247,8 @@ int main(void)
 
 	aiMini4wdDebugPrintf("AI System was Initialized. Build at %s %s\r\n", __DATE__, __TIME__);
 
+	aiMini4wdRegisterOnVbusChangedCb(_on_vbus_changed);
+
 	char logfilename[16];
 	_searchNewLogFilename(logfilename, sizeof(logfilename));
 	sConsoleOut = aiMini4wdFsOpen(logfilename, "w");
@@ -333,13 +345,13 @@ soft_reset:
 			aiMini4wdFsSync(sConsoleOut);
 
 			//J LEDÇãNìÆèÛë‘Ç…ÇµÇƒÇ®Ç≠
-			aiMini4wdPrintLedPattern(0);
+			aiMini4wdPrintLedPattern(0x0);
 		} else {
 			if ((ret = pyexec_friendly_repl()) != 0) {
 				break;
 			}
 		}
-    }
+	}
 	aiMini4wdFsSync(sConsoleOut);
 
 	aiMini4wdSetErrorStatus(2);
@@ -409,6 +421,7 @@ typedef enum AiMini4wdMicroPythonRawScriptReadState_t
 
 #define CTRL_A		(1)
 #define CTRL_B		(2)
+#define CTRL_C		(3)
 #define CTRL_D		(4)
 static AiMini4wdMicroPythonRawScriptReadState sReadState = cAiMini4wdMicroPythonReadStateSendCtrlA;
 
@@ -434,7 +447,11 @@ int mp_hal_stdin_rx_chr(void)
 	}
 	else if (sReadState == cAiMini4wdMicroPythonReadStateSentCtrlB) {
 		//J Wait for Reset
-		while(1);
+		while(sResetReq == 0);
+	}
+
+	if (sResetReq != 0) {
+		aiMini4wdReset(0x00000000);
 	}
 
     return ch;
