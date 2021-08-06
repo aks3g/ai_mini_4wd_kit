@@ -95,9 +95,9 @@ static void _configurate_gpio(void)
 
 
 	// USB-CTRL
-	samd51_gpio_configure(SAMD51_GPIO_B18, SAMD51_GPIO_IN,  SAMD51_GPIO_NO_PULL,     SAMD51_GPIO_MUX_DEFAULT);	//USB2_POWER_EN
-	samd51_gpio_configure(SAMD51_GPIO_B19, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);	//USB2_POWER_EM_MCU
-	samd51_gpio_configure(SAMD51_GPIO_B20, SAMD51_GPIO_IN,  SAMD51_GPIO_NO_PULL,     SAMD51_GPIO_MUX_DEFAULT);	//USB2_FAULT
+	samd51_gpio_configure(SAMD51_GPIO_A20, SAMD51_GPIO_IN,  SAMD51_GPIO_NO_PULL,     SAMD51_GPIO_MUX_DEFAULT);	//USB2_POWER_EN
+	samd51_gpio_configure(SAMD51_GPIO_A21, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);	//USB2_POWER_EM_MCU
+	samd51_gpio_configure(SAMD51_GPIO_A22, SAMD51_GPIO_IN,  SAMD51_GPIO_NO_PULL,     SAMD51_GPIO_MUX_DEFAULT);	//USB2_FAULT
 	
 	//USB
 	samd51_gpio_configure(SAMD51_GPIO_A24, SAMD51_GPIO_INOUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_FUNC_H);
@@ -213,7 +213,9 @@ int main(void)
 	consoleInstallCommand(&g_adcr_cmd);
 	consoleInstallCommand(&g_adccap_cmd);
 	consoleInstallCommand(&g_monitor_cmd);
-	
+	consoleInstallCommand(&g_sensor_cmd);
+	consoleInstallCommand(&g_usb_ctrl_cmd);	
+
 
     /* Replace with your application code */
     while (1) {

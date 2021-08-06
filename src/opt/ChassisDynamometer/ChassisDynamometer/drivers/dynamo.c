@@ -366,7 +366,7 @@ static int _adc_done_cb(const int32_t *val, const size_t len)
 }
 void _battery_adc_done_cb(int status, int16_t result)
 {
-	sBatteryVoltage = result;
+	sBatteryVoltage = 2 * (3300 * (int32_t)result) / (int32_t)4095;
 	
 	for (int i=0 ; i<8 ; ++i) {
 		sAdcCtx.average[i] = sAdcCtx.work[1-sAdcCtx.dptr][i] / AVERAGE_WINDOW_SIZE;

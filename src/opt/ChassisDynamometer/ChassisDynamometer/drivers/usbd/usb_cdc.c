@@ -181,13 +181,18 @@ static size_t _usbCdc_tx(SAMD51_UART_FIFO *fifo)
 /*--------------------------------------------------------------------------*/
 static void _usb_cdc_bulk_in(int error)
 {
-	if (samd51_uart_fifo_is_empty(&sCdcTxFifo)) {
-		sTxWorking = 0;
-		return ;
-	}
+	if (error == AI_OK) {
+		if (samd51_uart_fifo_is_empty(&sCdcTxFifo)) {
+			sTxWorking = 0;
+			return ;
+		}
 	
-	size_t size = _usbCdc_tx(&sCdcTxFifo);
-	if (size == 0) sTxWorking = 0;
+		size_t size = _usbCdc_tx(&sCdcTxFifo);
+		if (size == 0) sTxWorking = 0;
+	}
+	else {
+		sTxWorking = 0;
+	}
 
 	return;
 }

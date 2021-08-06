@@ -18,5 +18,7 @@ extern ConsoleCommand g_adcw_cmd;
 extern ConsoleCommand g_adcr_cmd;
 extern ConsoleCommand g_adccap_cmd;
 extern ConsoleCommand g_monitor_cmd;
+extern ConsoleCommand g_sensor_cmd;
+extern ConsoleCommand g_usb_ctrl_cmd;
 
 #endif /* COMMAND_LIST_H_ */

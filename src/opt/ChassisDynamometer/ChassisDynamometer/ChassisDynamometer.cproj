@@ -170,7 +170,13 @@
     <Compile Include="command\monitor.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="command\sensor.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="command\state.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="command\usb_ctrl.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Device_Startup\startup_samd51.c">

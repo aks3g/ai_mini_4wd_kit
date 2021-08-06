@@ -85,7 +85,7 @@ static void _print_frame(void)
 		"Er=        [mV]  |\n"
 		" I=        [mA]  |\n"
 		" T=        [Nm]  |\n"
-		"Battery Voltage =     [mV]\n"
+		"Battery Voltage =          [mV]\n"
 		"\n"
 		"(Exit : Ctrl+D, Reflesh Screen: c)\n"
 	);
@@ -147,6 +147,8 @@ static int _monitor_function(const int argc, const char **argv)
 			_print_bar( 9, 19, dynamoGetCurrent_mA(1), 2000);
 			_print_bar(14, 19, dynamoGetCurrent_mA(2), 2000);
 			_print_bar(19, 19, dynamoGetCurrent_mA(3), 2000);
+			
+			_print_val(21, 19, dynamoGetBatteryVoltage_mV());
 			
 			_move_curs_default();
 		}
