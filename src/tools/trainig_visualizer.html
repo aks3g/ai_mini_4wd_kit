@@ -1,0 +1,111 @@
+﻿<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+
+<title> AI mini4wd Kit Log Visualizer </title>
+<link rel="stylesheet" type="text/css" href="ai_mini4wd_training.css">
+
+<script language="javascript" type="text/javascript" src="libgraph.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="libanalyzer.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="self-position_estimation.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="trainig_visualizer_canvas_ctrl.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="trainig_visualizer_ctrl.js" charset="utf-8"></script>
+
+
+</HEAD>
+<BODY>
+<div class="header_menu">
+  <div class="dash_board">
+    <div class="menu_title"> <font class="logo_outline">AI mini4wd Kit</font></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="controls">
+    <div class="wheel_select">
+    Wheel Size: 
+    <select id="wheel_select" onChange="onWheelSelected()">
+      <option value="31">大径</option>
+      <option value="26" selected>中径</option>
+      <option value="24">小径</option>
+      <option value="31">カスタム</option>
+    </select>
+    <input type="number" id="wheel_size" size="4" maxlength="5" value="26" class="wheel_size">[mm]</input>
+    </div>
+
+    <form name="data_select_form">
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="ax" checked ="1" onChange="updateRawDataSelecter()">X軸加速度[mg]</span>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="ay" checked ="1" onChange="updateRawDataSelecter()">Y軸加速度[mg]</span>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="az" checked ="1" onChange="updateRawDataSelecter()">Z軸加速度[mg]</span>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="pitch" checked ="1" onChange="updateRawDataSelecter()">pitch[mdegree/sec]</span>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="roll" checked ="1" onChange="updateRawDataSelecter()">roll[mdegree/sec]</span>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="yaw" checked ="1" onChange="updateRawDataSelecter()">yaw[mdegree/sec]</span>
+      <br>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="rpm" checked ="1" onChange="updateRawDataSelecter()">車軸回転数[rpm]</span>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="vbat" checked ="1" onChange="updateRawDataSelecter()">バッテリ電圧[mV]</span>
+      <span class="check_box_span"><input type="checkbox" name="sensors" value="imon" checked ="1" onChange="updateRawDataSelecter()">モーター電流[mA]</span>
+    </form>
+  </div>
+
+  <br>
+<!-- 2つの要素を横に並べる -->
+  <div class="main_contents">
+    <hr>
+    <div class="minimap_box" id="minimap_box">
+      <canvas id="map_canvas" width="100%" height="0pt"></canvas><br>
+      <span class="buttons">
+        <a href="#" onclick="onMapFileLoadButtonClick();"  class="control_btn">Load Map</a>
+      </span>
+      <input hidden type="file" id="sensor_file" />
+      <text id="sensor_file_name">File not selected</text>
+      <br>
+      <span>
+        <a href="#" onclick="onSaveMapButtonClick();"  class="control_btn">Save Map</a>
+      </span>
+      <input hidden type="file" id="map_file" />
+
+      <br>
+      <hr>
+      <div class="trial_control">
+        <span class="buttons">
+          <a href="#" onclick="onAddTrialDataButtonClick();"  class="control_btn">Add Trial Data</a>
+          <input hidden type="file" id="trial_data_file" multiple/>
+        </span>
+      </div>
+      <br>
+      <select name="trial_data" size="10" class="trial_data_list" id="trial_data_list"  onChange="onTrialDataSelecterChanged(this);">
+      </select>
+      <div class="trial_control">
+        <span class="buttons">
+          <a href="#" onclick="onCreateSimDataButtonClick();"  class="control_btn">Save Sim Data</a>
+          <input hidden type="file" id="create_sim_data" multiple/>
+        </span>
+        <span class="buttons">
+          <a href="#" onclick="onSaveProjectButtonClick();"  class="control_btn">Save as Project</a>
+          <input hidden type="file" id="create_sim_data" multiple/>
+        </span>
+      </div>
+
+      <div class = "sub_section"><br><br><br><hr>Sample data DL 2021.09.01</div>
+      <a href="map.txt" download="map.txt">sample_map_data</a> <br>
+      <a href="sample_data.txt" download="sample_data.txt">sample_trial_data</a> <br>
+    </div>
+  
+    <div class="graph_area" id="graph_area">
+      <div class="graph_box" id="graph_box">
+        <canvas class="canvas_layer" id="raw_graph_canvas" width="100%" height="300pt"></canvas>
+        <canvas class="canvas_layer" id="extra_info_canvas" width="100%" height="300pt"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer_menu">
+  <div class="menu_copy">Copyright 2021 aks3g.com All rights reserved.</div>
+</div>
+
+</BODY>
+</HTML>

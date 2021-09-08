@@ -21,6 +21,7 @@ var IDX_RPM   = 6;
 var IDX_VBAT  = 7;
 var IDX_IMOT  = 8;
 var IDX_DUTY  = 9;
+var IDX_POS   = 10;
 
 var Jcjc_CenterRadius = 540;
 var Jcjc_OuterRadius  = Jcjc_CenterRadius + 115;
@@ -525,11 +526,13 @@ function analizeDriveRecord(ssv, log, unit_mm, interval, wheelSize, threshold)
   var average_velocity = new Array(ssv.length);
   var average_duty = new Array(ssv.length);
   var data_cnt = new Array(ssv.length);
+  var sim_position = new Array(log[0].length)
 
   for (var i=0 ; i<ssv.length ; ++i) {
     average_velocity[i] = 0.0;
     average_duty[i] = 0.0;
     data_cnt[i] = 0;
+    sim_position[i] = 0;
   }
 
 
@@ -541,6 +544,8 @@ function analizeDriveRecord(ssv, log, unit_mm, interval, wheelSize, threshold)
     average_velocity[position]  += log[IDX_RPM][i];
     average_duty[position] += log[IDX_DUTY][i];
     data_cnt[position]++;
+
+    sim_position[i] = position;
   }
 
   for (var i=0 ; i<ssv.length ; ++i) {
@@ -558,6 +563,6 @@ function analizeDriveRecord(ssv, log, unit_mm, interval, wheelSize, threshold)
     average_duty[i] = 100.0 * (average_duty[i] / 255.0); 
   }
 
-  return [average_velocity, average_duty];
+  return [average_velocity, average_duty, sim_position];
 }
 

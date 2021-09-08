@@ -10,12 +10,14 @@
 //
 // 折れ線グラフの罫線を描画
 //
-function _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label)
+function _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label, color="black")
 {
   var scale = h / (max - min);
   var y0 = y + scale * max;
 
   ctx2d.beginPath();
+  ctx2d.strokeStyle=color;
+  ctx2d.fillStyle=color;
 
   ctx2d.lineWidth = 0.5;
   ctx2d.strokeRect(x, y, w, h);
@@ -38,15 +40,15 @@ function _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label)
   ctx2d.textAlign="right";
   //J 暫定対策（恒久対策ってするんだろうか…）
   if (max >= 1) {
-    ctx2d.strokeText(Math.round(max).toString(), x - 3, y + 10);
+    ctx2d.fillText(Math.round(max).toString(), x - 3, y + 10);
   }
   else {
-    ctx2d.strokeText((Math.round(max*1000)/1000).toString(), x - 3, y + 10);
+    ctx2d.fillText((Math.round(max*1000)/1000).toString(), x - 3, y + 10);
   }
 
-  ctx2d.strokeText(Math.round(min).toString(), x - 10, y + h);
+  ctx2d.fillText(Math.round(min).toString(), x - 10, y + h);
   if (min < 0) {
-    ctx2d.strokeText("0", x - 10, y0);
+    ctx2d.fillText("0", x - 10, y0);
   }
   ctx2d.textAlign="start";
 
@@ -57,7 +59,7 @@ function _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label)
     ctx2d.translate(20, y + h/2);
     ctx2d.rotate(-90 * Math.PI/180);
     ctx2d.textAlign="center";
-    ctx2d.strokeText(label, 0, 0);
+    ctx2d.fillText(label, 0, 0);
   }
   ctx2d.restore();
 }
@@ -66,16 +68,16 @@ function _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label)
 //
 // 折れ線グラフ本体の描画
 //
-function _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max)
+function _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max, lineColor="maroon", shadowColor="indianred")
 {
   var scale = h / (max - min);
 
   var y0 = y + scale * max;
   var x0 = x;
 
-  ctx2d.strokeStyle="maroon";
+  ctx2d.strokeStyle=lineColor;
   ctx2d.shadowBlur = 2;
-  ctx2d.shadowColor = "indianred"
+  ctx2d.shadowColor = shadowColor
   ctx2d.beginPath();
   ctx2d.moveTo(x0, y0 - arr[0]*scale);
 
@@ -91,10 +93,10 @@ function _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max)
 //
 // 折れ線グラフの描画
 //
-function _drawLineGraph(ctx2d, arr, x, y, w, h, sub_x, sub_y, min, max, label)
+function _drawLineGraph(ctx2d, arr, x, y, w, h, sub_x, sub_y, min, max, label, lineColor="maroon", shadowColor="indianred", gridColor="black")
 {
-  _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label);
-  _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max)
+  _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label, gridColor);
+  _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max, lineColor, shadowColor)
 }
 
 
@@ -106,12 +108,13 @@ function _drawBarGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min_range, max_
   var margin_y = 100;
 
   ctx2d.strokeStyle = "black";
+  ctx2d.fillStyle = "black"
   ctx2d.beginPath()
   ctx2d.lineWidth = 1;
   ctx2d.strokeRect(x, y, w, h);
 
   ctx2d.textAlign="center";
-  ctx2d.strokeText(label, x+w/2, y+h + margin_y*2/3);
+  ctx2d.fillText(label, x+w/2, y+h + margin_y*2/3);
 
   ctx2d.stroke();
 
@@ -125,7 +128,7 @@ function _drawBarGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min_range, max_
     ctx2d.lineTo(posX, y + h);
 
     ctx2d.textAlign="center";
-    ctx2d.strokeText(i.toString(), posX, y+h + margin_y/4);
+    ctx2d.fillText(i.toString(), posX, y+h + margin_y/4);
   }
   ctx2d.stroke();
 }
@@ -167,17 +170,18 @@ function _drawGraph(graph_type, ctx2d, arr, x, y, w, h, sub_x, sub_y, min, max, 
 }
 
 //
-function _drawLine(canvas, x, y, w, h)
+function _drawLine(canvas, x, y, w, h, color="black")
 {
   var ctx2d = canvas.getContext("2d");
 
   ctx2d.beginPath()
   {
-    ctx2d.strokeStyle = "rgba(0,0,0,1)"
     ctx2d.moveTo(x, y);
     ctx2d.lineTo(x+w, y+h);
   }
+  ctx2d.strokeStyle = color
   ctx2d.stroke();
+  ctx2d.strokeStyle = "black";
 }
 
 function _drawClearAll(canvas)
@@ -194,23 +198,69 @@ function _drawPointer(canvas, x, y, r)
   ctx2d.beginPath();
   {
     ctx2d.fillStyle = "rgba(80,80,80,0.8)"
-    ctx2d.strokeStyle = "rgba(0,0,0,0.8)"
+    ctx2d.strokeStyle = "rgba(255,255,255,0.8)"
     ctx2d.arc( x, y+r, r, 0, 2 * Math.PI, false) ;
   }
   ctx2d.stroke();
 }
 
-function _drawLabel(canvas, x, y, label)
+function _drawLabel(canvas, x, y, label, color="black")
 {
   var ctx2d = canvas.getContext("2d");
   var w = ctx2d.measureText(label).width;
   ctx2d.beginPath();
+  ctx2d.strokeStyle = color
   {
-    ctx2d.fillStyle = "rgba(200,200,200,0.5)"
-    ctx2d.fillRect(x+3, y, w, -15)
+    ctx2d.fillStyle = "rgba(20,20,20,0.5)"
+    ctx2d.fillRect(x-3, y+8, w+5, -20)
 
     ctx2d.textAlign="left";
-    ctx2d.strokeText(label, x, y);
+    ctx2d.fillStyle=color
+    ctx2d.fillText(label, x, y);
   }
   ctx2d.stroke();
+  ctx2d.strokeStyle = "black";
+}
+
+function _drawUsageGuide(ctx, x, y, w, h, usageGuideList)
+{
+  // Calc Rect Size
+  var margin = 10;
+  var height = usageGuideList.length * 10 + 10;
+  var width  = 0;
+  var text_start = 0;
+ 
+  ctx.beginPath();
+  ctx.strokeStyle = "white"
+  {
+    for (var i=0 ; i<usageGuideList.length ; ++i) {
+      width = (width < ctx.measureText(usageGuideList[i].name).width) ? ctx.measureText(usageGuideList[i].name).width : width;
+    }
+    text_start = width;
+    width += margin + 50;
+
+    // Draw Rect
+    ctx.rect(x+w - width - margin, y+h - height - margin, width, height);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle="white";
+  var pad_height = ctx.measureText(usageGuideList[0].name).actualBoundingBoxAscent + ctx.measureText(usageGuideList[0].name).actualBoundingBoxDescent ;
+  for (var i=0 ; i<usageGuideList.length ; ++i) {
+    ctx.fillText(usageGuideList[i].name, x+w - text_start - margin, y+h - height -margin + pad_height);
+
+    var text_height = ctx.measureText(usageGuideList[i].name).actualBoundingBoxAscent + ctx.measureText(usageGuideList[i].name).actualBoundingBoxDescent;
+
+    ctx.beginPath();
+    ctx.strokeStyle = usageGuideList[i].color;
+    ctx.shadowBlur = 2;
+    ctx.shadowColor = usageGuideList[i].shadow
+    ctx.moveTo(x+w - width - margin,      y+h - height -margin + pad_height - text_height/2);
+    ctx.lineTo(x+w - width - margin + 50, y+h - height -margin + pad_height - text_height/2);
+    ctx.stroke();
+
+    pad_height += text_height + 3;
+  }
+  
+  ctx.strokeStyle = "black";
 }

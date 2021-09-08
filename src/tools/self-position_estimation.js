@@ -10,7 +10,7 @@ var SelfPositionEstimater = {
   milage_mm : 0,
   milage_index : 0,
   unit_mm : 50,
-  wheelSize : 31,
+  wheelSize : 26,
   interval : 1/52,
 
   weight: 0.001,
@@ -82,8 +82,6 @@ var SelfPositionEstimater = {
         max_index = i;
       }
     }
-
-    console.log(this.existance.length, max_index)
 
     return max_index;
   },
