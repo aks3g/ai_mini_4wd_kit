@@ -168,6 +168,7 @@ void _configurate_clock_tree(void)
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_TC4_TC5, CD_CLK_GEN_NUMBER_1MHZ);
 
 	samd51_mclk_enable(SAMD51_APBB_TCCn0, 1);
+	samd51_mclk_enable(SAMD51_APBB_TCCn1, 1);
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_TCC0_TCC1, CD_CLK_GEN_NUMBER_1MHZ);
 
 	//J ŠO•”Š„‚İ—LŒø‰»

@@ -36,6 +36,8 @@ typedef struct DynamoChannel_t
 	
 	uint16_t cnt;
 	uint16_t cnt_work;
+	uint32_t last_timestamp;
+	uint32_t delta;
 } DynamoChannnel;
 
 #define MAX_DYNAMO_NUM			4
@@ -135,7 +137,8 @@ int dynamoInitialize(void)
 	// base clock 1MHz t = 1us
 	// Prescalse = 1/4
 	// T = 4us x 65535 = 262140us = 262ms.
-	samd51_tc_initialize_as_timer(SAMD51_TC0, 1000000, 500000, _rpm_counter_cb);
+	samd51_tc_initialize_as_timer(SAMD51_TC0, 1000000, 100000, _rpm_counter_cb);
+	samd51_tcc_initialize_as_freerun_counter(SAMD51_TCC1, SAMD51_TC_PRESCALE_DIV1);
 
 	// base clock 1Mhz
 	// Target PWM frequency 50kHz
@@ -250,9 +253,14 @@ int32_t dynamoGetReverseEmf_mV(uint32_t ch)
 
 /*--------------------------------------------------------------------------*/
 float dynamoGetRpm(uint32_t ch)
-{
-	// 500msの間のカウンタの値があるので、60 * counter / 0.5でRPMになる
-	return sCtx[ch].cnt * 120;
+{	
+	if (sCtx[ch].delta == 0){
+		return 0.0f;
+	}
+	
+	// 1cnt = 1us単位
+	float rpm = 60.0f * 1000000.0f / (float)sCtx[ch].delta;
+	return rpm;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -311,39 +319,52 @@ static void _set_pwm_disable(int ch, SAMD51_GPIO_PORT pwm_pin)
 /*--------------------------------------------------------------------------*/
 static void _dynamo0_inter_cb(void)
 {
+	uint32_t cnt = samd51_tcc_get_counter(SAMD51_TCC1);
+
 	sCtx[0].cnt_work++;
+	sCtx[0].delta = (cnt - sCtx[0].last_timestamp) & 0x00ffffff;
+	sCtx[0].last_timestamp = cnt;
 }
 
 /*--------------------------------------------------------------------------*/
 static void _dynamo1_inter_cb(void)
 {
+	uint32_t cnt = samd51_tcc_get_counter(SAMD51_TCC1);
+
 	sCtx[1].cnt_work++;
+	sCtx[1].delta = (cnt - sCtx[1].last_timestamp) & 0x00ffffff;
+	sCtx[1].last_timestamp = cnt;
 }
 
 /*--------------------------------------------------------------------------*/
 static void _dynamo2_inter_cb(void)
 {
+	uint32_t cnt = samd51_tcc_get_counter(SAMD51_TCC1);
+
 	sCtx[2].cnt_work++;
+	sCtx[2].delta = (cnt - sCtx[2].last_timestamp) & 0x00ffffff;
+	sCtx[2].last_timestamp = cnt;
 }
 
 /*--------------------------------------------------------------------------*/
 static void _dynamo3_inter_cb(void)
 {
+	uint32_t cnt = samd51_tcc_get_counter(SAMD51_TCC1);
+
 	sCtx[3].cnt_work++;
+	sCtx[3].delta = (cnt - sCtx[3].last_timestamp) & 0x00ffffff;
+	sCtx[3].last_timestamp = cnt;
 }
 
 /*--------------------------------------------------------------------------*/
 static void _rpm_counter_cb(void)
 {
-	sCtx[0].cnt = sCtx[0].cnt_work;
-	sCtx[1].cnt = sCtx[1].cnt_work;
-	sCtx[2].cnt = sCtx[2].cnt_work;
-	sCtx[3].cnt = sCtx[3].cnt_work;
-	
-	sCtx[0].cnt_work = 0;
-	sCtx[1].cnt_work = 0;
-	sCtx[2].cnt_work = 0;
-	sCtx[3].cnt_work = 0;
+	for (int i=0 ; i<4 ; ++i) {
+		if (0 == sCtx[i].cnt_work){
+			sCtx[i].delta = 0;			
+		}
+		sCtx[i].cnt_work = 0;
+	}
 }
 
 static int _adc_done_cb(const int32_t *val, const size_t len)

@@ -28,7 +28,7 @@ static int _usb_ctrl_function(const int argc, const char **argv)
 		}
 		else {
 			consolePrintf("Invalid argument : %s\n", argv[0]);
-			return;
+			return -1;  
 		}
 
 		consolePrintf("Change USB %s\n", (sPowerEn != 0) ? "ENABLE" : "DISABLE");
