@@ -422,73 +422,6 @@ int samd51_tc_set_pwm(SAMD51_TC tc, uint8_t wave_index, uint16_t duty)
 	return AI_OK;
 }
 
-
-/*--------------------------------------------------------------------------*/
-int samd51_tcc_initialize_as_pwm(SAMD51_TC tc, SAMD51_TC_PRESCALE scale, uint32_t top, uint8_t enabled_ch)
-{
-	volatile REG_TCC volatile *reg = _getRegTcc(tc);
-	if (reg == NULL) {
-		return AI_ERROR_NODEV;
-	}
-
-	// Set top value.
-	reg->PER = (top);
-	while (reg->SYNCBUSY & (1 << 7));
-
-	//WAVE.WAVEGEN
-	reg->WAVE  = (0x02 << 0); // Normal PWM
-	while (reg->SYNCBUSY & (1 << 6));
-
-	//CTRLA.PRESCALER
-	uint32_t prescaler_bm = (scale << 8);
-	uint32_t enable = (1 << 1);
-	
-	reg->CTRLA = ((uint32_t)(enabled_ch&0x3f)<<24) | prescaler_bm | enable;
-	while (reg->SYNCBUSY & (1 << 1));
-
-	return AI_OK;
-}
-
-/*--------------------------------------------------------------------------*/
-int samd51_tcc_set_pwm(SAMD51_TC tc, uint8_t wave_index, uint32_t duty)
-{
-	volatile REG_TCC volatile *reg = (REG_TCC *)_getRegTcc(tc);
-	if (reg == NULL) {
-		return AI_ERROR_NODEV;
-	}
-
-	if (wave_index == 0) {
-		reg->CC0 = duty;
-		while (reg->SYNCBUSY & (1 << 8));
-	}
-	else if (wave_index == 1){
-		reg->CC1 = duty;
-		while (reg->SYNCBUSY & (1 << 9));
-	}
-	else if (wave_index == 2){
-		reg->CC2 = duty;
-		while (reg->SYNCBUSY & (1 << 10));
-	}
-	else if (wave_index == 3){
-		reg->CC3 = duty;
-		while (reg->SYNCBUSY & (1 << 11));
-	}
-	else if (wave_index == 4){
-		reg->CC4 = duty;
-		while (reg->SYNCBUSY & (1 << 12));
-	}
-	else if (wave_index == 5){
-		reg->CC5 = duty;
-		while (reg->SYNCBUSY & (1 << 13));
-	}
-	else {
-		return AI_ERROR_NODEV;
-	}
-
-	return AI_OK;
-}
-
-
 /*--------------------------------------------------------------------------*/
 void samd51_tc_finalize(SAMD51_TC tc)
 {
@@ -637,4 +570,255 @@ void TC7_Handler(void)
 	if (sTc7Callback) {
 		sTc7Callback();
 	}
+}
+
+
+
+/*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+int samd51_tcc_initialize_as_timer(SAMD51_TC tc, uint32_t peripheral_clock, uint32_t tick_us, SAMD51_TIMER_COUNTER_CB cb)
+{
+	volatile REG_TCC volatile *reg = _getRegTcc(tc);
+	if (reg == NULL) {
+		return AI_ERROR_NODEV;
+	}
+
+	return AI_NOT_IMPLEMENTED;
+}
+
+/*--------------------------------------------------------------------------*/
+int samd51_tcc_initialize_as_freerun_counter(SAMD51_TC tc, SAMD51_TC_PRESCALE scale)
+{
+	volatile REG_TCC volatile *reg = _getRegTcc(tc);
+	if (reg == NULL) {
+		return AI_ERROR_NODEV;
+	}
+
+	// 24bit width.
+	reg->PERBUF = 0xffffff;
+
+	// Enable IRQ
+	switch (tc){
+	case SAMD51_TCC0:
+		NVIC_EnableIRQ(TCC0_0_IRQn);
+		break;
+	case SAMD51_TCC1:
+		NVIC_EnableIRQ(TCC1_0_IRQn);
+		break;
+	case SAMD51_TCC2:
+		NVIC_EnableIRQ(TCC2_0_IRQn);
+		break;
+	default:
+		return AI_ERROR_NODEV;	
+	}
+	reg->INTSET = 0x01; // OVF Interrupt
+
+	// 48.7.1.1 Control A
+	uint32_t prescaler_bm = ((uint16_t)scale << 8);
+	uint32_t enable = (1 << 1);
+	
+	reg->CTRLA = prescaler_bm;
+	reg->CTRLA |= enable;
+	while (reg->SYNCBUSY & (1 << 1));
+
+	// 48.7.1.3
+	reg->CTRLBSET = (SAMD51_TC_CMD_RETRIGGER);
+	while (reg->SYNCBUSY & (1 << 2));
+
+	return AI_OK;
+}
+
+
+/*--------------------------------------------------------------------------*/
+int samd51_tcc_initialize_as_pwm(SAMD51_TC tc, SAMD51_TC_PRESCALE scale, uint32_t top, uint8_t enabled_ch)
+{
+	volatile REG_TCC volatile *reg = _getRegTcc(tc);
+	if (reg == NULL) {
+		return AI_ERROR_NODEV;
+	}
+
+	// Set top value.
+	reg->PER = (top);
+	while (reg->SYNCBUSY & (1 << 7));
+
+	//WAVE.WAVEGEN
+	reg->WAVE  = (0x02 << 0); // Normal PWM
+	while (reg->SYNCBUSY & (1 << 6));
+
+	//CTRLA.PRESCALER
+	uint32_t prescaler_bm = (scale << 8);
+	uint32_t enable = (1 << 1);
+	
+	reg->CTRLA = ((uint32_t)(enabled_ch&0x3f)<<24) | prescaler_bm | enable;
+	while (reg->SYNCBUSY & (1 << 1));
+
+	return AI_OK;
+}
+
+/*--------------------------------------------------------------------------*/
+int samd51_tcc_set_pwm(SAMD51_TC tc, uint8_t wave_index, uint32_t duty)
+{
+	volatile REG_TCC volatile *reg = (REG_TCC *)_getRegTcc(tc);
+	if (reg == NULL) {
+		return AI_ERROR_NODEV;
+	}
+
+	if (wave_index == 0) {
+		reg->CC0 = duty;
+		while (reg->SYNCBUSY & (1 << 8));
+	}
+	else if (wave_index == 1){
+		reg->CC1 = duty;
+		while (reg->SYNCBUSY & (1 << 9));
+	}
+	else if (wave_index == 2){
+		reg->CC2 = duty;
+		while (reg->SYNCBUSY & (1 << 10));
+	}
+	else if (wave_index == 3){
+		reg->CC3 = duty;
+		while (reg->SYNCBUSY & (1 << 11));
+	}
+	else if (wave_index == 4){
+		reg->CC4 = duty;
+		while (reg->SYNCBUSY & (1 << 12));
+	}
+	else if (wave_index == 5){
+		reg->CC5 = duty;
+		while (reg->SYNCBUSY & (1 << 13));
+	}
+	else {
+		return AI_ERROR_NODEV;
+	}
+
+	return AI_OK;
+}
+
+
+uint32_t samd51_tcc_get_counter(SAMD51_TC tc)
+{
+	volatile REG_TCC volatile *reg = (REG_TCC *)_getRegTcc(tc);
+	if (reg == NULL) {
+		return AI_ERROR_NODEV;
+	}
+
+	reg->CTRLBSET = (SAMD51_TC_CMD_READSYNC);
+
+	while (reg->SYNCBUSY & (1 << 2));
+	uint32_t cnt = reg->COUNT;
+
+	return cnt;
+}
+
+
+/*--------------------------------------------------------------------------*/
+void TCC0_0_Handler(void)
+{
+	volatile REG_TCC volatile *reg = (REG_TCC *)_getRegTcc(SAMD51_TCC0);
+	volatile uint32_t flag = reg->INTFLAG;
+	reg->INTFLAG = flag; //Clear all flags;
+
+	if (sTcc0Callback) sTcc0Callback();
+
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC0_1_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC0_2_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC0_3_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC0_4_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC0_5_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC0_6_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC1_0_Handler(void)
+{
+	volatile REG_TCC volatile *reg = (REG_TCC *)_getRegTcc(SAMD51_TCC1);
+	volatile uint32_t flag = reg->INTFLAG;
+	reg->INTFLAG = flag; //Clear all flags;
+
+	if (sTcc1Callback) sTcc1Callback();
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC1_1_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC1_2_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC1_3_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC1_4_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC2_0_Handler(void)
+{
+	volatile REG_TCC volatile *reg = (REG_TCC *)_getRegTcc(SAMD51_TCC2);
+	volatile uint32_t flag = reg->INTFLAG;
+	reg->INTFLAG = flag; //Clear all flags;
+
+	if (sTcc2Callback) sTcc2Callback();
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC2_1_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC2_2_Handler(void)
+{
+	return;
+}
+
+/*--------------------------------------------------------------------------*/
+void TCC2_3_Handler(void)
+{
+	return;
 }

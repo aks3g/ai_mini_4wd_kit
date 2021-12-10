@@ -54,7 +54,10 @@ int samd51_tc_initialize_as_freerun_counter(SAMD51_TC tc, SAMD51_TC_PRESCALE sca
 int16_t samd51_tc_get_counter(SAMD51_TC tc);
 
 
+int samd51_tcc_initialize_as_timer(SAMD51_TC tc, uint32_t peripheral_clock, uint32_t tick_us, SAMD51_TIMER_COUNTER_CB cb);
+int samd51_tcc_initialize_as_freerun_counter(SAMD51_TC tc, SAMD51_TC_PRESCALE scale);
 int samd51_tcc_initialize_as_pwm(SAMD51_TC tc, SAMD51_TC_PRESCALE scale, uint32_t top, uint8_t enabled_ch);
 int samd51_tcc_set_pwm(SAMD51_TC tc, uint8_t wave_index, uint32_t duty);
+uint32_t samd51_tcc_get_counter(SAMD51_TC tc);
 
 #endif /* SAMD51_TIMER_H_ */
