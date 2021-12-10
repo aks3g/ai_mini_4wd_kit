@@ -27,9 +27,9 @@ uint8_t cUsbCommunicationDeviceDescriptor[] =
 	0x02,							// bDeviceSubClass = Common Class(0x02)
 	0x01,							// bDeviceProtocol = IAD(0x01)
 	0x40,							// bMaxPacketSize0 = 64byte
-	WORD2BYTE(0x1122),				// idVender
-	WORD2BYTE(0x3344),				// idProduct
-	WORD2BYTE(0x1984),				// bcdDevice
+	WORD2BYTE(0x04D8),				// idVender
+	WORD2BYTE(0xE836),				// idProduct
+	WORD2BYTE(0x0001),				// bcdDevice
 	0x00,							// iManufacturer
 	0x00,							// iProduct
 	0x00,							// iSerialNumber
