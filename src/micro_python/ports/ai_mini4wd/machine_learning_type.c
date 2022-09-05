@@ -29,39 +29,43 @@ typedef struct _machine_learning_obj_t {
 	int *score_table_cnt;
 
 	float leaning_step;
-	int propagation_window;
+//	int propagation_window;
 	float time_constant_s;
 	int unit_mm;
-	float sigma;
+//	float sigma;
 } machine_learning_obj_t;
 
 /*---------------------------------------------------------------------------*/
 STATIC mp_obj_t machine_learning_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 	size_t n_kw, const mp_obj_t *args)
 {
-	mp_arg_check_num(n_args, n_kw, 6, 6, false);
+//	mp_arg_check_num(n_args, n_kw, 6, 6, false);
 
 	machine_learning_obj_t *o = m_new_obj(machine_learning_obj_t);
 
 	memset(o, 0, sizeof(machine_learning_obj_t));
 	o->base.type = &machine_learning_type;
 
-	o->len = mp_obj_get_int(args[0]);
-	o->propagation_window = mp_obj_get_int(args[1]);
-	o->leaning_step = mp_obj_get_float(args[2]);
-	o->time_constant_s = mp_obj_get_float(args[3]);
-	o->unit_mm = mp_obj_get_int(args[4]);
-	float init_velocity = mp_obj_get_float(args[5]);
-	o->sigma = mp_obj_get_float(args[6]);
+	o->len                = mp_obj_get_int(args[0]);	// 学習するマップのサイズ
+//	o->propagation_window = mp_obj_get_int(args[1]);	// 報酬を与えたときに伝播させる範囲
+	o->leaning_step       = mp_obj_get_float(args[1]);	// 1学習ごとに上げる速度(km/h)
+	o->time_constant_s    = mp_obj_get_float(args[2]);	// マシンの時定数
+	o->unit_mm            = mp_obj_get_int(args[3]);	// マップの単位(mm)
+	float init_velocity   = mp_obj_get_float(args[4]);	// 初期速度(政策の初期化に使う)
+//	o->sigma              = mp_obj_get_float(args[6]);	// 
 
+	// 速度政策
 	o->policy_of_velocity = m_new(float,   o->len);
 
+	// マップ上の各位置での平均速度を参照するためのテーブル
 	o->velocity_cnt       = m_new(int,     o->len);
 	o->ave_velocity       = m_new(float,   o->len);
 
+	// 報酬の系列
 	o->score_table_cnt    = m_new(int,     o->len);
 	o->score_table        = m_new(float,   o->len);
 
+	// 各テーブルを初期値で埋める
 	for (int i=0 ; i<o->len ; ++i) {
 		o->policy_of_velocity[i] = init_velocity;
 		o->score_table_cnt[i] = 0;
@@ -80,9 +84,12 @@ STATIC mp_obj_t ml_set_reward(size_t n, const mp_obj_t *args)
 
 //	mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
+	// pos      現在位置
+	// reward   報酬値
+	// velocity 現在速度
 	int pos = mp_obj_get_int(args[1]);
-	float evaluation_value = mp_obj_get_float(args[2]);
-	float velocity         = mp_obj_get_float(args[3]);
+	float reward   = mp_obj_get_float(args[2]);
+	float velocity = mp_obj_get_float(args[3]);
 
 	float delta_mm = o->time_constant_s * velocity * (1000000.0f / 3600.0f);
 	int idx = delta_mm / o->unit_mm;
@@ -91,9 +98,11 @@ STATIC mp_obj_t ml_set_reward(size_t n, const mp_obj_t *args)
 		nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Out of range."));
 	}
 
-	for (int i=0;i<o->propagation_window ; ++i) {
-		int p = (o->len + pos - idx - i) % o->len;
-		o->score_table[p] += evaluation_value;
+	int propagation_window = (delta_mm / o->unit_mm);
+
+	for (int i=-(propagation_window) ; i<propagation_window ; ++i) {
+		int p = (o->len + pos - idx + i) % o->len;
+		o->score_table[p] += reward;
 		o->score_table_cnt[p]++;
 	}
 
@@ -151,12 +160,20 @@ STATIC mp_obj_t ml_update(mp_obj_t self_in, mp_obj_t algorithm)
 	}
 
 	for (int i=0 ; i<o->len ; ++i) {
+/*
 		if (o->velocity_cnt[i] == 0 || o->score_table_cnt[i] == 0) {
 		}
 		else {
 			float delta = (o->policy_of_velocity[i] - o->ave_velocity[i]);
 			o->policy_of_velocity[i] = o->policy_of_velocity[i] + 
 				(float)exp(-(double)(delta * delta)/(double)(2*o->sigma*o->sigma)) * (o->score_table[i] + o->leaning_step);
+		}
+*/
+		if (o->score_table[i] < 0) {
+			(void)o->policy_of_velocity[i];
+		}
+		else {
+			o->policy_of_velocity[i] = o->policy_of_velocity[i] + o->leaning_step;
 		}
 	}
 

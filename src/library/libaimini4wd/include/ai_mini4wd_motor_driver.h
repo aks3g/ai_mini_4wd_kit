@@ -19,6 +19,7 @@ int aiMini4wdMotorDriverSetRpm(int rpm);
 int aiMini4wdMotorDriverSetPidGain(float Kp, float Ki, float Kd);
 
 int aiMini4wdMotorDriverGetDriveCurrent(float *current_mA);
+int aiMini4wdMotorDriverSetMinusCountMax(uint32_t max_count);
 
 #ifdef __cplusplus
 }

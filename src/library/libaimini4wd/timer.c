@@ -136,7 +136,7 @@ static void _tc0_cb(void)
 	}
 
 	if ((sGlobalTick % 50) == 0) {
-		aiMini4wdMotorDriverUpdateRpm(aiMini4wdSensorGetCurrentRpm());
+		// aiMini4wdMotorDriverUpdateRpm(aiMini4wdSensorGetCurrentRpm());
 	}
 
 	if ((sGlobalTick % 100) == 0) {

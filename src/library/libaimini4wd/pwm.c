@@ -22,6 +22,8 @@
 
 extern uint32_t gAiMini4wdInitFlags;
 
+static uint32_t sMinusCountMax = 5;
+
 static SAMD51_GPIO_PORT sPwm1Port = SAMD51_GPIO_B14;
 static SAMD51_GPIO_PORT sPwm2Port = SAMD51_GPIO_B15;
 
@@ -70,6 +72,14 @@ int aiMini4wdMotorDriverDrive(int duty)
 int aiMini4wdMotorDriverGetDuty(void)
 {
   return sCurrentDuty;
+}
+
+/*--------------------------------------------------------------------------*/
+int aiMini4wdMotorDriverSetMinusCountMax(uint32_t max_count)
+{
+	sMinusCountMax = max_count;
+	
+	return 0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -185,7 +195,7 @@ int aiMini4wdMotorDriverUpdateRpm(float rpm)
 	sPidCtx.e_1 = error;
 	sPidCtx.e_sum += error;
 	
-	if (u> 255) {
+	if (u > 255) {
 		u = 255;
 	}
 	
@@ -193,7 +203,7 @@ int aiMini4wdMotorDriverUpdateRpm(float rpm)
 		sMinusCnt = 0;
 	}
 	
-	if (sMinusCnt < 5) {
+	if (sMinusCnt < sMinusCountMax) {
 		sMinusCnt++;
 		if (u < -255) {
 			u = -255;

@@ -27,6 +27,7 @@
 #include "include/internal/clock.h"
 #include "include/internal/timer.h"
 #include "include/internal/registry.h"
+#include "include/internal/pwm.h"
 
 #include "include/ai_mini4wd_sensor.h"
 #include "include/ai_mini4wd_motor_driver.h"
@@ -36,6 +37,8 @@
 static AiMini4wdSensorData sCurrentData;
 static AiMini4wdCapturedSensorDataCb sSensorCapturedCb = NULL;
 static AiMini4wdOnStartCallback sOnStartCb = NULL;
+
+static int sOdometerUpdateCount = 0;
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -86,6 +89,14 @@ static void _update_rpm(uint16_t count)
 	qsort(sSorted, sizeof(sSorted)/sizeof(float), sizeof(float), _float_cmp);
 
 	sCurrentData.rpm = sSorted[2];
+	if (next_rpm > 6000) {
+		sCurrentData.rpm_raw = sCurrentData.rpm;	
+	}
+	else {
+		sCurrentData.rpm_raw = next_rpm;	
+	}
+
+	sOdometerUpdateCount = sOdometerUpdateCount + 1;
 	
 	return;	
 }
@@ -254,6 +265,8 @@ int aiMini4wdSensorRegisterCapturedCallback(AiMini4wdCapturedSensorDataCb cb)
 /*--------------------------------------------------------------------------*/
 int aiMini4wdUpdateSensorData(AiMini4wdImuRawData *imu)
 {
+	static volatile int sPidUpdate = 0;
+	
 	sCurrentData.imu.accel_f[0] = (float)imu->imu.accel[0] * LSM6DS3H_ACCEL_LSB;
 	sCurrentData.imu.accel_f[1] = (float)imu->imu.accel[1] * LSM6DS3H_ACCEL_LSB;
 	sCurrentData.imu.accel_f[2] = (float)imu->imu.accel[2] * LSM6DS3H_ACCEL_LSB;
@@ -262,9 +275,25 @@ int aiMini4wdUpdateSensorData(AiMini4wdImuRawData *imu)
 	sCurrentData.imu.gyro_f[1] = (float)imu->imu.gyro[1] * LSM6DS3H_ANGUL_LSB;
 	sCurrentData.imu.gyro_f[2] = (float)imu->imu.gyro[2] * LSM6DS3H_ANGUL_LSB;
 
+	//J 19ms‚ÌŠÔ‚É1“x‚àUpdate‚ª–³‚¢ê‡‚É‚Í‘¬“xƒ[ƒ‚Æ‚µ‚Äˆµ‚¤
+	if (sOdometerUpdateCount) {
+		// Clear Update counter
+		sOdometerUpdateCount = 0;
+	}
+	else {
+//		_update_rpm(0);
+//		sCurrentData.rpm = 0;
+	}
+
 	if (sSensorCapturedCb) {
 		sSensorCapturedCb(&sCurrentData);
 	}
+
+	if (sPidUpdate) {
+		// PID§Œä‚ğÀs‚·‚éê‡‚É‚±‚±‚ÅUpdate‚³‚¹‚é
+		aiMini4wdMotorDriverUpdateRpm(sCurrentData.rpm_raw);
+	}
+	sPidUpdate = 1 - sPidUpdate;
 
 	return AI_OK;
 }

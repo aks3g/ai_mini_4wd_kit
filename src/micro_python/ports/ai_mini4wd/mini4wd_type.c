@@ -24,14 +24,7 @@ static AiMini4wdSensorData sSensorData;
 static float sBatteryVoltage = 0;
 static float sMotorCurrent = 0;
 static float sTireSize = 31.0f;
-static float sKp = 0.3f;
-static float sKi = 0.01f;
-static float sKd = 0.01f;
 static int sCurrentDuty = 0;
-
-static float sKpArr[26] = {0.3f};
-static float sKiArr[26] = {0.01f};
-static float sKdArr[26] = {0.01f};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +39,7 @@ STATIC const machine_obj_t machine_obj = {{&machine_type}};
 STATIC mp_obj_t machine_make_new(const mp_obj_type_t *type_in, size_t n_args, 
 	size_t n_kw, const mp_obj_t *args)
 {
-	aiMini4wdMotorDriverSetPidGain(sKp, sKi, sKd);
+	aiMini4wdMotorDriverSetPidGain(0.3, 0.01, 0.01);
 
 	return (mp_obj_t)&machine_obj;
 }
@@ -188,6 +181,17 @@ STATIC mp_obj_t mini4wd_led(mp_obj_t self_in, mp_obj_t led_pattern)
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_led_obj, mini4wd_led);
 
 /*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_ext_led(mp_obj_t self_in, mp_obj_t led_pattern)
+{
+	int led_pattern_ = mp_obj_get_int(led_pattern);
+
+	aiMini4wdSetLedIndicator((uint16_t)led_pattern_, 1);
+
+	return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_ext_led_obj, mini4wd_ext_led);
+
+/*---------------------------------------------------------------------------*/
 STATIC mp_obj_t mini4wd_switch(mp_obj_t self_in, mp_obj_t index)
 {
 	int index_ = mp_obj_get_int(index);
@@ -217,9 +221,16 @@ STATIC mp_obj_t mini4wd_setDuty(mp_obj_t self_in, mp_obj_t duty)
 
 	aiMini4wdMotorDriverDrive(duty_i);
 
-    return mp_const_none;;
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setDuty_obj, mini4wd_setDuty);
+
+/*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_getDuty(mp_obj_t self_in)
+{
+    return mp_obj_new_int(sCurrentDuty);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mini4wd_getDuty_obj, mini4wd_getDuty);
 
 /*---------------------------------------------------------------------------*/
 STATIC mp_obj_t mini4wd_setRpm(mp_obj_t self_in, mp_obj_t rpm)
@@ -243,16 +254,21 @@ STATIC mp_obj_t mini4wd_setSpeed(mp_obj_t self_in, mp_obj_t speed_kmph)
 	float rpm = (speed_kmph_f * 1000000.0) / (sTireSize * 3.14159f * 60);
 	int rpm_i = (int)rpm;
 
-	int idx = abs((int)(speed_kmph_f+0.5f));
-	idx = idx < (sizeof(sKpArr) / sizeof(sKpArr[0])) ? idx : (sizeof(sKpArr) / sizeof(sKpArr[0])) - 1;
-
-	aiMini4wdMotorDriverSetPidGain(sKpArr[idx], sKiArr[idx], sKdArr[idx]);
 	aiMini4wdMotorDriverSetRpm(rpm_i);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setSpeed_obj, mini4wd_setSpeed);
 
+/*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_setMinusCountMax(mp_obj_t self_in, mp_obj_t count)
+{
+	int count_i = mp_obj_get_int(count);
+	aiMini4wdMotorDriverSetMinusCountMax((uint32_t)count_i);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setMinusCountMax_obj, mini4wd_setMinusCountMax);
 
 /*---------------------------------------------------------------------------*/
 STATIC mp_obj_t mini4wd_tireSize(mp_obj_t self_in, mp_obj_t size_mm)
@@ -269,52 +285,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_tireSize_obj, mini4wd_tireSize);
 
 
 /*---------------------------------------------------------------------------*/
-STATIC mp_obj_t mini4wd_setGainKp(mp_obj_t self_in, mp_obj_t Kp)
-{
-	sKp = mp_obj_get_float(Kp);
-
-	aiMini4wdMotorDriverSetPidGain(sKp, sKi, sKd);
-
-	for (int i=0 ; i < (sizeof(sKpArr) / sizeof(sKpArr[0])) ; ++i) {
-		sKpArr[i] = sKp;
-	}
-
-   return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setGainKp_obj, mini4wd_setGainKp);
-
-/*---------------------------------------------------------------------------*/
-STATIC mp_obj_t mini4wd_setGainKi(mp_obj_t self_in, mp_obj_t Ki)
-{
-	sKi = mp_obj_get_float(Ki);
-
-	aiMini4wdMotorDriverSetPidGain(sKp, sKi, sKd);
-
-	for (int i=0 ; i < (sizeof(sKiArr) / sizeof(sKiArr[0])) ; ++i) {
-		sKiArr[i] = sKi;
-	}
-
-   return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setGainKi_obj, mini4wd_setGainKi);
-
-/*---------------------------------------------------------------------------*/
-STATIC mp_obj_t mini4wd_setGainKd(mp_obj_t self_in, mp_obj_t Kd)
-{
-	sKd = mp_obj_get_float(Kd);
-
-	aiMini4wdMotorDriverSetPidGain(sKp, sKi, sKd);
-
-	for (int i=0 ; i < (sizeof(sKdArr) / sizeof(sKdArr[0])) ; ++i) {
-		sKdArr[i] = sKd;
-	}
-
-   return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setGainKd_obj, mini4wd_setGainKd);
-
-
-/*---------------------------------------------------------------------------*/
 STATIC mp_obj_t mini4wd_setGain(size_t n, const mp_obj_t *args)
 {
 //	mp_arg_check_num(n_args, n_kw, 3, 3, false);
@@ -322,20 +292,13 @@ STATIC mp_obj_t mini4wd_setGain(size_t n, const mp_obj_t *args)
 	float Kp = mp_obj_get_float(args[1]);
 	float Ki = mp_obj_get_float(args[2]);
 	float Kd = mp_obj_get_float(args[3]);
-	int idx = mp_obj_get_int(args[4]);
-
-	if (0 <= idx && idx < (sizeof(sKdArr) / sizeof(sKdArr[0]))) {
-		sKpArr[idx] = Kp;
-		sKiArr[idx] = Ki;
-		sKiArr[idx] = Kd;
-	}
 
 	aiMini4wdMotorDriverSetPidGain(Kp, Ki, Kd);
 
    return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mini4wd_setGain_obj, 5, mini4wd_setGain);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mini4wd_setGain_obj, 4, mini4wd_setGain);
 
 
 
@@ -370,14 +333,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setTachometerThreshold_obj, mini4wd_set
 /*---------------------------------------------------------------------------*/
 STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_led),				MP_ROM_PTR(&mini4wd_led_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_ext_led),			MP_ROM_PTR(&mini4wd_ext_led_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_sw),				MP_ROM_PTR(&mini4wd_switch_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setDuty),			MP_ROM_PTR(&mini4wd_setDuty_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_getDuty),			MP_ROM_PTR(&mini4wd_getDuty_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setRpm),			MP_ROM_PTR(&mini4wd_setRpm_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setSpeed),		MP_ROM_PTR(&mini4wd_setSpeed_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_setMinusCountMax),MP_ROM_PTR(&mini4wd_setMinusCountMax_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setTireSize),		MP_ROM_PTR(&mini4wd_tireSize_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_setGainKp),		MP_ROM_PTR(&mini4wd_setGainKp_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_setGainKi),		MP_ROM_PTR(&mini4wd_setGainKi_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_setGainKd),		MP_ROM_PTR(&mini4wd_setGainKd_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setGain),			MP_ROM_PTR(&mini4wd_setGain_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_setTachometerThreshold),		MP_ROM_PTR(&mini4wd_setTachometerThreshold_obj) },
 
