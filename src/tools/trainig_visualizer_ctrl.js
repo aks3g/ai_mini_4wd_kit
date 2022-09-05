@@ -168,7 +168,8 @@ function onCreateSimDataButtonClick()
     return;
   }
 
-  saveStringAsFile("sim_data.txt", createDatasetForSimulator(TrialDataList[document.getElementById("trial_data_list").value].sensorData));
+  saveStringAsFile("sim_data.txt", createResultData(TrialDataList[document.getElementById("trial_data_list").value]));
+//  saveStringAsFile("sim_data.txt", createDatasetForSimulator(TrialDataList[document.getElementById("trial_data_list").value].sensorData));
 }
 
 //
@@ -456,7 +457,21 @@ function createStateSpaceVectorString(ssv)
   return "# SSV\n" + str_s + str_x + str_y + str_l + str_curve;
 }
 
+function createResultData(trialDataInfo)
+{
+  var str=""
 
+  for (var i=0 ; i<trialDataInfo.data[0].length ; ++i) {
+    evt = (Math.abs(trialDataInfo.sensorData[IDX_ROLL][i]) > 100000 || trialDataInfo.sensorData[IDX_AZ][i] > 8000) ? 1 : 0;
+
+    str += trialDataInfo.sensorData[IDX_DUTY][i].toString() + "\t" +
+           trialDataInfo.data[0][i].toString() + "\t" +
+           evt.toString() + "\t" +
+           trialDataInfo.data[3][i].toString() + "\n"
+  }
+
+  return str
+}
 //
 //J Simulatorで使用するデータをPythonのArray形式の文字列で出力
 //
@@ -525,8 +540,8 @@ function loadTrialDataFile(file, loaded_cb)
       parseProjectFile(lines, loaded_cb);
     }
     else {
-      [sensorData, policy, next_policy] = parseTrialData(lines);
-      loaded_cb(file.name, policy, next_policy, sensorData);
+      [sensor_data_arr, policy_arr] = parseTrialData(lines);
+      loaded_cb(file.name, policy_arr, sensor_data_arr);
     }
   }
 
@@ -538,8 +553,10 @@ function loadTrialDataFile(file, loaded_cb)
 //
 function parseTrialData(lines)
 {
+  var policy_arr = []
+  var sensor_data_arr = []
+
   var policy = [];
-  var next_policy = [];
   var sensorData = [[],[],[],[],[],[],[],[],[],[],[],[]];
 
   lines.forEach( function (line) {
@@ -549,17 +566,18 @@ function parseTrialData(lines)
       var begin = line.indexOf('[')+1;
       var end = line.indexOf(']');
       policy = line.substring(begin, end).split(/,/)
-    }
-    else if (line.indexOf('next arr_policy') == 0) {
-      //J []で囲まれた範囲を切り出す
-      var begin = line.indexOf('[')+1;
-      var end = line.indexOf(']');
-      next_policy = line.substring(begin, end).split(/,/)
+
+      //J 方策を保存
+      policy_arr.push(policy)
+      if (sensorData[0].length != 0) {
+        sensor_data_arr.push(sensorData)
+      }
+      sensorData = [[],[],[],[],[],[],[],[],[],[],[],[]];
     }
     else {
       //J Tab区切りの数字列なのでこれを処理する
       var values = line.split(/\t/)
-      if (values.length == 14) { 
+      if (values.length == 14 || values.length == 16 ) { 
         sensorData[IDX_AX].push(Number(values[IDX_AX+1]));
         sensorData[IDX_AY].push(Number(values[IDX_AY+1]));
         sensorData[IDX_AZ].push(Number(values[IDX_AZ+1]));
@@ -614,14 +632,9 @@ function parseTrialData(lines)
     }
   });
 
-  if (policy.length == 0) {
-    policy = new Array(500).fill(0);
-  }
-  if (next_policy.length == 0) {
-    next_policy = new Array(500).fill(0);
-  }
+  console.log(policy_arr)
 
-  return [sensorData, policy, next_policy];
+  return [sensor_data_arr, policy_arr];
 }
 
 
@@ -637,21 +650,28 @@ function parseProjectFile(lines)
 //
 //J Trial Dataが読み込まらた後の処理
 //
-function trialDataUpdatedCallback(file_name, policy, next_policy, sensorData)
+function trialDataUpdatedCallback(file_name, policy_arr, sensor_data_arr)
 {
   var wheelSize = document.getElementById("wheel_size").value;
 
   var trial_data_select = document.getElementById("trial_data_list");
-  var option = document.createElement("option");
-  var id = trial_data_select.length;
-  option.text = id.toString() + " - " + file_name;
-  option.value = id;
 
-  trial_data_select.appendChild(option);
+  console.log(policy_arr.length)
+  console.log(sensor_data_arr.length)
 
-  var velocity = createVelocityOnEachPosition(sensorData);
+  for (var i=0 ; i < sensor_data_arr.length ; ++i) {
+    var option = document.createElement("option");
+    var id = trial_data_select.length;
+    option.text = file_name + " - trial " + i.toString() ;
+    option.value = id;
+  
+    trial_data_select.appendChild(option);
+  
+    var velocity = createVelocityOnEachPosition(sensor_data_arr[i]);
+  
+    TrialDataList.push(new TrialDataInfo(id, file_name, policy_arr[i], policy_arr[i+1], velocity, sensor_data_arr[i]));
+  }
 
-  TrialDataList.push(new TrialDataInfo(id, file_name, policy, next_policy, velocity, sensorData));
 
   document.getElementById("trial_data_list").value = (TrialDataList.length-1).toString();
   onTrialDataSelecterChanged(document.getElementById("trial_data_list"))

@@ -228,11 +228,10 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
   }
 
   var max_velocity = Math.max(Math.max(...data[1]), Math.max(...data[2]), Math.max(...data[3]))
-
   var j = 0;
   label = sensor_name[0] + "[" + sensor_unit[0] + "]";
   _drawLineGraph(
-    ctx2d, 
+   ctx2d, 
     data[0], 
     margin_left,
     j*(height + margin_top + margin_bottom) + margin_top,
@@ -251,6 +250,7 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
 
   // Policy
   label = sensor_name[1] + "[" + sensor_unit[1] + "]";
+
   _drawLineGraph(
     ctx2d, 
     data[1], 
@@ -267,6 +267,7 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
     "khaki",
     "white"
     );
+
 //j++;
 
   // Next Policy

@@ -27,23 +27,22 @@ function _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label, c
     ctx2d.lineTo(x+w, y0);
   }
 
-  for (var i=sub_x + x ; i<w+x ; i += sub_x) {
+  for (var i=sub_x + x ; i<w+x && sub_x!=0; i += sub_x) {
     ctx2d.moveTo(i, y);
     ctx2d.lineTo(i, y+h);
+  }
+
+  for (var i = 0 ; i*scale<h && sub_y != 0; i += sub_y) {
+    ctx2d.moveTo(x,   h - i*scale + y);
+    ctx2d.lineTo(x+w, h - i*scale + y);
   }
   ctx2d.stroke();
   ctx2d.lineWidth = 1.0;
 
-
-
   //J Rangeを出す
   ctx2d.textAlign="right";
-  //J 暫定対策（恒久対策ってするんだろうか…）
-  if (max >= 1) {
-    ctx2d.fillText(Math.round(max).toString(), x - 3, y + 10);
-  }
-  else {
-    ctx2d.fillText((Math.round(max*1000)/1000).toString(), x - 3, y + 10);
+  for (var i = 0 ; i*scale<h && sub_y!=0; i += sub_y) {
+    ctx2d.fillText(Math.round(i+min).toString(), x - 10, h - i*scale + y);
   }
 
   ctx2d.fillText(Math.round(min).toString(), x - 10, y + h);
@@ -95,8 +94,11 @@ function _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max, lineColor="maroon"
 //
 function _drawLineGraph(ctx2d, arr, x, y, w, h, sub_x, sub_y, min, max, label, lineColor="maroon", shadowColor="indianred", gridColor="black")
 {
+console.log(201)
   _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label, gridColor);
+console.log(202)
   _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max, lineColor, shadowColor)
+console.log(203)
 }
 
 
@@ -229,7 +231,7 @@ function _drawUsageGuide(ctx, x, y, w, h, usageGuideList)
   var height = usageGuideList.length * 10 + 10;
   var width  = 0;
   var text_start = 0;
- 
+
   ctx.beginPath();
   ctx.strokeStyle = "white"
   {
