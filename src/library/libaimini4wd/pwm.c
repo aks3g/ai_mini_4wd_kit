@@ -178,40 +178,53 @@ int aiMini4wdMotorDriverSetPidGain(float Kp, float Ki, float Kd)
 	return AI_OK;
 }
 
+
+float gDebugError = 0;
+float gDebugErrorSum = 0;
 /*--------------------------------------------------------------------------*/
 int aiMini4wdMotorDriverUpdateRpm(float rpm)
 {
+	static uint32_t sMinusCnt = 0;
+	static float last_rpm = 0;
+
 	if (sDriveMode != DRIVE_MODE_RPM) {
 		return AI_OK;
 	}
 	
-	static uint32_t sMinusCnt = 0;
-	
+	if (rpm > 7000) {
+		rpm = last_rpm;
+	}
+	else {
+		last_rpm = rpm;
+	}
+
 	float error = sPidCtx.target_rpm - rpm; 
 	int u =  (error * sPidCtx.Kp) + 
 			 (sPidCtx.e_sum * sPidCtx.Ki) + 
 			 ((error - sPidCtx.e_1) * sPidCtx.Kd);
 
+	gDebugError = sPidCtx.e_1;
+	gDebugErrorSum = sPidCtx.e_sum;
+
 	sPidCtx.e_1 = error;
 	sPidCtx.e_sum += error;
-	
-	if (u > 255) {
-		u = 255;
-	}
-	
-	if (u > 0) {
+
+	// Dutyが正であれば、最大値を切る
+	if (u >= 0) {
 		sMinusCnt = 0;
+		if (u > 255) {
+			u = 255;
+		}
 	}
-	
-	if (sMinusCnt < sMinusCountMax) {
+	else {
 		sMinusCnt++;
 		if (u < -255) {
 			u = -255;
 		}
-	}
-	else {
-		if (u < 0) {
-			u = 0;
+
+		// Dutyを負の状態で長時間キープさせない
+		if (sMinusCnt > sMinusCountMax) {
+			u = 0;			
 		}
 	}
 

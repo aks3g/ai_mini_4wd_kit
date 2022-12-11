@@ -89,12 +89,7 @@ static void _update_rpm(uint16_t count)
 	qsort(sSorted, sizeof(sSorted)/sizeof(float), sizeof(float), _float_cmp);
 
 	sCurrentData.rpm = sSorted[2];
-	if (next_rpm > 6000) {
-		sCurrentData.rpm_raw = sCurrentData.rpm;	
-	}
-	else {
-		sCurrentData.rpm_raw = next_rpm;	
-	}
+	sCurrentData.rpm_raw = next_rpm;	
 
 	sOdometerUpdateCount = sOdometerUpdateCount + 1;
 	
@@ -291,7 +286,7 @@ int aiMini4wdUpdateSensorData(AiMini4wdImuRawData *imu)
 
 	if (sPidUpdate) {
 		// PID§Œä‚ğÀs‚·‚éê‡‚É‚±‚±‚ÅUpdate‚³‚¹‚é
-		aiMini4wdMotorDriverUpdateRpm(sCurrentData.rpm_raw);
+		aiMini4wdMotorDriverUpdateRpm(sCurrentData.rpm);
 	}
 	sPidUpdate = 1 - sPidUpdate;
 

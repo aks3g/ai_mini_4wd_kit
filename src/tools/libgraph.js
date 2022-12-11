@@ -94,11 +94,8 @@ function _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max, lineColor="maroon"
 //
 function _drawLineGraph(ctx2d, arr, x, y, w, h, sub_x, sub_y, min, max, label, lineColor="maroon", shadowColor="indianred", gridColor="black")
 {
-console.log(201)
   _drawGraphRuledLine(ctx2d, x, y, w, h, sub_x, sub_y, min, max, label, gridColor);
-console.log(202)
   _drawLineGraphBody(ctx2d, arr, x, y, w, h, min, max, lineColor, shadowColor)
-console.log(203)
 }
 
 

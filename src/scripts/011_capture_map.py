@@ -11,7 +11,7 @@ import gc
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 UNIT_mm = 100;
-TIRE_SIZE_mm = 31
+TIRE_SIZE_mm = 26
 INTERVAL_sec = 1.0/52.0
 COEFF_DELTA  = (1.0 / 60.0) * INTERVAL_sec * TIRE_SIZE_mm * 3.14
 COEFF_DEGREE = (1.0 / 1000.0) * INTERVAL_sec
@@ -34,10 +34,6 @@ def convertTo_degree(mdps) :
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 m = mini4wd.Machine()
-
-while True:
-	m.setDuty(255)
-
 
 # マシンのタイヤ直径を31㎜に変更
 m.setTireSize(TIRE_SIZE_mm)
@@ -65,9 +61,9 @@ m.waitIntTrig()
 m.led(2)
 
 # PID制御でマシンの速度を10km/hに保ちます
-m.setSpeed(6)
+m.setSpeed(7)
 
-while milage < 120000 and lap < 3 :
+while m.checkExtTrig() == False and lap < 3:
 	# 1/52秒待ち/センサデータの更新
 	m.grab()
 

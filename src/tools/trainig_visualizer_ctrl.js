@@ -26,6 +26,7 @@ TrialDataInfo = function(id, filename, policy, next_policy, velocity, sensorData
   }
   this.data = [];
   this.data.push(sensorData[IDX_POS])
+  this.data.push(sensorData[IDX_EVA])
   this.data.push(_policy)
   this.data.push(_next_policy)
   this.data.push(velocity)
@@ -375,11 +376,22 @@ function mapUpdatedCallback(sensorData)
   var [velocityArr, odometryArr, velocityArrFromAccel, odometryArrFromAccel] = estimateVelocityAndOdometory(sensorData, wheelSize);
 
   //J 特徴量ヒストグラムと内周、中央周、外周を判断するための閾値を求める
-  var distribution = createFeatureValueHistgram(resampledSensorData,UNIT_mm, -800, 800, 10);
-  ThresholdOfCurve = decideThresholdOfFeatures(distribution, 10);
+  var is5lane = document.getElementById("five_lane").checked;
+  if (is5lane) {
+    var lanes = 5;
+    var laps  = 10;
+    var distribution = createFeatureValueHistgram(resampledSensorData,UNIT_mm, -1000, 1000, 10);
+    ThresholdOfCurve = decideThresholdOfFeatures5(distribution, 10);
+  }
+  else {
+    var lanes = 3;
+    var laps  = 3;
+    var distribution = createFeatureValueHistgram(resampledSensorData,UNIT_mm, -800, 800, 10);
+    ThresholdOfCurve = decideThresholdOfFeatures(distribution, 10);
+  }
 
   //J 3周分のデータを利用して、状態空間を作り出す
-  StateSpaceVec = createStateSpaceVector(sensorData, UNIT_mm, {left:1.0, right:1.0}, wheelSize, ThresholdOfCurve);
+  StateSpaceVec = createStateSpaceVector(sensorData, UNIT_mm, {left:1.0, right:0.98}, wheelSize, ThresholdOfCurve, lanes, laps);
   updateStateSpaceVector(-1);
 
   return;
@@ -447,12 +459,27 @@ function createStateSpaceVectorString(ssv)
   str_y += "]\n";
   str_l += "]\n";
 
-  var str_curve = "curve_threshold = [";
-  str_curve += ThresholdOfCurve.inter_to_center_left.toString() + ",";
-  str_curve += ThresholdOfCurve.center_to_outer_left.toString() + ",";
-  str_curve += ThresholdOfCurve.inter_to_center_right.toString() + ",";
-  str_curve += ThresholdOfCurve.center_to_outer_right.toString();
-  str_curve += "]\n";
+  if (document.getElementById("five_lane").checked) {
+    var str_curve = "curve_threshold = [";
+    str_curve += ThresholdOfCurve.c1_to_c2_left.toString() + ",";
+    str_curve += ThresholdOfCurve.c2_to_c3_left.toString() + ",";
+    str_curve += ThresholdOfCurve.c3_to_c4_left.toString() + ",";
+    str_curve += ThresholdOfCurve.c4_to_c5_left.toString() + ",";
+    str_curve += ThresholdOfCurve.c1_to_c2_right.toString() + ",";
+    str_curve += ThresholdOfCurve.c2_to_c3_right.toString() + ",";
+    str_curve += ThresholdOfCurve.c3_to_c4_right.toString() + ",";
+    str_curve += ThresholdOfCurve.c4_to_c5_right.toString();
+    str_curve += "]\n";
+  }
+  else {
+    var str_curve = "curve_threshold = [";
+    str_curve += ThresholdOfCurve.inter_to_center_left.toString() + ",";
+    str_curve += ThresholdOfCurve.center_to_outer_left.toString() + ",";
+    str_curve += ThresholdOfCurve.inter_to_center_right.toString() + ",";
+    str_curve += ThresholdOfCurve.center_to_outer_right.toString();
+    str_curve += "]\n";
+  }
+
 
   return "# SSV\n" + str_s + str_x + str_y + str_l + str_curve;
 }
@@ -557,7 +584,7 @@ function parseTrialData(lines)
   var sensor_data_arr = []
 
   var policy = [];
-  var sensorData = [[],[],[],[],[],[],[],[],[],[],[],[]];
+  var sensorData = [[],[],[],[],[],[],[],[],[],[],[],[],[]];
 
   lines.forEach( function (line) {
     //J strategy は arr_policyという名前のPython形式の配列として記述されている
@@ -572,7 +599,7 @@ function parseTrialData(lines)
       if (sensorData[0].length != 0) {
         sensor_data_arr.push(sensorData)
       }
-      sensorData = [[],[],[],[],[],[],[],[],[],[],[],[]];
+      sensorData = [[],[],[],[],[],[],[],[],[],[],[],[],[]];
     }
     else {
       //J Tab区切りの数字列なのでこれを処理する
@@ -589,6 +616,7 @@ function parseTrialData(lines)
         sensorData[IDX_IMOT].push(Number(values[IDX_IMOT+1]));
         sensorData[IDX_DUTY].push(Number(values[IDX_DUTY+1]));
         sensorData[IDX_POS].push(Number(values[13]));
+        sensorData[IDX_EVA].push(Number(values[15]));
       }
       else if (values.length == 12) { 
         sensorData[IDX_AX].push(Number(values[IDX_AX+1]));
@@ -700,13 +728,19 @@ function updateStateSpaceVector(position = -1)
 {
   if (StateSpaceVec.length == 0) return;
 
+  var lanes = 3;
+  if (document.getElementById("five_lane").checked) {
+    lanes = 5;
+  }
+
   drawStateSpaceVector(
     document.getElementById("map_canvas"),
     document.getElementById("minimap_box").clientWidth,
     document.getElementById("minimap_box").clientHeight,
     StateSpaceVec,
     position,
-    0);
+    0,
+    lanes);
 }
 
 //-----------------------------------------------------------------------------

@@ -7,8 +7,8 @@
 /*-----------------------------------------------------------------------------
  *J グラフのラベル
  */
-var TrainigSensorName   = ["Position", "Policy", "Updated Policy", "Velocity", "Accel-X", "Accel-Y", "Accel-Z", "Pitch", "Roll", "Yaw", "rpm", "V-BATT", "I-MOT"];
-var TrainingSensorUnit  = ["-",        "km/h",     "km/h",     "km/h", "mG", "mG", "mG", "mdegree/sec", "mdegree/sec", "mdegree/sec", "rpm", "mV", "mA"];
+var TrainigSensorName   = ["Position", "-", "Policy", "Updated Policy", "Velocity", "Accel-X", "Accel-Y", "Accel-Z", "Pitch", "Roll", "Yaw", "rpm", "V-BATT", "I-MOT"];
+var TrainingSensorUnit  = ["-",      , "-", "km/h",     "km/h",     "km/h", "mG", "mG", "mG", "mdegree/sec", "mdegree/sec", "mdegree/sec", "rpm", "mV", "mA"];
 
 /*-----------------------------------------------------------------------------
  *J グラフ描画に必要な情報
@@ -26,6 +26,7 @@ var FeatureColorTable = ["#000000", "#ff0000", "#191970", "#0000cd", "#00bfff", 
  *J グラフ描画に必要な情報
  */
 var FeatureColorTable = ["#ffffff", "#ff0000", "#8a2be2", "#0000cd", "#00bfff", "#adff2f", "#228b22", "#7fffd4", "#ffffff"]
+var FeatureColorTable5 = ["#000000", "#ff0000", "#000080", "#0000cd", "#1e90ff", "#87cefa", "#b0e0e6", "#006400", "#008000", "#2e8b57", "#66cdaa", "#98fb98", "#ffffff"]
 
 /*-----------------------------------------------------------------------------
  *
@@ -108,18 +109,25 @@ function checkRectSize(vec)
 /*-----------------------------------------------------------------------------
  * 状態空間の描画
  */
-function drawStateSpaceVector(canvas, clientWidth, clientHeight, vec, position, focused_lap)
+function drawStateSpaceVector(canvas, clientWidth, clientHeight, vec, position, focused_lap, lanes)
 {
-  var AlphaMap = ["ff", "ff", "ff"];
+  var AlphaMap = ["ff", "ff", "ff", "ff", "ff", "ff", "ff", "ff", "ff", "ff"];
   if (0 <= position && position < vec.length) {
     var highlite_lap = vec[position].lap;
 
-    AlphaMap = ["20", "20", "20"];
+    AlphaMap = ["20", "20", "20", "20", "20", "20", "20", "20", "20", "20"];
     AlphaMap[highlite_lap] = "ff";
   }
   else if (focused_lap != NaN) {
-    AlphaMap = ["20", "20", "20"];
+    AlphaMap = ["20", "20", "20", "20", "20", "20", "20", "20", "20", "20"];
     AlphaMap[focused_lap] = "ff";
+  }
+
+  //J palet を用意する
+  var palette = FeatureColorTable;
+  if (lanes != 3) {
+    console.log('5 lanes')
+    palette = FeatureColorTable5;
   }
 
   //J mapのサイズを取得する
@@ -149,7 +157,7 @@ function drawStateSpaceVector(canvas, clientWidth, clientHeight, vec, position, 
   ctx2d.lineWidth = 1.5
   for (var i=0; i<vec.length ; ++i) {
     ctx2d.beginPath()
-    ctx2d.strokeStyle = FeatureColorTable[vec[i].feature] + AlphaMap[vec[i].lap];
+    ctx2d.strokeStyle = palette[vec[i].feature] + AlphaMap[vec[i].lap];
     ctx2d.fillStyle = (i == position) ? "#ff00ffff" : "#00000000"; //TODO
     ctx2d.arc(vec[i].x * scale + org.x, canvas_size.h - (vec[i].y * scale + org.y), 10, 0, Math.PI*2, false);
     ctx2d.fill();
@@ -179,6 +187,23 @@ function drawStateSpaceVector(canvas, clientWidth, clientHeight, vec, position, 
   return;
 }
 
+function   _drawEvaluationValue(ctx2d, data, x, y, w, h)
+{
+  console.log(data) 
+  ctx2d.lineWidht = 1;
+  ctx2d.strokeStyle="#ff0000"
+
+  for (var i=0 ; i<data.length ; ++i) {
+    if (data[i] != 0) {
+      ctx2d.beginPath();
+      ctx2d.moveTo(x+i, y)
+      ctx2d.lineTo(x+i, y+h);
+      ctx2d.stroke();
+    }
+  }
+}
+
+
 //-----------------------------------------------------------------------------
 // 選択されているセンサデータのみグラフとして描画する
 //
@@ -197,7 +222,6 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
 
     return num;
   }
-
 
   if (data == NaN || data.length == 0) {
     return;
@@ -229,6 +253,8 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
 
   var max_velocity = Math.max(Math.max(...data[1]), Math.max(...data[2]), Math.max(...data[3]))
   var j = 0;
+
+  // Position with Evaluation value
   label = sensor_name[0] + "[" + sensor_unit[0] + "]";
   _drawLineGraph(
    ctx2d, 
@@ -246,14 +272,23 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
     "khaki",
     "white"
     );
+  _drawEvaluationValue(
+    ctx2d,
+    data[1],
+    margin_left,
+    j*(height + margin_top + margin_bottom) + margin_top,
+    width,
+    height
+  )
+
   j++;
 
   // Policy
-  label = sensor_name[1] + "[" + sensor_unit[1] + "]";
+  label = sensor_name[2] + "[" + sensor_unit[2] + "]";
 
   _drawLineGraph(
     ctx2d, 
-    data[1], 
+    data[2], 
     margin_left,
     j*(height + margin_top + margin_bottom) + margin_top,
     width,
@@ -273,7 +308,7 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
   // Next Policy
   _drawLineGraph(
     ctx2d, 
-    data[2], 
+    data[3], 
     margin_left,
     j*(height + margin_top + margin_bottom) + margin_top,
     width,
@@ -292,7 +327,7 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
   // Velocity
   _drawLineGraph(
     ctx2d, 
-    data[3], 
+    data[4], 
     margin_left,
     j*(height + margin_top + margin_bottom) + margin_top,
     width,
@@ -307,25 +342,25 @@ function drawSensorDataGraph(canvas, data, xaxis_sub_ruled_interval, sensor_name
     "white"
     );
 
-  var usageGuideList = [new UsageGuide(sensor_name[1], "gold", "khaki"), new UsageGuide(sensor_name[2], "orangered", "khaki"), new UsageGuide(sensor_name[3], "lawngreen", "khaki")]
+  var usageGuideList = [new UsageGuide(sensor_name[2], "orangered", "khaki"), new UsageGuide(sensor_name[3], "lawngreen", "khaki"), new UsageGuide(sensor_name[4], "gold", "khaki")]
   _drawUsageGuide(ctx2d, margin_left, j*(height + margin_top + margin_bottom) + margin_top, width, height, usageGuideList);
 
   j++;
 
   for (var i=0 ; i<9 ; ++i) {
     if (selecter.sensors[i].checked) {
-      label = sensor_name[i+4] + "[" + sensor_unit[i+4] + "]";
+      label = sensor_name[i+5] + "[" + sensor_unit[i+6] + "]";
       _drawLineGraph(
         ctx2d, 
-        data[i+4], 
+        data[i+5], 
         margin_left,
         j*(height + margin_top + margin_bottom) + margin_top,
         width,
         height,
         xaxis_sub_ruled_interval,
         0,
-        Math.min(...data[i+4]),
-        Math.max(...data[i+4]),
+        Math.min(...data[i+5]),
+        Math.max(...data[i+5]),
         label,
         "gold",
         "khaki",
@@ -434,10 +469,10 @@ function drawDataPointerAndLabel(canvas, data, selecter, x)
 
   for (var i=0 ; i<9 ; ++i) {
     if (selecter.sensors[i].checked) {
-      var scale = height / (Math.max(...data[i+4]) - Math.min(...data[i+4]))
-      var y = j*(height + margin_top + margin_bottom) + height - ((data[i+4][data_idx] - Math.min(...data[i+4])) * scale);
+      var scale = height / (Math.max(...data[i+5]) - Math.min(...data[i+5]))
+      var y = j*(height + margin_top + margin_bottom) + height - ((data[i+5][data_idx] - Math.min(...data[i+5])) * scale);
       _drawPointer(canvas, x, y, 5);
-      _drawLabel(canvas, x+5, y, data[i+4][data_idx].toString(), "white")
+      _drawLabel(canvas, x+5, y, data[i+5][data_idx].toString(), "white")
       j++;
     }
   }

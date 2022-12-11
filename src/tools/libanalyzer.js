@@ -22,11 +22,17 @@ var IDX_VBAT  = 7;
 var IDX_IMOT  = 8;
 var IDX_DUTY  = 9;
 var IDX_POS   = 10;
+var IDX_EVA   = 11;
 
 var Jcjc_CenterRadius = 540;
 var Jcjc_OuterRadius  = Jcjc_CenterRadius + 115;
 var Jcjc_InnerRadius  = Jcjc_CenterRadius - 115;
 
+var five_radius_5 = 835
+var five_radius_4 = five_radius_5 - 115
+var five_radius_3 = five_radius_4 - 115
+var five_radius_2 = five_radius_3 - 115
+var five_radius_1 = five_radius_2 - 115
 
 //J 3ラップ分の色情報とハイライト時の色情報
 var FEATURE_UPDOWN = 1;
@@ -37,6 +43,20 @@ var FEATURE_OUT_RIGHT = 5;
 var FEATURE_CENTER_RIGHT = 6;
 var FEATURE_IN_RIGHT = 7;
 var FEATURE_STRAIGHT = 8
+
+var FEATURE_UPDOWN = 1
+var FEATURE_C1_L = 2
+var FEATURE_C2_L = 3
+var FEATURE_C3_L = 4
+var FEATURE_C4_L = 5
+var FEATURE_C5_L = 6
+var FEATURE_C1_R = 7
+var FEATURE_C2_R = 8
+var FEATURE_C3_R = 9
+var FEATURE_C4_R = 10
+var FEATURE_C5_R = 11
+var FEATURE_STRAIGHT = 12
+
 
 var TracingContext = {
   xArr: [],
@@ -296,7 +316,7 @@ function resampling(data, wheelSize, unit)
 }
 
 //
-// 移動距離とYaw軸、Pitch軸の角度変化から特徴量を出します
+// 移動距離とYaw軸、Pitch軸の角度変化から特徴量を出します(3レーン用)
 //
 function featureValue(delta_mm, yaw_deg, pitch_deg, threshold)
 {
@@ -337,9 +357,67 @@ function featureValue(delta_mm, yaw_deg, pitch_deg, threshold)
 
 
 //
+// 移動距離とYaw軸、Pitch軸の角度変化から特徴量を出します(5レーン用)
+//
+function featureValue5(delta_mm, yaw_deg, pitch_deg, threshold)
+{
+  var feature = 0;
+  var radius = 0
+
+  if (Math.abs(yaw_deg) != 0) {
+    radius = (delta_mm / (yaw_deg / 360)) / (2 * Math.PI);
+  }
+
+  if (pitch_deg > 3.0) {
+    feature = FEATURE_UPDOWN;
+  }
+  else if (threshold.c4_to_c5_left <= radius && radius < 950) {
+    feature = FEATURE_C5_L;
+  }
+  else if (threshold.c3_to_c4_left <= radius && radius < threshold.c4_to_c5_left) {
+    feature = FEATURE_C4_L;
+  }
+  else if (threshold.c2_to_c3_left <= radius && radius < threshold.c3_to_c4_left) {
+    feature = FEATURE_C3_L;
+  }
+  else if (threshold.c1_to_c2_left <= radius && radius < threshold.c2_to_c3_left) {
+    feature = FEATURE_C2_L;
+  }
+  else if (250 <= radius && radius < threshold.c1_to_c2_left) {
+    feature = FEATURE_C1_L;
+  }
+
+  else if (threshold.c1_to_c2_right <= radius && radius < -250) {
+    feature = FEATURE_C1_R;
+  }
+  else if (threshold.c2_to_c3_right <= radius && radius < threshold.c1_to_c2_right) {
+    feature = FEATURE_C2_R;
+  }
+  else if (threshold.c3_to_c4_right <= radius && radius < threshold.c2_to_c3_right) {
+    feature = FEATURE_C3_R;
+  }
+  else if (threshold.c4_to_c5_right <= radius && radius < threshold.c3_to_c4_right) {
+    feature = FEATURE_C4_R;
+  }
+  else if (-950 <= radius && radius < threshold.c4_to_c5_right) {
+    feature = FEATURE_C5_R;
+  }
+
+  else {
+    feature = FEATURE_STRAIGHT;
+  }
+
+
+  return feature;
+}
+
+
+
+
+//
 // 特定コースにおける状態空間を作ります
 //
-function createStateSpaceVector(data, unit, coeff, wheelSize, threshold)
+function createStateSpaceVector(data, unit, coeff, wheelSize, threshold, lane=3, max_lap=3)
 {
   var Interval = 1.0/52.0;
   var stateSpaceVec = []
@@ -367,7 +445,7 @@ function createStateSpaceVector(data, unit, coeff, wheelSize, threshold)
     if (posX < 0 && (posX + delta_mm * Math.cos(direction * Math.PI/180.0)) >= 0) {
       lap++;
       direction = 0;
-      if (lap >= 3) {
+      if (lap >= max_lap) {
         break;
       }
     }
@@ -388,8 +466,12 @@ function createStateSpaceVector(data, unit, coeff, wheelSize, threshold)
         pitch += data[IDX_PITCH][i] * remaining_rate * 1/52;
         rpm   += data[IDX_RPM][i];
 
-        var feature = featureValue(unit, yaw / 1000.0, pitch / 1000.0, threshold);
-
+        if (lane == 3) {
+          var feature = featureValue( unit, yaw / 1000.0, pitch / 1000.0, threshold);
+        }
+        else {
+          var feature = featureValue5(unit, yaw / 1000.0, pitch / 1000.0, threshold);
+        }
         //J 状態空間の1点としてPush
         stateSpaceVec.push(new StateInfo(posX, posY, lap, feature));
 
@@ -512,6 +594,79 @@ function decideThresholdOfFeatures(distribution, step)
     center_to_outer_left:  (threshold_center_to_outer_left - Math.round(distribution.length/2))* step,
     inter_to_center_right: (threshold_inter_to_center_right - Math.round(distribution.length/2))* step,
     center_to_outer_right: (threshold_center_to_outer_right - Math.round(distribution.length/2))* step,
+  }
+
+  return threshold;
+}
+
+
+function decideThresholdOfFeatures5(distribution, step)
+{
+  //J 左回りの場合の中央値の間で最小の値を採用する
+  var bin_1 = Math.round(distribution.length/2 + (five_radius_1 / step));
+  var bin_2 = Math.round(distribution.length/2 + (five_radius_2 / step));
+  var bin_3 = Math.round(distribution.length/2 + (five_radius_3 / step));
+  var bin_4 = Math.round(distribution.length/2 + (five_radius_4 / step));
+  var bin_5 = Math.round(distribution.length/2 + (five_radius_5 / step));
+
+  var sub_arr = distribution.slice(bin_1, bin_2);
+  var threshold_1_to_2_left = searchMinIndex(sub_arr) + bin_1;
+
+  sub_arr = distribution.slice(bin_2, bin_3);
+  var threshold_2_to_3_left = searchMinIndex(sub_arr) + bin_2;
+
+  sub_arr = distribution.slice(bin_3, bin_4);
+  var threshold_3_to_4_left = searchMinIndex(sub_arr) + bin_3;
+
+  sub_arr = distribution.slice(bin_4, bin_5);
+  var threshold_4_to_5_left = searchMinIndex(sub_arr) + bin_4;
+
+
+  //J 右回りの場合の中央値の間で最小の値を採用する
+  var bin_1 = Math.round(distribution.length/2 - (five_radius_1 / step));
+  var bin_2 = Math.round(distribution.length/2 - (five_radius_2 / step));
+  var bin_3 = Math.round(distribution.length/2 - (five_radius_3 / step));
+  var bin_4 = Math.round(distribution.length/2 - (five_radius_4 / step));
+  var bin_5 = Math.round(distribution.length/2 - (five_radius_5 / step));
+
+  var sub_arr = distribution.slice(bin_2, bin_1);
+  var threshold_1_to_2_right = searchMinIndex(sub_arr) + bin_2;
+
+  sub_arr = distribution.slice(bin_3, bin_2);
+  var threshold_2_to_3_right = searchMinIndex(sub_arr) + bin_3;
+
+  sub_arr = distribution.slice(bin_4, bin_3);
+  var threshold_3_to_4_right = searchMinIndex(sub_arr) + bin_4;
+
+  sub_arr = distribution.slice(bin_5, bin_4);
+  var threshold_4_to_5_right = searchMinIndex(sub_arr) + bin_5;
+
+
+  //このリテラルの形をここで定義して本当にいいんだろうか
+  var threshold = {
+    c1_to_c2_left:  (threshold_1_to_2_left  - Math.round(distribution.length/2))* step,
+    c2_to_c3_left:  (threshold_2_to_3_left  - Math.round(distribution.length/2))* step,
+    c3_to_c4_left:  (threshold_3_to_4_left  - Math.round(distribution.length/2))* step,
+    c4_to_c5_left:  (threshold_4_to_5_left  - Math.round(distribution.length/2))* step,
+
+    c1_to_c2_right: (threshold_1_to_2_right - Math.round(distribution.length/2))* step,
+    c2_to_c3_right: (threshold_2_to_3_right - Math.round(distribution.length/2))* step,
+    c3_to_c4_right: (threshold_3_to_4_right - Math.round(distribution.length/2))* step,
+    c4_to_c5_right: (threshold_4_to_5_right - Math.round(distribution.length/2))* step,
+
+  }
+
+  var threshold = {
+    c1_to_c2_left:  432,
+    c2_to_c3_left:  547,
+    c3_to_c4_left:  662,
+    c4_to_c5_left:  777,
+
+    c1_to_c2_right: -432,
+    c2_to_c3_right: -547,
+    c3_to_c4_right: -662,
+    c4_to_c5_right: -777,
+
   }
 
   return threshold;

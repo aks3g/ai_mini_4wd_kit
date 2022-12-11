@@ -21,7 +21,8 @@ var GraphTypeBar  = 1;
 var LineColors = ["maroon",    "darkblue",   "darkgreen",  "indigo",    "crimson",   "darkcyan" ]
 var LineShadow = ["indianred", "dodgerblue", "aquamarine", "slateblue", "lightpink", "turquoise"]
 
-var FeatureColorTable = ["#000000", "#ff0000", "#191970", "#0000cd", "#00bfff", "#2f4f4f", "#228b22", "#7fffd4", "#000000"]
+var FeatureColorTable =  ["#000000", "#ff0000", "#191970", "#0000cd", "#00bfff", "#2f4f4f", "#228b22", "#7fffd4", "#000000"]
+var FeatureColorTable5 = ["#000000", "#ff0000", "#000080", "#0000cd", "#1e90ff", "#87cefa", "#b0e0e6", "#006400", "#008000", "#2e8b57", "#66cdaa", "#98fb98", "#000000"]
 
 
 /*-----------------------------------------------------------------------------
@@ -255,7 +256,7 @@ function drawEstimatedMachinePosition(canvas, clientWidth, xArr, yArr, lapArr)
 /*-----------------------------------------------------------------------------
  * 状態空間の描画
  */
-function drawStateSpaceVector(canvas, clientWidth, vec, position, focused_lap)
+function drawStateSpaceVector(canvas, clientWidth, vec, position, focused_lap, lanes)
 {
   //J XY座標を表す構造体的なもの
   Position = function(x, y) {
@@ -328,16 +329,23 @@ function drawStateSpaceVector(canvas, clientWidth, vec, position, focused_lap)
 
 
 
-  var AlphaMap = ["ff", "ff", "ff"];
+  var AlphaMap = ["ff", "ff", "ff", "ff", "ff", "ff", "ff", "ff", "ff", "ff"];
   if (0 <= position && position < vec.length) {
     var highlite_lap = vec[position].lap;
 
-    AlphaMap = ["20", "20", "20"];
+    AlphaMap = ["20", "20", "20", "20", "20", "20", "20", "20", "20", "20"];
     AlphaMap[highlite_lap] = "ff";
   }
   else if (focused_lap != NaN) {
-    AlphaMap = ["20", "20", "20"];
+    AlphaMap = ["20", "20", "20", "20", "20", "20", "20", "20", "20", "20"];
     AlphaMap[focused_lap] = "ff";
+  }
+
+  //J palet を用意する
+  var palette = FeatureColorTable;
+  if (lanes != 3) {
+    console.log('5 lanes')
+    palette = FeatureColorTable5;
   }
 
   //J mapのサイズを取得する
@@ -363,19 +371,24 @@ function drawStateSpaceVector(canvas, clientWidth, vec, position, focused_lap)
   ctx2d.fillStyle = "rgba(0, 0, 0, 0)";
   ctx2d.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
+  var tmp=[]
   ctx2d.lineWidth = 1.5
   for (var i=0; i<vec.length ; ++i) {
 //    if (document.lane_select.lanes[vec[i].lap].checked == false) {
 //      continue;
 //    }
 
+    tmp.push(vec[i].feature)
     ctx2d.beginPath()
-    ctx2d.strokeStyle = FeatureColorTable[vec[i].feature] + AlphaMap[vec[i].lap];
+    ctx2d.strokeStyle = palette[vec[i].feature] + AlphaMap[vec[i].lap];
     ctx2d.fillStyle = (i == position) ? "#ff1493ff" : "#00000000"; //TODO
     ctx2d.arc(vec[i].x * scale + org.x, canvas_size.h - (vec[i].y * scale + org.y), 10, 0, Math.PI*2, false);
     ctx2d.fill();
     ctx2d.stroke();
   }
+  console.log(FeatureColorTable5.length)
+  console.log(tmp.length)
+  console.log(tmp.toString())
 
   //J 尺のリファレンスを置く
   var sizeOf500mm = scale * 500;
@@ -402,7 +415,7 @@ function drawStateSpaceVector(canvas, clientWidth, vec, position, focused_lap)
 /*-----------------------------------------------------------------------------
  * 観測された回転半径の頻度を表す棒グラフを描画
  */
-function drawFeatureDistributionGraph(canvas, arr, x, y, label, min_range, max_range, step, threshold)
+function drawFeatureDistributionGraph(canvas, arr, x, y, label, min_range, max_range, step, threshold, lanes = 3)
 {
   var width = arr.length * 4;
   var height = 300;
@@ -418,43 +431,89 @@ function drawFeatureDistributionGraph(canvas, arr, x, y, label, min_range, max_r
 
   _drawGraph(GraphTypeBar, ctx2d, arr, x + margin_x, y + margin_y/2, width, height, step, 0, min_range, max_range, label)
 
-//  drawBarGraphRuledLine(ctx2d, x + margin_x, y + margin_y/2, width, height, margin_y/2, label, min_range, max_range, step);
-//  drawBarGraphBody(ctx2d, arr, x + margin_x, y + margin_y/2, width, height);
-
   //J リファレンスとなる中央、外周、内周の半径をプロットする
-  var bin_width = 2;
-  var bin_center = width * (Jcjc_CenterRadius-min_range) /(max_range - min_range)
-  var bin_outer =  width * (Jcjc_OuterRadius -min_range) /(max_range - min_range)
-  var bin_inner =  width * (Jcjc_InnerRadius -min_range) /(max_range - min_range)
+  if (lanes==5) {
+    var bin_width = 2;
+    var bin_c1 = width * (five_radius_1 - min_range) / (max_range - min_range)
+    var bin_c2 = width * (five_radius_2 - min_range) / (max_range - min_range)
+    var bin_c3 = width * (five_radius_3 - min_range) / (max_range - min_range)
+    var bin_c4 = width * (five_radius_4 - min_range) / (max_range - min_range)
+    var bin_c5 = width * (five_radius_5 - min_range) / (max_range - min_range)
 
-  ctx2d.fillStyle = "blue";
-  ctx2d.fillRect(x + margin_x + bin_center - bin_width/2,  y + margin_y/2, bin_width, height);
-  ctx2d.fillRect(x + margin_x + bin_outer  - bin_width/2,  y + margin_y/2, bin_width, height);
-  ctx2d.fillRect(x + margin_x + bin_inner  - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillStyle = "blue";
+    ctx2d.fillRect(x + margin_x + bin_c1 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c2 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c3 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c4 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c5 - bin_width/2,  y + margin_y/2, bin_width, height);
+  
+    ctx2d.beginPath();
+    ctx2d.textAlign="center";
+    ctx2d.strokeText("L/C1", x + margin_x + bin_c1 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("L/C2", x + margin_x + bin_c2 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("L/C3", x + margin_x + bin_c3 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("L/C4", x + margin_x + bin_c4 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("L/C5", x + margin_x + bin_c5 - bin_width/2, y + margin_y/3);
+    ctx2d.stroke();
 
-  ctx2d.beginPath();
-  ctx2d.textAlign="center";
-  ctx2d.strokeText("L/Center", x + margin_x + bin_center - bin_width/2, y + margin_y/3);
-  ctx2d.strokeText("L/Outer",  x + margin_x + bin_outer  - bin_width/2, y + margin_y/3);
-  ctx2d.strokeText("L/Inner",  x + margin_x + bin_inner  - bin_width/2, y + margin_y/3);
-  ctx2d.stroke();
 
-  bin_center = width * (-Jcjc_CenterRadius-min_range) /(max_range - min_range)
-  bin_outer =  width * (-Jcjc_OuterRadius -min_range) /(max_range - min_range)
-  bin_inner =  width * (-Jcjc_InnerRadius -min_range) /(max_range - min_range)
+    bin_c1 = width * (-five_radius_1 - min_range) / (max_range - min_range)
+    bin_c2 = width * (-five_radius_2 - min_range) / (max_range - min_range)
+    bin_c3 = width * (-five_radius_3 - min_range) / (max_range - min_range)
+    bin_c4 = width * (-five_radius_4 - min_range) / (max_range - min_range)
+    bin_c5 = width * (-five_radius_5 - min_range) / (max_range - min_range)
 
-  ctx2d.fillStyle = "green";
-  ctx2d.fillRect(x + margin_x + bin_center - bin_width/2,  y + margin_y/2, bin_width, height);
-  ctx2d.fillRect(x + margin_x + bin_outer  - bin_width/2,  y + margin_y/2, bin_width, height);
-  ctx2d.fillRect(x + margin_x + bin_inner  - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillStyle = "green";
+    ctx2d.fillRect(x + margin_x + bin_c1 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c2 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c3 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c4 - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_c5 - bin_width/2,  y + margin_y/2, bin_width, height);
+  
+    ctx2d.beginPath();
+    ctx2d.textAlign="center";
+    ctx2d.strokeText("R/C1", x + margin_x + bin_c1 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("R/C2", x + margin_x + bin_c2 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("R/C3", x + margin_x + bin_c3 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("R/C4", x + margin_x + bin_c4 - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("R/C5", x + margin_x + bin_c5 - bin_width/2, y + margin_y/3);
+    ctx2d.stroke();
 
-  ctx2d.beginPath();
-  ctx2d.textAlign="center";
-  ctx2d.strokeText("R/Center", x + margin_x + bin_center - bin_width/2, y + margin_y/3);
-  ctx2d.strokeText("R/Outer",  x + margin_x + bin_outer  - bin_width/2, y + margin_y/3);
-  ctx2d.strokeText("R/Inner",  x + margin_x + bin_inner  - bin_width/2, y + margin_y/3);
-  ctx2d.stroke();
-
+  }
+  else {
+    var bin_width = 2;
+    var bin_center = width * (Jcjc_CenterRadius-min_range) /(max_range - min_range)
+    var bin_outer =  width * (Jcjc_OuterRadius -min_range) /(max_range - min_range)
+    var bin_inner =  width * (Jcjc_InnerRadius -min_range) /(max_range - min_range)
+  
+    ctx2d.fillStyle = "blue";
+    ctx2d.fillRect(x + margin_x + bin_center - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_outer  - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_inner  - bin_width/2,  y + margin_y/2, bin_width, height);
+  
+    ctx2d.beginPath();
+    ctx2d.textAlign="center";
+    ctx2d.strokeText("L/Center", x + margin_x + bin_center - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("L/Outer",  x + margin_x + bin_outer  - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("L/Inner",  x + margin_x + bin_inner  - bin_width/2, y + margin_y/3);
+    ctx2d.stroke();
+  
+    bin_center = width * (-Jcjc_CenterRadius-min_range) /(max_range - min_range)
+    bin_outer =  width * (-Jcjc_OuterRadius -min_range) /(max_range - min_range)
+    bin_inner =  width * (-Jcjc_InnerRadius -min_range) /(max_range - min_range)
+  
+    ctx2d.fillStyle = "green";
+    ctx2d.fillRect(x + margin_x + bin_center - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_outer  - bin_width/2,  y + margin_y/2, bin_width, height);
+    ctx2d.fillRect(x + margin_x + bin_inner  - bin_width/2,  y + margin_y/2, bin_width, height);
+  
+    ctx2d.beginPath();
+    ctx2d.textAlign="center";
+    ctx2d.strokeText("R/Center", x + margin_x + bin_center - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("R/Outer",  x + margin_x + bin_outer  - bin_width/2, y + margin_y/3);
+    ctx2d.strokeText("R/Inner",  x + margin_x + bin_inner  - bin_width/2, y + margin_y/3);
+    ctx2d.stroke();
+  }
   //J 閾値を破線でプロットする
   segs = ctx2d.getLineDash()
   ctx2d.lineWidth = 2;

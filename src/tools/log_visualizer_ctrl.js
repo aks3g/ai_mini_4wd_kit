@@ -171,10 +171,26 @@ function sensorDataUpdatedCallback(sensorData)
   document.getElementById("raw_graph").style.height = h.toString() ;
 
   //J 特徴量ヒストグラムと内周、中央周、外周を判断するための閾値を求める
-  var distribution = createFeatureValueHistgram(ResampledSensorData,UNIT_mm, -800, 800, 10);
-  ThresholdOfCurve = decideThresholdOfFeatures(distribution, 10);
+  var is5lane = document.getElementById("five_lane").checked;
+  if (is5lane) {
+    var lanes = 5;
+    var laps  = 10;
+    var range_min = -1000;
+    var range_max =  1000;
+    var distribution = createFeatureValueHistgram(ResampledSensorData,UNIT_mm, range_min, range_max, 10);
+    ThresholdOfCurve = decideThresholdOfFeatures5(distribution, 10);
+    console.log(ThresholdOfCurve)
+  }
+  else {
+    var lanes = 3;
+    var laps  = 3;
+    var range_min = -800;
+    var range_max =  800;
+    var distribution = createFeatureValueHistgram(ResampledSensorData,UNIT_mm, range_min, range_max, 10);
+    ThresholdOfCurve = decideThresholdOfFeatures(distribution, 10);
+  }
 
-  drawFeatureDistributionGraph(document.getElementById("canvas_graph_feature"), distribution, 0, 0, "Feature Value Distribution", -800, 800, 1, ThresholdOfCurve);
+  drawFeatureDistributionGraph(document.getElementById("canvas_graph_feature"), distribution, 0, 0, "Feature Value Distribution", range_min, range_max, 1, ThresholdOfCurve, lanes);
 
 
   //J XY座標でコースをプロットする
@@ -189,9 +205,9 @@ function sensorDataUpdatedCallback(sensorData)
   drawEstimatedMachinePosition(document.getElementById("canvas_graph_xy_plot"), document.getElementById("sensor_visualizer").clientWidth, TracingContext.xArr, TracingContext.yArr, TracingContext.lapArr);
 
   //J 3周分のデータを利用して、状態空間を作り出す
-  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, {left:1.0, right:1.0}, wheelSize, ThresholdOfCurve);
+  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, {left:1.0, right:1.0}, wheelSize, ThresholdOfCurve, lanes, laps);
 
-  drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, -1);
+  drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, -1, lanes);
 }
 
 //
@@ -274,7 +290,14 @@ function onSimulaterTimerEvent()
 
   if (val < document.getElementById("map_range").max) {
     var position = updateSimulater(val, TestData);
-    drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, position);
+    var is5lane = document.getElementById("five_lane").checked;
+    if (is5lane) {
+      var lanes = 5;
+    }
+    else {
+      var lanes = 3;
+    }
+    drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, position, -1, lanes);
     drawExistanceGraph(document.getElementById("canvas_graph_existance"), getExistanceArray());
 
     document.getElementById("map_range").value = val;
@@ -346,7 +369,16 @@ function onCoeffUndated()
   lap_sel = document.getElementById("lap_selecter").innerHTML = selecter_html;
 
   drawEstimatedMachinePosition(document.getElementById("canvas_graph_xy_plot"), document.getElementById("sensor_visualizer").clientWidth, TracingContext.xArr, TracingContext.yArr, TracingContext.lapArr);
-  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, coeff, wheelSize, ThresholdOfCurve);
+  var is5lane = document.getElementById("five_lane").checked;
+  if (is5lane) {
+    var lanes = 5;
+    var laps = 10;
+  }
+  else {
+    var lanes = 3;
+    var laps = 3;
+  }
+  StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, coeff, wheelSize, ThresholdOfCurve, lanes, laps);
   updateStateSpaceVector();
 }
 
@@ -355,7 +387,14 @@ function onCoeffUndated()
 //
 function updateStateSpaceVector()
 {
-  drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, -1);
+  var is5lane = document.getElementById("five_lane").checked;
+  if (is5lane) {
+    var lanes = 5;
+  }
+  else {
+    var lanes = 3;
+  }
+  drawStateSpaceVector(document.getElementById("canvas_graph_estimate_position"), document.getElementById("sensor_visualizer").clientWidth, StateSpaceVec, -1, lanes);
 }
 
 
