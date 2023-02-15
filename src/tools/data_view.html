@@ -1,0 +1,46 @@
+﻿<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+
+<title> AI mini4wd Kit Data Viewer </title>
+<link rel="stylesheet" type="text/css" href="ai_mini4wd_data_view.css">
+
+<script language="javascript" type="text/javascript" src="libgraph.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="data_view_ctrl.js" charset="utf-8"></script>
+<script language="javascript" type="text/javascript" src="data_view_canvas_ctrl.js" charset="utf-8"></script>
+
+
+</HEAD>
+<BODY>
+<div class="header_menu">
+  <div class="dash_board">
+    <div class="menu_title"> <font class="logo_outline">AI mini4wd Kit</font></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="controls">
+    <span class="buttons">
+      <a href="#" onclick="onFileLoadButtonClick();"  class="control_btn">Load</a>
+      <input hidden type="file" id="data_file" />
+      <text id="data_file_name">File not selected</text>
+    </span>
+  </div>
+  <div>
+    <div class="data_list" id="data_list"></div>
+    <div class="data_item" id="data_item"></div>
+  </div>
+</div>
+<hr>
+<div class="main_contents">
+  <canvas class="main_graph" id="main_graph"></canvas>
+</div>
+
+<div class="footer_menu">
+  <div class="menu_copy">Copyright 2022 aks3g.com All rights reserved.</div>
+</div>
+
+</BODY>
+</HTML>
