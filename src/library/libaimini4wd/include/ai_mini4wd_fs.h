@@ -57,6 +57,8 @@ AiMini4wdDir *aiMini4wdFsOpenDir(const char *path);
 void aiMini4wdFsCloseDir(AiMini4wdDir *dir);
 int aiMini4wdFsReadDir(AiMini4wdDir *dir, AiMini4wdFileInfo *file);
 
+int aiMini4wdDiskFormat(void);
+
 #ifdef __cplusplus
 }
 #endif

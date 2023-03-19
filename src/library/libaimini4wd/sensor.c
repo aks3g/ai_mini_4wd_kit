@@ -98,15 +98,25 @@ static void _update_rpm(uint16_t count)
 
 static void _ac_callback(void)
 {
-	uint16_t counter = samd51_tc_start_onshot(SAMD51_TC2);
+//	uint16_t counter = samd51_tc_start_onshot(SAMD51_TC2);
 	if (sOnStartCb) {
 		sOnStartCb();
+	}
+
+	aiMini4wdToggleLedPattern(1 << 0);
+	if (samd51_ac_state(1)){
+		aiMini4wdSetLedPattern(1<<2);
+		aiMini4wdClearLedPattern(1<<1);
+	}
+	else {
+		aiMini4wdSetLedPattern(1<<1);
+		aiMini4wdClearLedPattern(1<<2);
 	}
 
 //	aiMini4wdClearLedPattern(1);
 //	aiMini4wdToggleLedPattern(2);
 
-	_update_rpm(counter);
+//	_update_rpm(counter);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -169,17 +179,20 @@ static int _initialize_tachometer(void)
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_DAC, LIB_MINI_4WD_CLK_GEN_NUMBER_1MHZ);
 
 	samd51_dac_initialize(0, SAMD51_DAC_REF_BUFFERED_EXTERNAL_VOLTAGE);
+	samd51_dac_initialize(1, SAMD51_DAC_REF_BUFFERED_EXTERNAL_VOLTAGE);
 	AiMini4wdRegistry *regstry = aiMini4wdRegistryGet();
 	if (regstry != NULL) {
-		aiMini4wdSensorSetTachometerThreshold(regstry->sdk_data.field.tachometer_threshold, 0);
+//		aiMini4wdSensorSetTachometerThreshold(regstry->sdk_data.field.tachometer_threshold1, regstry->sdk_data.field.tachometer_threshold2, 0);
 	} else {
-		aiMini4wdSensorSetTachometerThreshold(1200, 0);
+//		aiMini4wdSensorSetTachometerThreshold(2500, 2500, 0);
 	}
+	aiMini4wdSensorSetTachometerThreshold(2500, 2500, 1);
 
 	//J Enable AC
 	samd51_mclk_enable(SAMD51_APBC_AC, 1);
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_AC, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
-	samd51_ac_initialize(0, SAMD51_AC_POS_PIN1, SAMD51_AC_NEG_DAC0, SAMD51_AC_INT_RISING, SAMD51_AC_OUTPUT_OFF, SAMD51_AC_FILTER_NO, SAMD52_AC_HYST50mV, 0, _ac_callback);
+	samd51_ac_initialize(0, SAMD51_AC_POS_PIN2, SAMD51_AC_NEG_DAC0, SAMD51_AC_INT_RISING, SAMD51_AC_OUTPUT_OFF, SAMD51_AC_FILTER_NO, SAMD52_AC_HYST50mV, 0, _ac_callback);
+	samd51_ac_initialize(1, SAMD51_AC_POS_PIN0, SAMD51_AC_NEG_PIN3, SAMD51_AC_INT_RISING, SAMD51_AC_OUTPUT_OFF, SAMD51_AC_FILTER_NO, SAMD52_AC_HYST50mV, 0, NULL);
 
 	return AI_OK;
 }
@@ -357,7 +370,7 @@ int aiMini4wdSensorCalibrateTachoMeter(uint16_t *threshold_mv, uint16_t *work_bu
 	//J ADCで全力サンプリング
 	for (int i=0 ; i<length ; ++i) {
 		sAdcConversionDone= 0;
-		ret = samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN5, SAMD51_ADC_NEG_GND, _adcConversionDone);
+		ret = samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN6, SAMD51_ADC_NEG_GND, _adcConversionDone);
 		if (ret != AI_OK) {
 			return ret;
 		}
@@ -388,24 +401,31 @@ int aiMini4wdSensorCalibrateTachoMeter(uint16_t *threshold_mv, uint16_t *work_bu
 
 
 /*--------------------------------------------------------------------------*/
-int aiMini4wdSensorSetTachometerThreshold(uint16_t threshold_mv, int save)
+int aiMini4wdSensorSetTachometerThreshold(uint16_t threshold1_mv, uint16_t threshold2_mv, int save)
 {
 	int ret = AI_OK;
-	uint16_t dac_out = (uint16_t)((float)threshold_mv * (4096.0f/3300.0f));
+	uint16_t dac_out = (uint16_t)((float)threshold1_mv * (4096.0f/3300.0f));
 	if (dac_out > 0x0fff) {
 		return AI_ERROR_OUT_OF_RANGE;
 	}
+	samd51_dac_output(0, dac_out);
+
+	dac_out = (uint16_t)((float)threshold2_mv * (4096.0f/3300.0f));
+	if (dac_out > 0x0fff) {
+		return AI_ERROR_OUT_OF_RANGE;
+	}
+	samd51_dac_output(1, dac_out);
+
 
 	//J Flashに保存する
 	if (save) {
 		AiMini4wdRegistry *regstry = aiMini4wdRegistryGet();
 		if (regstry != NULL) {
-			regstry->sdk_data.field.tachometer_threshold = threshold_mv;
+			regstry->sdk_data.field.tachometer_threshold1 = threshold1_mv;
+			regstry->sdk_data.field.tachometer_threshold2 = threshold2_mv;
 			ret = aiMini4wdRegistryUpdate();
 		}
 	}
-
-	samd51_dac_output(0, dac_out);
 	
 	return ret;
 }

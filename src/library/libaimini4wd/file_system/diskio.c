@@ -9,10 +9,10 @@
 
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
-#include "sdhc_diskio.h"
+#include "qspi_diskio.h"
 
 /* Definitions of physical drive number for each drive */
-#define DEV_SDHC		0	/* Example: Map MMC/SD card to physical drive 1 */
+#define DEV_QSPI		0	/* Example: Map MMC/SD card to physical drive 1 */
 
 
 /*-----------------------------------------------------------------------*/
@@ -27,8 +27,8 @@ DSTATUS _disk_status (
 	int result;
 
 	switch (pdrv) {
-	case DEV_SDHC :
-		result = sdhc_disk_status();
+	case DEV_QSPI :
+		result = qspi_disk_status();
 		// translate the reslut code here
 		if (result == 0) {
 			stat = RES_OK;
@@ -56,8 +56,8 @@ DSTATUS _disk_initialize (
 	int result;
 
 	switch (pdrv) {
-	case DEV_SDHC :
-		result = sdhc_disk_initialize();
+	case DEV_QSPI :
+		result = qspi_disk_initialize();
 
 		// translate the reslut code here
 		if (result == 0) {
@@ -88,9 +88,9 @@ DRESULT _disk_read (
 	DRESULT res;
 
 	switch (pdrv) {
-	case DEV_SDHC :
+	case DEV_QSPI :
 		// translate the arguments here
-		res = sdhc_disk_read(buff, sector, count);
+		res = qspi_disk_read(buff, sector, count);
 
 		return res;
 	}
@@ -116,9 +116,9 @@ DRESULT _disk_write (
 	DRESULT res;
 
 	switch (pdrv) {
-	case DEV_SDHC :
-		// translate the arguments here
-		res = sdhc_disk_write(buff, sector, count);
+	case DEV_QSPI :
+		// DEV_QSPI the arguments here
+		res = qspi_disk_write(buff, sector, count);
 
 		return res;
 	}
@@ -142,9 +142,10 @@ DRESULT _disk_ioctl (
 	DRESULT res;
 
 	switch (pdrv) {
-	case DEV_SDHC :
+	case DEV_QSPI :
 
 		// Process of the command for the RAM drive
+		res = qspi_disk_ioctl(cmd, buff);
 
 		return res;
 	}

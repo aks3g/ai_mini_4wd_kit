@@ -16,6 +16,7 @@ extern "C" {
 #include "samd51_error.h"
 
 #define AI_ERROR_NOENT				(0xd51a0001)
+#define AI_ERROR_INVALID_ALIGN		(0xd51a0002)
 
 #ifdef __cplusplus
 }

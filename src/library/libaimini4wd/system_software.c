@@ -56,13 +56,6 @@ typedef struct GlobalParameters_t
 
 static volatile GlobalParameters sGlobalParams;
 
-static uint8_t sUartTxBuf[512];
-static uint8_t sUartRxBuf[512];
-
-static SAMD51_UART_FIFO sUartTxFifo;
-static SAMD51_UART_FIFO sUartRxFifo;
-
-
 // From prohect file
 void SystemInit(void);
 
@@ -105,23 +98,12 @@ int aiMini4wdInitialize(uint32_t flags)
 	//J 120MHzになったFDPLLをGCLK0のソースに設定する（死にそう）
 	samd51_gclk_configure_generator(LIB_MINI_4WD_CLK_GEN_NUMBER_MAIN, SAMD51_GCLK_SRC_DPLL0, 0, 0, SAMD51_GCLK_DIV_NORMAL);
 
-	//J Debug UART
-	if (flags & AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT) {
-		sGlobalParams.enabledPrintf = 1;
-
-		samd51_uart_fifo_setup(&sUartTxFifo, sUartTxBuf, sizeof(sUartTxBuf));
-		samd51_uart_fifo_setup(&sUartRxFifo, sUartRxBuf, sizeof(sUartRxBuf));
-		samd51_mclk_enable(SAMD51_APBB_SERCOM2, 1);
-		samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SERCOM2_CORE, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
-		samd51_uart_initialize(SAMD51_SERCOM2, 115200, SAMD51_SERCOM_PAD1, SAMD51_SERCOM_PAD0, &sUartTxFifo, &sUartRxFifo);
-	}
-
-
 	//J Timers
 	aiMini4WdInitializeTimer();
 	
 	//J FSの初期化. 内部的に2000ms 待つので旧来のWaitを消す
 	aiMini4wdFsInitialize();
+	
   
 	//J レジストリロード
 	aiMini4wdRegistryLoad();
@@ -140,19 +122,19 @@ int aiMini4wdInitialize(uint32_t flags)
 	aiMini4wdSensorsInitialize();
 
 	//J Odometerの初期化
-	if ((flags & AI_MINI_4WD_INIT_FLAG_USE_ODOMETER) && !(flags & AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT)) {
+	if (flags & AI_MINI_4WD_INIT_FLAG_USE_ODOMETER) {
 		sGlobalParams.enableOdometer = 1;
+
 		aiMini4wdSensorsInitializeOdometer();
 	}
 
-	if ((flags & AI_MINI_4WD_INIT_FLAG_USE_LED_INDICATOR) && !(flags & AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT)) {
+	if (flags & AI_MINI_4WD_INIT_FLAG_USE_LED_INDICATOR) {
 		sGlobalParams.enableLedIndicator = 1;
 
 		// Enable Ext I2c
 		samd51_mclk_enable(SAMD51_APBB_SERCOM2, 1);
 		samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SERCOM2_CORE, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
 		samd51_i2c_initialize(SAMD51_SERCOM2, 400000);
-
 	}
 
 	//J Motor Driver
@@ -202,7 +184,8 @@ int aiMini4wdInitialize(uint32_t flags)
 
 	if (flags & AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL) {
 		sGlobalParams.enableUsb = 1;
-		
+		sGlobalParams.enabledPrintf = 1;
+
 		//J Full Speedで動かす前提なので48MHzを突っ込む
 		samd51_mclk_enable(SAMD51_AHB_USB, 1);
 		samd51_mclk_enable(SAMD51_APBB_USB, 1);

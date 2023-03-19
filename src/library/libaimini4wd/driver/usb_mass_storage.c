@@ -11,7 +11,7 @@
 #include <samd51_error.h>
 
 #include "samd51_usb_device.h"
-#include "sdhc_diskio.h"
+#include "qspi_diskio.h"
 #include "scsi.h"
 
 #include "usb_mass_storage.h"
@@ -114,7 +114,7 @@ static uint8_t sBulkInBuf[64];
 int usbMassStorageInitialize(int in_ep, int out_ep)
 {
 	//J Init SD
-	sdhc_disk_initialize();
+	qspi_disk_initialize();
 	
 	//J Setup USB
 	scsiInitialize(1);
@@ -134,7 +134,7 @@ int usbMassStorageInitialize(int in_ep, int out_ep)
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-static uint8_t s_scsi_parse_buf[512];
+static uint8_t s_scsi_parse_buf[4096]; //TODO
 
 /*--------------------------------------------------------------------------*/
 int usbMassStorageUpdate(void)

@@ -115,6 +115,7 @@ int aiMini4wdCurrentVoltageMonitorControl(int enable)
 	return AI_OK;
 }
 
+void flash_timer_proc(void);
 
 static volatile uint32_t sAdcSwitch = 0;
 static void _tc0_cb(void)
@@ -147,6 +148,7 @@ static void _tc0_cb(void)
 	}
 
 	(void)aiMini4wdUpdateSwitchStatus();
+	flash_timer_proc();
 
 	return;
 }

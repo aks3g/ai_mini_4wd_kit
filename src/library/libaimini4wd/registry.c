@@ -36,7 +36,8 @@ int aiMini4wdRegistryLoad(void)
 		memset ((void *)&sRegs, 0x00, sizeof(sRegs));		
 		
 		sRegs.sdk_data.field.sdk_version = AI_MINI_4WD_VERSION;
-		sRegs.sdk_data.field.tachometer_threshold = 1200;
+		sRegs.sdk_data.field.tachometer_threshold1 = 1200;
+		sRegs.sdk_data.field.tachometer_threshold2 = 1200;
 		
 		return AI_ERROR_INVALID;
 	}

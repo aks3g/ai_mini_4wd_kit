@@ -92,18 +92,20 @@ static void _vbus_changed_cb(int vbus)
 	return;
 }
 
+
 int main(void)
 {
 	uint8_t buf[512];
 
-	int ret =aiMini4wdInitialize(0x80000000 | AI_MINI_4WD_INIT_FLAG_USE_DEBUG_PRINT | AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL);
+	int ret =aiMini4wdInitialize(0x80000000 | AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL);
 	if (ret != AI_OK) {
 		goto ERROR;
 	}
 
 	//J USBÇ™ê⁄ë±Ç≥ÇÍÇƒÇ¢ÇÈèÍçáConosleÉÇÅ[ÉhÇ…à⁄çsÇ∑ÇÈ
-	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
-		aiMini4wdRegisterOnVbusChangedCb(_vbus_changed_cb);
+//	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
+	if (1) {
+//		aiMini4wdRegisterOnVbusChangedCb(_vbus_changed_cb);
 		aiMini4wdFsMountDrive(0);
 
 		while (1) {

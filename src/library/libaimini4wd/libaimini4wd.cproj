@@ -158,6 +158,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="driver\lsm6ds3h.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="driver\MX25L51245G.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="driver\odometer.c">
       <SubType>compile</SubType>
     </Compile>
@@ -182,12 +185,15 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="file_system\ffunicode.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="file_system\qspi_diskio.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="file_system\scsi.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="file_system\sdhc_diskio.c">
+    <None Include="file_system\sdhc_diskio.c">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="fs.c">
       <SubType>compile</SubType>
     </Compile>
@@ -242,6 +248,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="include\internal\lsm6ds3h.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\internal\MX25L51245G.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\internal\odometer.h">
       <SubType>compile</SubType>
     </Compile>
@@ -249,6 +258,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\internal\mmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\qspi_diskio.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\internal\registry.h">

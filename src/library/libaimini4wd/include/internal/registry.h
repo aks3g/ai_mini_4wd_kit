@@ -28,7 +28,8 @@ typedef struct AiMini4wdRegistry_t
 		struct {
 			uint32_t sdk_version;
 			UpdateFileHeader fw;
-			uint16_t tachometer_threshold;
+			uint16_t tachometer_threshold1;
+			uint16_t tachometer_threshold2;
 		} field;
 	} sdk_data;
 	

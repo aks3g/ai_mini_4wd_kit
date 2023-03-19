@@ -15,7 +15,7 @@
 
 typedef struct ScsiControlContext_t
 {
-	uint8_t  buf[512];
+	uint8_t  buf[FF_MAX_SS];//
 	uint32_t lba;
 	uint8_t  *op_ptr;
 	uint16_t byte_count;
@@ -382,7 +382,7 @@ static int8_t _scsi_process_read10(uint8_t *cdb, size_t cdb_len, uint8_t *buf, s
 		sCtx.lba = lba;
 		sCtx.op_ptr = sCtx.buf;
 
-		sdhc_disk_read(sCtx.buf, lba + sCtx.block_count, 1);
+		qspi_disk_read(sCtx.buf, lba + sCtx.block_count, 1);
 
 		memcpy(buf, sCtx.op_ptr, buf_len);
 		sCtx.op_ptr += buf_len;
@@ -398,7 +398,7 @@ static int8_t _scsi_process_read10(uint8_t *cdb, size_t cdb_len, uint8_t *buf, s
 	*transfer_len = buf_len;
 
 	//J 1セクタ送り終わるごとに次の通信に備える
-	if (sCtx.byte_count == 512) {
+	if (sCtx.byte_count == FF_MAX_SS) {
 		sCtx.block_count++;
 		sCtx.byte_count = 0;
 		sCtx.op_ptr = NULL;
@@ -431,7 +431,7 @@ static int8_t _scsi_process_read_capacity10(uint8_t *cdb, size_t cdb_len, uint8_
 
 
 	uint32_t last_lba = 0;
-	int ret = sdhc_disk_ioctl(GET_SECTOR_COUNT, &last_lba);
+	int ret = qspi_disk_ioctl(GET_SECTOR_COUNT, &last_lba);
 	if (ret != 0) {
 		return SCSI_ERROR_NOT_SUPPORTED;
 	}
@@ -439,7 +439,7 @@ static int8_t _scsi_process_read_capacity10(uint8_t *cdb, size_t cdb_len, uint8_
 	last_lba = last_lba - 1;
 
 	ScsiCapacityData10 *response = (ScsiCapacityData10 *)buf;
-	response->block_size = _ltob(512);
+	response->block_size = _ltob(FF_MAX_SS);
 	response->last_logical_block_address = _ltob(last_lba);
 		
 	*transfer_len =  sizeof(ScsiCapacityData10);
@@ -483,8 +483,8 @@ static int8_t _scsi_process_write10(uint8_t *cdb, size_t cdb_len, uint8_t *buf, 
 	sCtx.byte_count += buf_len;
 
 	//J 1ブロック分データ溜まった
-	if (sCtx.byte_count == 512) {
-		sdhc_disk_write(sCtx.buf, lba + sCtx.block_count, 1);
+	if (sCtx.byte_count == FF_MAX_SS) {
+		qspi_disk_write(sCtx.buf, lba + sCtx.block_count, 1);
 
 		sCtx.block_count++;
 		sCtx.byte_count = 0;
@@ -571,14 +571,14 @@ static int8_t _scsi_process_read_format_capacities(uint8_t *cdb, size_t cdb_len,
 	ScsiCapacityList *response = (ScsiCapacityList *)buf;
 	memset (response, 0x00, sizeof(ScsiCapacityList));
 	
-	uint32_t num_blocks = sdhc_disk_ioctl(GET_SECTOR_COUNT, &num_blocks);
+	uint32_t num_blocks = qspi_disk_ioctl(GET_SECTOR_COUNT, &num_blocks);
 
 	response->capacityListHeader.capacity_list_length = 8;
 	response->currentCapacityHeader.descriptor_code = SCSI_CAPACITY_DESCRIPTOR_TYPE_FORMATTED_MEDIA;
 	response->currentCapacityHeader.number_of_blocks = _ltob(num_blocks);
-	response->currentCapacityHeader.block_length[0] = 0x00;	// 512決め打ち
-	response->currentCapacityHeader.block_length[1] = 0x02;	// 512決め打ち
-	response->currentCapacityHeader.block_length[2] = 0x00;	// 512決め打ち
+	response->currentCapacityHeader.block_length[0] = (FF_MAX_SS >> 0)  && 0xff;
+	response->currentCapacityHeader.block_length[1] = (FF_MAX_SS >> 8)  && 0xff;
+	response->currentCapacityHeader.block_length[2] = (FF_MAX_SS >> 16) && 0xff;
 
 	*transfer_len = sizeof (ScsiCapacityList);
 	

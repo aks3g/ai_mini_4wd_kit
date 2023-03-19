@@ -12,7 +12,7 @@
 
 #include <samd51_error.h>
 #include <samd51_clock.h>
-#include <samd51_sdhc.h>
+#include <samd51_qspi.h>
 
 #include "include/internal/clock.h"
 #include "include/internal/ff.h"
@@ -137,13 +137,20 @@ int aiMini4wdFsInitialize(void)
 	memset ((void *)sDirs , 0, sizeof(AiMini4wdDirPointers) *MAX_DIRS);
 	
 	//J SDC ‰Šú‰»
-	samd51_mclk_enable(SAMD51_AHB_SDHCn0, 1);
-	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SDHC0, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
+//	samd51_mclk_enable(SAMD51_AHB_SDHCn0, 1);
+//	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SDHC0, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
 	
-	samd51_sdhc_initialize(SAMD51_SDHC0);
+//	samd51_sdhc_initialize(SAMD51_SDHC0);
 
-	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
-	while ((tick + 2000) > aiMini4WdTimerGetSystemtick());
+	samd51_mclk_enable(SAMD51_APBC_QSPI, 1);
+	samd51_mclk_enable(SAMD51_AHB_QSPI, 1);
+	samd51_mclk_enable(SAMD51_AHB_DMAC, 1);
+	
+	samd51_qspi_initialize(10, 0, 0, 0, SAMD51_QSPI_CLOCK_MODE0);
+	samd51_dmac_initialize();
+
+//	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
+//	while ((tick + 2000) > aiMini4WdTimerGetSystemtick());
 
 	return aiMini4wdFsMountDrive(1);	
 }
@@ -402,4 +409,11 @@ int aiMini4wdFsReadDir(AiMini4wdDir *dir, AiMini4wdFileInfo *file)
 	file->size = info.fsize;
 	
 	return AI_OK;
+}
+
+static uint8_t work[4096];
+int aiMini4wdDiskFormat(void)
+{
+	FRESULT result = _f_mkfs("", FM_ANY, FF_MAX_SS, work, sizeof(work));
+	return (int)result;
 }
