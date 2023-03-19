@@ -157,6 +157,9 @@ cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEv
     <Compile Include="include\samd51_dac.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\samd51_dmac.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\samd51_error.h">
       <SubType>compile</SubType>
     </Compile>
@@ -170,6 +173,9 @@ cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEv
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\samd51_nvmctrl.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\samd51_qspi.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\samd51_sdhc.h">
@@ -202,6 +208,9 @@ cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEv
     <Compile Include="samd51_dac.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="samd51_dmac.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="samd51_gpio.c">
       <SubType>compile</SubType>
     </Compile>
@@ -212,6 +221,9 @@ cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEv
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="samd51_nvmctrl.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="samd51_qspi.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="samd51_sdhc.c">

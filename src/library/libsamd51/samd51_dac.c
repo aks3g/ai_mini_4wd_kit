@@ -119,11 +119,15 @@ int samd51_dac_initialize(uint32_t ch, SAMD51_DAC_REFERENCE ref)
 	if (ch >= 2) {
 		return AI_ERROR_NODEV;
 	}
+
+//	reg_dac->CTRLA = 1;
+//	while (reg_dac->SYNBUSY & (1 << SAMD51_DAC_SWRST_pos));
 	
 	reg_dac->CTRLA = 0;
+	while (reg_dac->SYNBUSY & (1 << SAMD51_DAC_ENABLE_pos));
 
 	// Control
-	uint32_t ctrl = OSR_1 | (5 << SAMD51_DAC_CTRL_REFRESH_pos) | DITHERING_DISABLED | RUN_IN_STANDBY_ENABLED | EXTERNAL_FILTER_DISABLED | CC12M | ENABLE;
+	uint32_t ctrl = OSR_1 | (1 << SAMD51_DAC_CTRL_REFRESH_pos) | DITHERING_DISABLED | RUN_IN_STANDBY_ENABLED | EXTERNAL_FILTER_DISABLED | CC100K | ENABLE;
 	if (ch == 0) {
 		reg_dac->DACCTRL0 = ctrl;
 	}
@@ -146,7 +150,7 @@ int samd51_dac_initialize(uint32_t ch, SAMD51_DAC_REFERENCE ref)
 		while ((reg_dac->STATUS & (1<<SAMD51_DAC_READY1_pos)) == 0);
 	}
 
-	samd51_dac_output(ch, 0);
+	samd51_dac_output(ch, 1000);
 
 	return AI_OK;
 }

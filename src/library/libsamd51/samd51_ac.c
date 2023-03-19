@@ -136,17 +136,20 @@ int samd51_ac_initialize(
 						
 	if (ch == 0)
 	{
-		sAcCallback[0] = cb;
-		
-		reg_ac->INTENSET = (1 << SAMD51_AC_INT_COMP0_pos);
+		if (cb) {
+			sAcCallback[0] = cb;
+			reg_ac->INTENSET = (1 << SAMD51_AC_INT_COMP0_pos);
+		}
 		reg_ac->COMPCTRL0 = compctrl;
 		while(reg_ac->SYNCBUSY & (1 << SAMD51_AC_SYNCBUSY_COMPCTRL0_pos));
 	}
 	else
 	{
-		sAcCallback[1] = cb;
+		if (cb) {
+			sAcCallback[1] = cb;
+			reg_ac->INTENSET = (1 << SAMD51_AC_INT_COMP1_pos);
+		}
 
-		reg_ac->INTENSET = (1 << SAMD51_AC_INT_COMP1_pos);
 		reg_ac->COMPCTRL1 = compctrl;
 		while(reg_ac->SYNCBUSY & (1 << SAMD51_AC_SYNCBUSY_COMPCTRL1_pos));
 	}
@@ -164,6 +167,20 @@ void samd51_ac_finalize(void)
 
 	reg_ac->CTRLA = (1 << SAMD51_AC_SWRST_pos);
 	while(reg_ac->SYNCBUSY & (1 << SAMD51_AC_SWRST_pos));
+}
+
+/*--------------------------------------------------------------------------*/
+int samd51_ac_state(uint32_t ch)
+{
+	if (ch == 0) {
+		return (reg_ac->STATUSA & (1<<SAMD51_AC_STATE0_pos)) ? 1 : 0;
+	}
+	else if (ch == 1) {
+		return (reg_ac->STATUSA & (1<<SAMD51_AC_STATE1_pos)) ? 1 : 0;
+	}
+	else {
+		return 0;
+	}
 }
 
 /*--------------------------------------------------------------------------*/

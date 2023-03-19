@@ -861,6 +861,7 @@ typedef union UsbDescritorHead_t
 } UsbDescritprHead;
 #pragma pack()
 
+static volatile  int cnt = 0;
 /*---------------------------------------------------------------------------*/
 static int _usb_search_descriptor(const uint8_t *descroptor, uint16_t descriptor_len, uint8_t type, uint8_t index, uint16_t required_len, uint8_t **found_desc, uint16_t *len)
 {
@@ -870,6 +871,12 @@ static int _usb_search_descriptor(const uint8_t *descroptor, uint16_t descriptor
 	
 	if ((found_desc == NULL) || (len == NULL)) {
 		return AI_ERROR_NOBUF;
+	}
+	
+	cnt++;
+	if (cnt == 8){
+		volatile int x = 0;
+		x++;
 	}
 	
 	//J descriptor ‚ğ‘–¸‚µ‚Ä‘ÎÛ‚Æ‚È‚édescriptor ‚Ìæ“ª‚ğŒ©‚Â‚¯‚é

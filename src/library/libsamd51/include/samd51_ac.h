@@ -74,5 +74,6 @@ int samd51_ac_initialize(
 						SAMD51_AC_INTERRUPT_CALLBACK cb
 						);
 void samd51_ac_finalize(void);
+int samd51_ac_state(uint32_t ch);
 
 #endif /* SAMD51_AC_H_ */
