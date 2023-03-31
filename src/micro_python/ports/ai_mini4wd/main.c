@@ -299,6 +299,7 @@ int main(void)
 		__fatal_error("Script Not found.\r\n");
 	}
 
+
 #if MICROPY_ENABLE_GC
 	gc_init(heap, heap + sizeof(heap));
 #endif

@@ -322,7 +322,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mini4wd_calibrateTachometer_obj, mini4wd_calibr
 STATIC mp_obj_t mini4wd_setTachometerThreshold(mp_obj_t self_in, mp_obj_t threshold)
 {
 	uint16_t threshold_mv = mp_obj_get_int(threshold);
-	aiMini4wdSensorSetTachometerThreshold(threshold_mv, 1); // Flashに毎回保存する
+	aiMini4wdSensorSetTachometerThreshold(threshold_mv, threshold_mv, 1); // Flashに毎回保存する
 
 	return mp_const_none;
 }
