@@ -29,6 +29,7 @@ CFLAGS_CORTEX_M4 = -mthumb -D__SAMD51J20A__ -mcpu=cortex-m4
 CFLAGS = -x c $(INC) -D__SAMD51J20A__ -Wall -Werror -std=c99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS = -mthumb -Wl,-Map=$@.map  -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m4 -T samd51j20a_flash.ld
 LDFLAGS_BOOTLOADER = -mthumb -Wl,-Map=$@.map  -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m4 -T samd51j20a_bootloader.ld
+ARFLAGS_LIB = 
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG), 1)
@@ -64,31 +65,51 @@ SRC_C = \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
-	$(BUILD)/_frozen_mpy.c \
+	$(BUILD)/_frozen_mpy.c
+
+SRC_LIB_C = \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/unicode.c \
+	mini4wd.c \
+	mini4wd_type.c \
+	self_position_estimater_type.c \
+	machine_learning_type.c \
+	storage_if.c \
+	modpyb.c \
+	lib/timeutils/timeutils.c \
+	lib/utils/printf.c \
+	lib/utils/stdout_helpers.c \
+	lib/utils/pyexec.c \
+	lib/libc/string0.c \
+	lib/mp-readline/readline.c \
+	$(BUILD)/_frozen_mpy.c
+
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+LIB_OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_LIB_C:.c=.o)) $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-all: $(BUILD)/MINI4WD.AUP $(BUILD)/firmware.bin
+all: $(BUILD)/MINI4WD.AUP
+lib: $(BUILD)/libupython_mini4wd.a
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
 	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
 
-$(BUILD)/firmware.elf: $(OBJ)
-	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) $(LIB) -o $@ $^ $(LIBS)
-	$(Q)$(SIZE) $@
-
 $(BUILD)/MINI4WD.elf: $(OBJ)
 	$(ECHO) "LINK $@"
+	echo $(Q)$(LD) $(LDFLAGS_BOOTLOADER) $(LIB) -o $@ $^ $(LIBS)
 	$(Q)$(LD) $(LDFLAGS_BOOTLOADER) $(LIB) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .relocate $^ $(BUILD)/firmware.bin
+$(BUILD)/libupython_mini4wd.a: $(LIB_OBJ)
+	$(ECHO) "ARCHIVE $@"
+	$(Q)$(AR) $(ARFLAGS_LIB)-r $@ $^
+	$(CP) $@ ../../../library/lib/libupython_mini4wd.a
+	$(Q)$(SIZE) $@
+
 
 $(BUILD)/MINI4WD.bin: $(BUILD)/MINI4WD.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .relocate $^ $(BUILD)/MINI4WD.bin
