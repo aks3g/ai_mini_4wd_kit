@@ -1,0 +1,67 @@
+#
+#		Makefile のターゲット依存部（samd51x用）
+#
+
+#
+#  コンパイルオプション
+#
+INCLUDES := $(INCLUDES) -I$(SRCDIR)/arch/$(PRC)_$(TOOL)/$(CHIP) -I$(SRCDIR)/../../library/include
+COPTS := $(COPTS) -nostartfiles -D__SAMD51J20A__
+LDFLAGS := $(LDFLAGS) -mlittle-endian -L$(SRCDIR)/../../library/lib -D__SAMD51J20A__
+LIBS := $(LIBS) -lsamd51_rtos
+ifeq ($(FPU_ABI),)
+FPU_ABI = softfp
+endif
+
+#
+#  CPUコアの定義
+#
+CORE_TYPE = CORTEX_M4
+
+#
+#  カーネルに関する定義
+#
+KERNEL_DIR := $(KERNEL_DIR) $(SRCDIR)/arch/$(PRC)_$(TOOL)/$(CHIP)
+KERNEL_ASMOBJS := $(KERNEL_ASMOBJS)
+KERNEL_COBJS := $(KERNEL_COBJS) core_timer.o chip_config.o
+
+#
+#  システムサービスに関する定義
+#
+SYSSVC_DIR := $(SYSSVC_DIR) $(SRCDIR)/arch/$(PRC)_$(TOOL)/$(CHIP)
+SYSSVC_COBJS := $(SYSSVC_COBJS) chip_serial.o syscalls.o system_samd51.o ai_mini4wd_cfg.o
+
+
+#
+#  リンカスクリプトの定義
+#
+ifeq ($(DBGENV),RAM)
+LDSCRIPT = $(SRCDIR)/target/$(BOARD)/samd51x20x_ram.ld
+COPTS := $(COPTS) -DTOPPERS_RAM_EXEC
+else
+LDSCRIPT = $(SRCDIR)/target/$(BOARD)/samd51x20x_rom.ld
+endif
+
+#
+#  スタートアップモジュールに関する定義
+#
+#  stm32f4xx_xxx.ldに「STARTUP(start.o)」を記述したため，
+#  スタートアップモジュールの名前をHIDDEN_OBJSに定義する．
+#  また，LDFLAGSに-nostdlibを追加している．
+#
+HIDDEN_OBJS = start.o
+
+$(HIDDEN_OBJS): %.o: %.S
+	$(CC) -c $(CFLAGS) $(KERNEL_CFLAGS) $<
+
+$(HIDDEN_OBJS:.o=.d): %.d: %.S
+	@$(PERL) $(SRCDIR)/utils/makedep -C $(CC) \
+		-O "$(CFLAGS) $(KERNEL_CFLAGS)" $< >> Makefile.depend
+
+LDFLAGS := $(LDFLAGS)
+
+
+#
+#  コア依存部のインクルード
+#
+include $(SRCDIR)/arch/$(PRC)_$(TOOL)/common/Makefile.core
