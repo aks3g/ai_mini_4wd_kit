@@ -299,6 +299,8 @@ int main(void)
 		__fatal_error("Script Not found.\r\n");
 	}
 
+	aiMini4wdPrintLedPattern(0x0);
+
 
 #if MICROPY_ENABLE_GC
 	gc_init(heap, heap + sizeof(heap));
