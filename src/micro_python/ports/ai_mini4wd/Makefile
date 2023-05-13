@@ -24,9 +24,9 @@ LD = $(CROSS_COMPILE)gcc
 
 DFU = $(TOP)/tools/dfu.py
 PYDFU = $(TOP)/tools/pydfu.py
-#CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
+#CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_CORTEX_M4 = -mthumb -D__SAMD51J20A__ -mcpu=cortex-m4
-CFLAGS = -x c $(INC) -D__SAMD51J20A__ -Wall -Werror -std=c99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(CFLAGS_CORTEX_M4) $(COPT)
+CFLAGS = -x c $(INC) -D__SAMD51J20A__  -mcpu=cortex-m4 -mtune=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp -Wall -Werror -std=c99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS = -mthumb -Wl,-Map=$@.map  -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m4 -T samd51j20a_flash.ld
 LDFLAGS_BOOTLOADER = -mthumb -Wl,-Map=$@.map  -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m4 -T samd51j20a_bootloader.ld
 ARFLAGS_LIB = 
@@ -70,6 +70,7 @@ SRC_C = \
 SRC_LIB_C = \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/unicode.c \
+	wrapper.c \
 	mini4wd.c \
 	mini4wd_type.c \
 	self_position_estimater_type.c \
@@ -92,7 +93,7 @@ $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 all: $(BUILD)/MINI4WD.AUP
-lib: $(BUILD)/libupython_mini4wd.a
+lib: $(BUILD)/libmpython_mini4wd.a
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
@@ -104,10 +105,10 @@ $(BUILD)/MINI4WD.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS_BOOTLOADER) $(LIB) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-$(BUILD)/libupython_mini4wd.a: $(LIB_OBJ)
+$(BUILD)/libmpython_mini4wd.a: $(LIB_OBJ)
 	$(ECHO) "ARCHIVE $@"
 	$(Q)$(AR) $(ARFLAGS_LIB)-r $@ $^
-	$(CP) $@ ../../../library/lib/libupython_mini4wd.a
+	$(CP) $@ ../../../library/lib/libmpython_mini4wd.a
 	$(Q)$(SIZE) $@
 
 
