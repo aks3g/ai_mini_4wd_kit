@@ -34,6 +34,7 @@
 #include "include/internal/usb.h"
 #include "include/internal/usb_cdc.h"
 #include "include/internal/usb_mass_storage.h"
+#include "include/internal/rtc.h"
 
 #include "include/ai_mini4wd_sensor.h"
 #include "include/ai_mini4wd_motor_driver.h"
@@ -98,13 +99,13 @@ int aiMini4wdInitialize(uint32_t flags)
 	//J 120MHzになったFDPLLをGCLK0のソースに設定する（死にそう）
 	samd51_gclk_configure_generator(LIB_MINI_4WD_CLK_GEN_NUMBER_MAIN, SAMD51_GCLK_SRC_DPLL0, 0, 0, SAMD51_GCLK_DIV_NORMAL);
 
+
 	//J Timers
 	aiMini4WdInitializeTimer();
 	
 	//J FSの初期化. 内部的に2000ms 待つので旧来のWaitを消す
 	aiMini4wdFsInitialize();
 	
-  
 	//J レジストリロード
 	aiMini4wdRegistryLoad();
 	if (flags & AI_MINI_4WD_INIT_FLAG_FOR_INTERNAL_BOOTLOADER) {
@@ -121,6 +122,13 @@ int aiMini4wdInitialize(uint32_t flags)
 	//J 加速度センサ、タコメータ
 	aiMini4wdSensorsInitialize();
 
+	// Enable Ext I2c
+	samd51_mclk_enable(SAMD51_APBB_SERCOM2, 1);
+	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SERCOM2_CORE, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
+	samd51_i2c_initialize(SAMD51_SERCOM2, 400000);
+	aiMini4wdInitializeRtc(SAMD51_SERCOM2);
+
+
 	//J Odometerの初期化
 	if (flags & AI_MINI_4WD_INIT_FLAG_USE_ODOMETER) {
 		sGlobalParams.enableOdometer = 1;
@@ -130,11 +138,6 @@ int aiMini4wdInitialize(uint32_t flags)
 
 	if (flags & AI_MINI_4WD_INIT_FLAG_USE_LED_INDICATOR) {
 		sGlobalParams.enableLedIndicator = 1;
-
-		// Enable Ext I2c
-		samd51_mclk_enable(SAMD51_APBB_SERCOM2, 1);
-		samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_SERCOM2_CORE, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
-		samd51_i2c_initialize(SAMD51_SERCOM2, 400000);
 	}
 
 	//J Motor Driver
@@ -234,7 +237,6 @@ int aiMini4wdDebugPrintf(const char *format, ...)
 	int len = vsnprintf(gCommonLineBuf, sizeof(gCommonLineBuf), format, ap );
     va_end( ap );
 
-	samd51_uart_puts(SAMD51_SERCOM2, gCommonLineBuf);
 	usbCdc_puts(gCommonLineBuf);
 
 	return len;
@@ -246,7 +248,7 @@ int aiMini4wdDebugPuts(const char *str, size_t len)
 		return 0;
 	}
 
-	int ret = samd51_uart_puts(SAMD51_SERCOM2, str);
+	int ret = 0;
 	usbCdc_puts(str);
 
 	return ret;
@@ -258,10 +260,9 @@ int aiMini4wdDebugPutc(const char c)
 		return 0;
 	}
 
-	int ret = samd51_uart_putc(SAMD51_SERCOM2, c);
 	usbCdc_putc(c);
 
-	return ret;
+	return 0;
 }
 
 int aiMini4wdDebugTryGetc(void)
@@ -271,12 +272,9 @@ int aiMini4wdDebugTryGetc(void)
 	}
 
 	char c = 0;
-	int ret = 0;
+	int ret = -1;
 	if (usbCdc_isLinkedUp()) {
 		ret = usbCdc_try_rx((uint8_t *)&c);
-	}
-	else {
-		ret = samd51_uart_try_rx(SAMD51_SERCOM2, (uint8_t *)&c);
 	}
 	
 	if (ret == 0) {
@@ -293,12 +291,9 @@ int aiMini4wdDebugGetc(void)
 	}
 
 	char c = 0;
-	int ret = 0;
+	int ret = -1;
 	if (usbCdc_isLinkedUp()) {
 		ret = usbCdc_rx((uint8_t *)&c, 1);
-	}
-	else {
-		ret = samd51_uart_rx(SAMD51_SERCOM2, (uint8_t *)&c, 1);
 	}
 
 	if (ret == 0) {

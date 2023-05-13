@@ -52,5 +52,7 @@ int samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL ch, SAMD51_EIC_SENSE_TYPE
 void samd51_external_interrupt_enable(SAMD51_EIC_CHANNEL ch, int enable);
 
 uint16_t samd51_external_interrupt_get_pinstate(void);
+void samd51_external_pend(SAMD51_EIC_CHANNEL ch);
+void samd51_external_restore(SAMD51_EIC_CHANNEL ch);
 
 #endif /* SAMD51_INTERRUPT_H_ */

@@ -7,12 +7,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <samd51_gpio.h>
 
 #include <ai_mini4wd.h>
 #include <ai_mini4wd_fs.h>
 #include <ai_mini4wd_hid.h>
+#include <ai_mini4wd_timer.h>
+#include <ai_mini4wd_trace.h>
 
 
 #include "console_cmd.h"
@@ -34,6 +37,9 @@ static void _console_cmd_umnt(char **args, int argn);
 static void _console_cmd_dump_registry(char **args, int argn);
 static void _console_cmd_fmt(char **args, int argn);
 static void _console_cmd_sensor(char **args, int argn);
+static void _console_cmd_rtc(char **args, int argn);
+static void _console_cmd_fs_test(char **args, int argn);
+static void _console_cmd_trace(char **args, int argn);
 
 console_cmd_def console_cmd_set[NUM_CMDS]
 =
@@ -52,7 +58,10 @@ console_cmd_def console_cmd_set[NUM_CMDS]
 	{"mnt",			"Mount FS (Unmount from UMSS)",		_console_cmd_mnt},
 	{"umnt",		"Unmount FS (Mount to UMSS)",		_console_cmd_umnt},
 	{"fmt",			"Format File system",				_console_cmd_fmt},
-	{"sensor",		"show sensor values",				_console_cmd_sensor},		
+	{"sensor",		"show sensor values",				_console_cmd_sensor},
+	{"rtc",			"get/set RTC value",				_console_cmd_rtc},
+	{"fs",			"File system test",					_console_cmd_fs_test},
+	{"trace",		"trace control",					_console_cmd_trace},
 	{NULL,			NULL,								NULL},
 };
 
@@ -422,9 +431,106 @@ static void _console_cmd_fmt(char **args, int argn)
 	}
 }
 
-static uint16_t work[4096];
 static void _console_cmd_sensor(char **args, int argn)
 {
-	uint16_t mv=0;
-	aiMini4wdSensorCalibrateTachoMeter(&mv, work, sizeof(work)/sizeof(work[0]));
+}
+
+static void _console_cmd_rtc(char **args, int argn)
+{
+	if (argn == 0) {
+		uint32_t rtc_val = aiMini4wdRtcGetTimer();
+		struct tm *ptn;
+		ptn = localtime((time_t *)&rtc_val);
+		
+		aiMini4wdDebugPrintf("%04d/%02d/%02d %02d:%02d:%02d\n", 1900 + ptn->tm_year, ptn->tm_mon + 1, ptn->tm_mday, ptn->tm_hour, ptn->tm_min, ptn->tm_sec);	
+	}
+	else if (argn == 2){
+		struct tm new_time;
+		int year, mon, day, hour, min, sec;
+		sscanf(args[0], "%04d/%02d/%02d", &year, &mon, &day);
+		sscanf(args[1], "%02d:%02d:%02d", &hour, &min, &sec);
+
+		new_time.tm_hour = hour;
+		new_time.tm_min  = min;
+		new_time.tm_sec  = sec;
+		new_time.tm_mday = day;
+		new_time.tm_mon  = mon - 1;
+		new_time.tm_year = year - 1900;
+		
+		volatile time_t epoc = mktime(&new_time);
+
+		aiMini4wdDebugPrintf("epoc = %u\n", (uint32_t)epoc);
+		aiMini4wdRtcSetTimer(epoc);
+	}
+}
+
+static void _console_cmd_fs_test(char **args, int argn) {
+	AiMini4wdFile *fp;
+	
+	fp=aiMini4wdFsOpen("test.txt", "w");
+	
+	volatile int ret = aiMini4wdFsSeek(fp, 1*1024*1024);
+	if (ret != 0) {
+		aiMini4wdDebugPrintf("Error at aiMini4wdFsSeek() = %08x\n", (uint32_t)ret);
+	}
+
+	ret = aiMini4wdFsSeek(fp, 0);
+	if (ret != 0) {
+		aiMini4wdDebugPrintf("Error at aiMini4wdFsSeek() = %08x\n", (uint32_t)ret);
+	}
+
+	ret = aiMini4wdFsSync(fp);
+	if (ret != 0) {
+		aiMini4wdDebugPrintf("Error at aiMini4wdFsSync() = %08x\n", (uint32_t)ret);
+	}
+
+	ret = aiMini4wdFsWrite(fp, "test message\n", strlen("test message\n"));
+	if (ret != 0) {
+		aiMini4wdDebugPrintf("Error at aiMini4wdFsWrite() = %08x\n", (uint32_t)ret);
+	}
+
+	for (int i=0; i<1000 ; ++i) {
+		ret = aiMini4wdFsPuts(fp, "Test\n", strlen( "Test\n"));
+	}
+
+	ret = aiMini4wdFsPutsFlush(fp);
+	if (ret != 0) {
+		aiMini4wdDebugPrintf("Error at aiMini4wdFsWrite() = %08x\n", (uint32_t)ret);
+	}	ret = aiMini4wdFsTruncate(fp);
+
+
+	aiMini4wdFsClose(fp);
+}
+
+static sTraceIdx=0;
+static void log_reader(uint32_t idx, uint32_t tick, uint32_t log)
+{
+	aiMini4wdDebugPrintf("%4d\t%08x\t%08x\n", idx, tick, log);
+}
+
+static void _console_cmd_trace(char **args, int argn) {
+	if (argn == 0) {
+		
+	}
+	else if (strcmp(args[0], "enable") == 0) {
+		aiMini4wdDebugPrintf("Enable Debug trace\n");
+		aiMini4wdDebugTraceControl(1);
+	}
+	else if (strcmp(args[0], "disable") == 0) {
+		aiMini4wdDebugPrintf("Disable Debug trace\n");
+		aiMini4wdDebugTraceControl(0);
+	}
+	else if (strcmp(args[0], "clear") == 0) {
+		aiMini4wdDebugPrintf("Clear Debug trace\n");
+		aiMini4wdDebugTraceClear();
+	}
+	else if (strcmp(args[0], "push") == 0) {
+		aiMini4wdDebugTracePush(aiMini4WdTimerGetSystemtick(), 0xdeadbeef);
+	}
+	else if (strcmp(args[0], "pop") == 0) {
+		aiMini4wdDebugPrintf("--Start of Debug Trace--\n");
+		sTraceIdx = 0;
+		aiMini4wdDebugTracePop(log_reader);
+		aiMini4wdDebugPrintf("--End of Debug Trace--\n");
+	}
 }

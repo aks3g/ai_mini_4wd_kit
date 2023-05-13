@@ -47,8 +47,8 @@ static int _setDuty(int duty);
 int aiMini4WdInitializePwm(void)
 {
 	if (gAiMini4wdInitFlags & AI_MINI_4WD_INIT_FLAG_USE_TEST_TYPE_HW) {
-		sPwm1Port = SAMD51_GPIO_B15;
-		sPwm2Port = SAMD51_GPIO_B14;
+	//	sPwm1Port = SAMD51_GPIO_B15;
+	//	sPwm2Port = SAMD51_GPIO_B14;
 	}
 
 	samd51_mclk_enable(SAMD51_APBC_TCn4, 1);
@@ -90,10 +90,10 @@ static int _setDuty(int duty)
 	}
 	
 	if (duty == 0) {
-		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
-		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
-		samd51_gpio_configure(SAMD51_GPIO_B14, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
-		samd51_gpio_configure(SAMD51_GPIO_B15, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
+		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_DEFAULT);
+		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_DEFAULT);
+		samd51_gpio_configure(SAMD51_GPIO_B14, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_DEFAULT);
+		samd51_gpio_configure(SAMD51_GPIO_B15, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_DEFAULT);
 
 		samd51_gpio_output(SAMD51_GPIO_B12, 0);
 		samd51_gpio_output(SAMD51_GPIO_B13, 0);
@@ -103,8 +103,8 @@ static int _setDuty(int duty)
 	else if(duty > 0) {
 		samd51_gpio_output(SAMD51_GPIO_B12, 0);
 		samd51_gpio_output(SAMD51_GPIO_B13, 0);
-		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
-		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_FUNC_E);
+		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_DEFAULT);
+		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_FUNC_E);
 
 		samd51_gpio_output(sPwm1Port, 1);
 		samd51_gpio_output(sPwm2Port, 0);
@@ -113,8 +113,8 @@ static int _setDuty(int duty)
 	else if(duty < 0) {
 		samd51_gpio_output(SAMD51_GPIO_B12, 0);
 		samd51_gpio_output(SAMD51_GPIO_B13, 0);
-		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_FUNC_E);
-		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_PULLUP_DOWN, SAMD51_GPIO_MUX_DEFAULT);
+		samd51_gpio_configure(SAMD51_GPIO_B12, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_FUNC_E);
+		samd51_gpio_configure(SAMD51_GPIO_B13, SAMD51_GPIO_OUT, SAMD51_GPIO_NO_PULL, SAMD51_GPIO_MUX_DEFAULT);
 
 		samd51_gpio_output(sPwm1Port, 0);
 		samd51_gpio_output(sPwm2Port, 1);

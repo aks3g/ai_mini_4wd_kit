@@ -75,6 +75,8 @@
     </ToolchainSettings>
     <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(MSBuildProjectDirectory)\..\include
 cp $(OutputDirectory)\libconsole.a $(MSBuildProjectDirectory)\..\lib</PostBuildEvent>
+    <OutputFileName>libconsole</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>

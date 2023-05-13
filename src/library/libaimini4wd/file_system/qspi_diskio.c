@@ -30,6 +30,10 @@ static int sFlashBusy = 0;
 static int spi_flash_is_busy(void);
 static void _flash_write_done(int status);
 
+void _rtos_null_process(void){return;}
+void __rtos_write_done_hook(void) __attribute__ ((weak, alias("_rtos_null_process")));
+void __rtos_wait_write_done(void) __attribute__ ((weak, alias("_rtos_null_process")));
+
 /*--------------------------------------------------------------------------*/
 DSTATUS qspi_disk_initialize (void)
 {
@@ -65,7 +69,6 @@ DRESULT qspi_disk_read (BYTE* buff, DWORD sector, UINT count)
 /*--------------------------------------------------------------------------*/
 DRESULT qspi_disk_write (const BYTE* buff, DWORD sector, UINT count)
 {
-	int ret = 0;
 	uint32_t addr = sector * SPI_FLASH_SECTOR_SIZE;
 	size_t size = count * SPI_FLASH_SECTOR_SIZE;
 	if (mx25x.initialized == 0) {
@@ -75,7 +78,7 @@ DRESULT qspi_disk_write (const BYTE* buff, DWORD sector, UINT count)
 
 	sFlashBusy = SPI_FLASH_BUSY_ERASE;
 	mx25x.dma_ctx.addr = addr;
-	mx25x.dma_ctx.buf  = buff;
+	mx25x.dma_ctx.buf  = (BYTE *)buff;
 	mx25x.dma_ctx.size = size;
 	mx25x.transaction_done = _flash_write_done;
 
@@ -84,11 +87,23 @@ DRESULT qspi_disk_write (const BYTE* buff, DWORD sector, UINT count)
 	MX25L51245G_wait_status_ret_set(&mx25x, 0x02);
 
 	//J Timer CB‚Ì’†‚ÅStatus‚ðPolling‚µ‚ÄWrite‚ðKick‚·‚é
-	ret = MX25L51245G_erase_sector(&mx25x, addr);
+	int ret = MX25L51245G_erase_sector(&mx25x, addr);
 
+	__rtos_wait_write_done();
 	while(spi_flash_is_busy());
 
-	return RES_OK;
+	return ret;
+}
+
+/*--------------------------------------------------------------------------*/
+DRESULT qspi_disk_check_busy(void)
+{
+	if (spi_flash_is_busy()) {
+		return RES_NOTRDY;
+	}
+	else {
+		return RES_OK;
+	}
 }
 
 /*--------------------------------------------------------------------------*/
@@ -147,7 +162,7 @@ void flash_timer_proc(void)
 				MX25L51245G_write_data(&mx25x, mx25x.dma_ctx.addr, mx25x.dma_ctx.size, mx25x.dma_ctx.buf);
 			}
 			else {
-				sFlashBusy = SPI_FLASH_BUSY_ERASE;
+				sFlashBusy = SPI_FLASH_BUSY_WRITE;
 			}
 		}
 	}
@@ -160,4 +175,5 @@ void flash_timer_proc(void)
 static void _flash_write_done(int status)
 {
 	sFlashBusy = SPI_FLASH_IDLE;
+	__rtos_write_done_hook();
 }

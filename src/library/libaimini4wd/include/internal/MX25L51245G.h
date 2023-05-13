@@ -116,4 +116,20 @@ typedef struct {
 	MX25L5124G_TRANSACTION_DONE transaction_done;
 } MX25L51245G;
 
+
+int MX25L51245G_identification(MX25L51245G *ctx, uint8_t *manuf_id, uint8_t *type, uint8_t *density);
+int MX25L51245G_status_reg(MX25L51245G *ctx, uint8_t *status);
+int MX25L51245G_write_status_configuration_reg(MX25L51245G *ctx, uint8_t status, uint8_t config);
+int MX25L51245G_wait_status_ret_clear(MX25L51245G *ctx, uint8_t clear_mask);
+int MX25L51245G_wait_status_ret_set(MX25L51245G *ctx, uint8_t set_mask);
+int MX25L51245G_configuration_reg(MX25L51245G *ctx, uint8_t *conf);
+int MX25L51245G_enter_4byte_address_mode(MX25L51245G *ctx);
+int MX25L51245G_enable_QPI(MX25L51245G *ctx);
+int MX25L51245G_disable_QPI(MX25L51245G *ctx);
+int MX25L51245G_write_enable(MX25L51245G *ctx);
+int MX25L51245G_init(MX25L51245G *ctx);
+int MX25L51245G_read_data(MX25L51245G *ctx, uint32_t addr, size_t size, uint8_t *buf);
+int MX25L51245G_write_data(MX25L51245G *ctx, uint32_t addr, size_t size, uint8_t *buf);
+int MX25L51245G_erase_sector(MX25L51245G *ctx, uint32_t addr);
+
 #endif /* MX25L51245G_H_ */

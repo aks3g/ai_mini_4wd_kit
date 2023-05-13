@@ -10,6 +10,7 @@
 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_adc.h>
 
@@ -172,7 +173,7 @@ int samd51_adc_setup(uint32_t ch, SAMD51_ADC_MODE mode, SAMD51_ADC_BIT_RESOLUTIO
 		return AI_ERROR_INVALID;
 	}
 	
-	NVIC_EnableIRQ(ADC0_1_IRQn + (2 * ch));
+	samd51_enable_irq(ADC0_1_IRQn + (2 * ch));
 
 	// Disable ADC
 	reg->CTRLA = 0;

@@ -106,15 +106,19 @@ int samd51_nvmctrl_write_page(const uint32_t phisical_adr, const void *buf, cons
 	uint32_t *buf_32 = (uint32_t *)buf;	
 	uint32_t addr = phisical_adr;
 	for (i=0 ;  i<npages ; ++i) {
+		NVMCTRL_REG.addr = 0;
+
 		//Check Status
 		if ((NVMCTRL_REG.status & 0x01) == 0) {
 			ret = AI_ERROR_BUSY;
 			break;
 		}
-
+		
 		//J Buffer Clear
 		NVMCTRL_REG.ctrlb = (uint16_t)(((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NCMCTRL_CMD_PBC);
+		__DSB();
 		while ((NVMCTRL_REG.intflag & SAMD51_NVMCTRL_FLAG_DONE) == 0);
+		while ((NVMCTRL_REG.status & 0x01) == 0);
 
 		//Check Status
 		if ((NVMCTRL_REG.status & 0x01) == 0) {
@@ -134,8 +138,12 @@ int samd51_nvmctrl_write_page(const uint32_t phisical_adr, const void *buf, cons
 		}
 
 		// Write Page
-		NVMCTRL_REG.ctrlb = (uint16_t)(((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NVMCTRL_CMD_WP);
+		volatile uint16_t write_cmd =  (uint16_t)(((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NVMCTRL_CMD_WP);
+		NVMCTRL_REG.ctrlb = write_cmd;
+		__DSB();
 		while ((NVMCTRL_REG.intflag & SAMD51_NVMCTRL_FLAG_DONE) == 0);
+		while ((NVMCTRL_REG.status & 0x01) == 0);
+
 		if (NVMCTRL_REG.intflag & ~SAMD51_NVMCTRL_FLAG_DONE) {
 			ret = AI_ERROR_NOT_READY;
 			break;
@@ -148,10 +156,10 @@ int samd51_nvmctrl_write_page(const uint32_t phisical_adr, const void *buf, cons
 	return ret;
 }
 
-int samd51_nvmctrl_erase_page(const uint32_t phisical_adr, size_t npages)
+int samd51_nvmctrl_erase_block(const uint32_t phisical_adr, size_t blocks)
 {
-	size_t page_size = samd51_nvmctrl_get_page_size();	
-	if (phisical_adr & (page_size -1)) {
+	size_t block_size = samd51_nvmctrl_get_block_size();	
+	if (phisical_adr & (block_size -1)) {
 		return AI_ERROR_INVALID;
 	}
 
@@ -159,7 +167,7 @@ int samd51_nvmctrl_erase_page(const uint32_t phisical_adr, size_t npages)
 
 	size_t i=0;
 	uint32_t addr = phisical_adr;
-	for (i=0 ;  i<npages ; ++i) {
+	for (i=0 ;  i<blocks ; ++i) {
 		NVMCTRL_REG.addr = addr;
 		NVMCTRL_REG.ctrlb = (uint16_t)(((SAMD51_NVM_EXEC_CMD) << 8) | SAMD51_NVMCTRL_CMD_EB);
 
@@ -169,7 +177,7 @@ int samd51_nvmctrl_erase_page(const uint32_t phisical_adr, size_t npages)
 			break;
 		}
 
-		addr += page_size;
+		addr += block_size;
 		NVMCTRL_REG.intflag = NVMCTRL_REG.intflag; // Clear All flags.
 	}
 
@@ -185,6 +193,15 @@ size_t samd51_nvmctrl_get_page_size(void)
 
 	return (size_t)page_size;
 }
+
+size_t samd51_nvmctrl_get_block_size(void)
+{
+	uint32_t page_size = (NVMCTRL_REG.param >> 16) & 0x00000007;
+	page_size = 1 << (page_size + 3);
+
+	return (size_t)page_size * 16;
+}
+
 
 
 size_t samd51_nvmctrl_get_pages(void)

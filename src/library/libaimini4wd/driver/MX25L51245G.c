@@ -216,7 +216,7 @@ int MX25L51245G_init(MX25L51245G *ctx)
 {
 	memset (ctx, 0, sizeof(MX25L51245G));
 	
-	volatile uint8_t manuf_id=0, type, density;
+	uint8_t manuf_id=0, type, density;
 	MX25L51245G_identification(ctx, &manuf_id, &type, &density);
 
 	//	MX25L51245G_enter_4byte_address_mode(ctx);
@@ -271,13 +271,12 @@ int MX25L51245G_write_data(MX25L51245G *ctx, uint32_t addr, size_t size, uint8_t
 	p_mx25x = ctx;
 
 	// SPI_FLASH_PAGE_SIZEˆÈã‚Ì‘‚«ž‚Ý‚Í•ªŠ„‚·‚é
-	if (size > SPI_FLASH_PAGE_SIZE) {
+	if (size >= SPI_FLASH_PAGE_SIZE) {
 		int ret =  samd51_qspi_exec_instruction(&ctx->dma_ctx.inst, buf, SPI_FLASH_PAGE_SIZE, NULL, 0, _write_done);
 		ctx->dma_ctx.addr = addr + SPI_FLASH_PAGE_SIZE;
 		ctx->dma_ctx.buf  = buf + SPI_FLASH_PAGE_SIZE;
 		ctx->dma_ctx.size = size - SPI_FLASH_PAGE_SIZE;
 		return ret;
-
 	}
 	else {
 		return samd51_qspi_exec_instruction(&ctx->dma_ctx.inst, buf, size, NULL, 0, _write_done);

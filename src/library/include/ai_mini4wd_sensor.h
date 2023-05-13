@@ -8,8 +8,6 @@
 #ifndef AI_MINI4WD_SENSOR_H_
 #define AI_MINI4WD_SENSOR_H_
 
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif

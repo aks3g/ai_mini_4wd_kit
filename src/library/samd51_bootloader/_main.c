@@ -41,44 +41,31 @@
 
 #define FLASH_HEAD					(0x1E000)
 
-
-
-static int sTgl = 0;
 static volatile uint32_t sProgress = 0;
 void _timerCb(void)
 {
-	uint8_t toggle_led = 0;
-	
 	switch (sProgress) {
 	case 0:
 		aiMini4wdPrintLedPattern(0);
 		break;
 	case 1:
-		aiMini4wdPrintLedPattern(0);
-		toggle_led = (0x01);
+		aiMini4wdSetLedPattern(0);
+		aiMini4wdToggleLedPattern(0x1);
 		break;
 	case 2:
-		aiMini4wdPrintLedPattern(0x1);
-		toggle_led = (0x02);
+		aiMini4wdSetLedPattern(0x1);
+		aiMini4wdToggleLedPattern(0x2);
 		break;
 	case 3:
-		aiMini4wdPrintLedPattern(0x3);
-		toggle_led = (0x04);
+		aiMini4wdSetLedPattern(0x3);
+		aiMini4wdToggleLedPattern(0x4);
 		break;
 	case 4:
-		aiMini4wdPrintLedPattern(0x7);
-		toggle_led = (0x08);
+		aiMini4wdSetLedPattern(0x7);
 		break;
-	}
-
-	if (toggle_led != 0) {
-		if (sTgl) {
-			aiMini4wdSetLedPattern(toggle_led);
-		}
-		else {
-			aiMini4wdClearLedPattern(toggle_led);
-		}
-		sTgl = 1 - sTgl;
+	case 5:
+		aiMini4wdPrintLedPattern(0x5);
+		break;
 	}
 }
 
@@ -92,20 +79,18 @@ static void _vbus_changed_cb(int vbus)
 	return;
 }
 
-
+#include <time.h>
 int main(void)
 {
 	uint8_t buf[512];
-
 	int ret =aiMini4wdInitialize(0x80000000 | AI_MINI_4WD_INIT_FLAG_USE_USB_SERIAL);
 	if (ret != AI_OK) {
 		goto ERROR;
 	}
 
 	//J USBが接続されている場合Conosleモードに移行する
-//	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
-	if (1) {
-//		aiMini4wdRegisterOnVbusChangedCb(_vbus_changed_cb);
+	if (samd51_gpio_input(SAMD51_GPIO_A23) != 0) {
+		aiMini4wdRegisterOnVbusChangedCb(_vbus_changed_cb);
 		aiMini4wdFsMountDrive(0);
 
 		while (1) {
@@ -156,14 +141,14 @@ int main(void)
 	aiMini4wdDebugPrintf("Size: %d[byte]\n", header.size);
 
 	//J 必要な領域を消す
-	uint32_t pages = (header.size + 511) / 512;
-	for (uint32_t i=0 ; i<pages ; ++i) {
-		ret = samd51_nvmctrl_erase_page(FLASH_HEAD + (i*512), 1);
+	uint32_t block_size = samd51_nvmctrl_get_block_size();
+	uint32_t blocks = (header.size + (block_size-1)) / block_size;
+	for (uint32_t i=0 ; i<blocks ; ++i) {
+		ret = samd51_nvmctrl_erase_block(FLASH_HEAD + (i*block_size), 1);
 		if (ret != AI_OK) {
 			goto ERROR;
 		}
-
-		sProgress = ((4 * i) / pages) + 1;
+		sProgress = ((3 * i) / blocks) + 1;
 	}
 
 	// 512Byte毎に読み込んでFlashに書き込む
@@ -187,7 +172,15 @@ int main(void)
 	aiMini4wdRegistryUpdate();
 
 ENSURE:
-	aiMini4wdSetLedPattern(0x5);
+	sProgress = (0);
+	
+	volatile uint32_t *p = (uint32_t *)FLASH_HEAD;
+	if (*p == 0xffffffff) {
+		sProgress = (0x5);
+		while(1);
+	}
+
+	aiMini4wdClearLedPattern(0x7);	
 	aiMini4wdReset(FLASH_HEAD); // Never return.
 
 ERROR:

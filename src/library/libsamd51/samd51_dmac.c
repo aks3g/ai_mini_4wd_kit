@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_dmac.h>
 
@@ -125,17 +126,28 @@ int samd51_dmac_initialize(void)
 	reg->WRBADDR  = (uint32_t)wbdescs;
 
 //	reg->PRICTRL0=0;
-	NVIC_EnableIRQ(DMAC_0_IRQn);
-	NVIC_EnableIRQ(DMAC_1_IRQn);
-	NVIC_EnableIRQ(DMAC_2_IRQn);
-	NVIC_EnableIRQ(DMAC_3_IRQn);
-	NVIC_EnableIRQ(DMAC_4_IRQn);
+	samd51_enable_irq(DMAC_0_IRQn);
+	samd51_enable_irq(DMAC_1_IRQn);
+	samd51_enable_irq(DMAC_2_IRQn);
+	samd51_enable_irq(DMAC_3_IRQn);
+	samd51_enable_irq(DMAC_4_IRQn);
 
 	// Enable DMAC
 	reg->CTRL = (0x0f<<DMAC_CTRL_PRIOLITY_LEVEL_0_ENABLE_POS) | (1<<DMAC_CTRL_ENABLE_POS);
 
 	return AI_OK;
 }
+
+/*--------------------------------------------------------------------------*/
+void samd51_dmac_finalize(void)
+{
+	volatile REG_DMAC *reg = (volatile REG_DMAC *)SAMD51_DMAC_BASE;
+
+	reg->CTRL = (1<<DMAC_CTRL_SWRST_Pos);
+
+	return AI_OK;
+}
+
 
 /*--------------------------------------------------------------------------*/
 int samd51_dmac_transaction_start(int ch, SAMD51_DMAC_TRIGSRC trig, SAMD51_DMAC_TRIGACT act, REG_DMA_DESC *p_desc, SAMD51_DMAC_TRANSACTION_DONE cb)

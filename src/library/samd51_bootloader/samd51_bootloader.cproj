@@ -29,7 +29,7 @@
     <eraseonlaunchrule>0</eraseonlaunchrule>
     <EraseKey />
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
-    <avrtoolserialnumber>J41800050150</avrtoolserialnumber>
+    <avrtoolserialnumber>J41800068351</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x60060304</avrdeviceexpectedsignature>
     <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_atmelice>
@@ -40,16 +40,17 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
-      <ToolNumber>J41800050150</ToolNumber>
+      <ToolNumber>J41800068351</ToolNumber>
       <ToolName>Atmel-ICE</ToolName>
     </com_atmel_avrdbg_tool_atmelice>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
     <AdditionalModules>
       <Module>
-        <File>..\..\..\micro_python\ports\ai_mini4wd\build\firmware.elf</File>
+        <File>..\..\..\toppers\ai_mini4wd_os\obj\asp.elf</File>
         <EraseRule>2</EraseRule>
       </Module>
     </AdditionalModules>
+    <UseGdb>True</UseGdb>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>

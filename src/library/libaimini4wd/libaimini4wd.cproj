@@ -54,6 +54,7 @@
   <armgcc.compiler.symbols.DefSymbols>
     <ListValues>
       <Value>NDEBUG</Value>
+      <Value>OMMIT_FS_PRINT</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -68,6 +69,7 @@
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -mtune=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp</armgcc.compiler.miscellaneous.OtherFlags>
   <armgcc.linker.libraries.Libraries>
     <ListValues>
       <Value>libm</Value>
@@ -116,7 +118,7 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <Value>../../include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.level>Optimize debugging experience (-Og)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
@@ -155,7 +157,16 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Folder Include="file_system" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="driver\lsm6ds3h.c">
+    <Compile Include="debug_trace.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="driver\iam20680ht.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="driver\lsm6ds3h.c">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="driver\max31329.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="driver\MX25L51245G.c">
@@ -185,6 +196,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="file_system\ffunicode.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="file_system\ff_rtc.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="file_system\qspi_diskio.c">
       <SubType>compile</SubType>
     </Compile>
@@ -201,6 +215,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hids.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\ai_mini4wd_trace.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\ai_mini4wd_error.h">
@@ -245,7 +262,13 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
     <Compile Include="include\internal\hids.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\internal\iam20680ht.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\internal\lsm6ds3h.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\max31329.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\internal\MX25L51245G.h">
@@ -264,6 +287,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\internal\registry.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\internal\rtc.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\internal\scsi.h">
@@ -297,6 +323,9 @@ cp $(OutputDirectory)\libaimini4wd.a $(SolutionDir)\lib</PostBuildEvent>
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="reset.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="rtc.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="sensor.c">

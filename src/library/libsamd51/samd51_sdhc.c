@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_sdhc.h>
 
@@ -56,7 +57,7 @@ int samd51_sdhc_initialize(SAMD51_SDHC sdhc)
 	while (regs->clock_control.bm.internal_clock_stable == 0);
 
 	//J Interrupt ハンドラを有効にしておく
-	NVIC_EnableIRQ(SDHC0_IRQn);
+	samd51_enable_irq(SDHC0_IRQn);
 	
 	//J 必要なInterrupt を有効にする
 	regs->normal_interrupt_signal_enable.bm.transfer_complete = 1;

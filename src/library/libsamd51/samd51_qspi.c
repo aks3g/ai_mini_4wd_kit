@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_qspi.h>
 #include <samd51_dmac.h>
@@ -169,6 +170,16 @@ int samd51_qspi_initialize(uint8_t baud_div, uint8_t delay_before_sck, uint8_t m
 	reg->BAUD = (baud_div << SAMD51_QSPI_BAUD_BAUD_POS) | (delay_before_sck << SAMD51_QSPI_BAUD_DLYBS_POS) | ((uint32_t)mode);
 
 	return AI_OK;	
+}
+
+/*--------------------------------------------------------------------------*/
+void samd51_qspi_finalize(void)
+{
+	volatile REG_QSPI *reg = (volatile REG_QSPI *)(SAMD51_QSPI_BASE);
+	
+	reg->CTRLA = (1 << SAMD51_QSPI_CTRLA_SWRST_POS);
+
+	return AI_OK;
 }
 
 

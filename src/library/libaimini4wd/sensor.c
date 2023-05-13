@@ -22,6 +22,7 @@
 #include <samd51_clock.h>
 
 #include "include/internal/lsm6ds3h.h"
+#include "include/internal/iam20680ht.h"
 #include "include/internal/odometer.h"
 #include "include/internal/sensor.h"
 #include "include/internal/clock.h"
@@ -42,15 +43,10 @@ static int sOdometerUpdateCount = 0;
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
-static void _int0_cb(void)
-{
-	lsm6ds3h_on_int1();
-}
-
-/*--------------------------------------------------------------------------*/
 static void _int1_cb(void)
 {
-	lsm6ds3h_on_int2();
+	iam20680ht_on_int();
+	//samd51_external_pend(SAMD51_EIC_CHANNEL3);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -65,7 +61,7 @@ static int _float_cmp(const void *a, const void *b)
 	return *(float *)a - *(float *)b;
 }
 	
-static void _update_rpm(uint16_t count)
+static void _update_rpm(uint16_t count, int dir)
 {
 	float next_rpm = 0;
 	if (count != 0) {
@@ -74,6 +70,9 @@ static void _update_rpm(uint16_t count)
 
 		//J タイヤ軸でのRPM
 		next_rpm =  rpm * 8.0f / 20.0f;
+		if (dir) {
+			next_rpm = -next_rpm;
+		}
 	}
 	else {
 		next_rpm = 0;
@@ -98,37 +97,25 @@ static void _update_rpm(uint16_t count)
 
 static void _ac_callback(void)
 {
-//	uint16_t counter = samd51_tc_start_onshot(SAMD51_TC2);
+	uint16_t counter = samd51_tc_start_onshot(SAMD51_TC2);
 	if (sOnStartCb) {
 		sOnStartCb();
 	}
 
-	aiMini4wdToggleLedPattern(1 << 0);
 	if (samd51_ac_state(1)){
-		aiMini4wdSetLedPattern(1<<2);
-		aiMini4wdClearLedPattern(1<<1);
+		_update_rpm(counter, 0);
 	}
 	else {
-		aiMini4wdSetLedPattern(1<<1);
-		aiMini4wdClearLedPattern(1<<2);
+		_update_rpm(counter, 1);
 	}
-
-//	aiMini4wdClearLedPattern(1);
-//	aiMini4wdToggleLedPattern(2);
-
-//	_update_rpm(counter);
 }
 
 /*--------------------------------------------------------------------------*/
 static void _pulse_width_overflow(void)
 {
 	uint16_t counter = samd51_tc_start_onshot(SAMD51_TC2);
-	
 
-//	aiMini4wdClearLedPattern(2);
-//	aiMini4wdToggleLedPattern(1);
-
-	_update_rpm(counter);
+	_update_rpm(counter, 0);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -158,7 +145,6 @@ static int _initialize_ext_i2c(void)
 /*--------------------------------------------------------------------------*/
 static int _initialize_sensor_interrupt(void)
 {
-	samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL2, SAMD51_EIC_SENSE_RISE, 0, _int0_cb);
 	samd51_external_interrupt_setup(SAMD51_EIC_CHANNEL3, SAMD51_EIC_SENSE_RISE, 0, _int1_cb);
 
 	return AI_OK;
@@ -178,8 +164,7 @@ static int _initialize_tachometer(void)
 	samd51_mclk_enable(SAMD51_APBD_DAC, 1);
 	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_DAC, LIB_MINI_4WD_CLK_GEN_NUMBER_1MHZ);
 
-	samd51_dac_initialize(0, SAMD51_DAC_REF_BUFFERED_EXTERNAL_VOLTAGE);
-	samd51_dac_initialize(1, SAMD51_DAC_REF_BUFFERED_EXTERNAL_VOLTAGE);
+	samd51_dac_initialize((1<<0) | (1<<1), SAMD51_DAC_REF_BUFFERED_EXTERNAL_VOLTAGE);
 	AiMini4wdRegistry *regstry = aiMini4wdRegistryGet();
 	if (regstry != NULL) {
 //		aiMini4wdSensorSetTachometerThreshold(regstry->sdk_data.field.tachometer_threshold1, regstry->sdk_data.field.tachometer_threshold2, 0);
@@ -204,23 +189,20 @@ int aiMini4wdSensorsInitialize(void)
 	_initialize_i2c();
 
 	//J Initialize IMU
-	lsm6ds3h_probe();
+//	lsm6ds3h_probe();
+	volatile unsigned int ret = iam20680ht_probe();
 
 	//J Internal Driver
 	_initialize_sensor_interrupt();
 
-	//J EICレジスタのピン状態を確認する
-	uint16_t pinstate = 0;
-	do {
-		samd51_external_interrupt_get_pinstate();
-	} while ((pinstate & 0x0C) == 0x0C);
-
-	lsm6ds3h_grab_oneshot();
+	//J EICレジスタのピン状態を確認したいが…
+//	samd51_external_pend(SAMD51_EIC_CHANNEL3);
+//	iam20680ht_grab_oneshot();
+//	samd51_external_restore(SAMD51_EIC_CHANNEL3);
 
 	_initialize_tachometer();
 
-
-	return AI_OK;
+	return ret;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -275,13 +257,13 @@ int aiMini4wdUpdateSensorData(AiMini4wdImuRawData *imu)
 {
 	static volatile int sPidUpdate = 0;
 	
-	sCurrentData.imu.accel_f[0] = (float)imu->imu.accel[0] * LSM6DS3H_ACCEL_LSB;
-	sCurrentData.imu.accel_f[1] = (float)imu->imu.accel[1] * LSM6DS3H_ACCEL_LSB;
-	sCurrentData.imu.accel_f[2] = (float)imu->imu.accel[2] * LSM6DS3H_ACCEL_LSB;
+	sCurrentData.imu.accel_f[0] = IAM20680HT_ACCEL_TO_mG((float)imu->imu.accel[0]);
+	sCurrentData.imu.accel_f[1] = IAM20680HT_ACCEL_TO_mG((float)imu->imu.accel[1]);
+	sCurrentData.imu.accel_f[2] = IAM20680HT_ACCEL_TO_mG((float)imu->imu.accel[2]);
 
-	sCurrentData.imu.gyro_f[0] = (float)imu->imu.gyro[0] * LSM6DS3H_ANGUL_LSB;
-	sCurrentData.imu.gyro_f[1] = (float)imu->imu.gyro[1] * LSM6DS3H_ANGUL_LSB;
-	sCurrentData.imu.gyro_f[2] = (float)imu->imu.gyro[2] * LSM6DS3H_ANGUL_LSB;
+	sCurrentData.imu.gyro_f[0] = IAM20680HT_ANGLE_TO_mdps((float)imu->imu.gyro[0]);
+	sCurrentData.imu.gyro_f[1] = IAM20680HT_ANGLE_TO_mdps((float)imu->imu.gyro[1]);
+	sCurrentData.imu.gyro_f[2] = IAM20680HT_ANGLE_TO_mdps((float)imu->imu.gyro[2]);
 
 	//J 19msの間に1度もUpdateが無い場合には速度ゼロとして扱う
 	if (sOdometerUpdateCount) {
@@ -302,6 +284,8 @@ int aiMini4wdUpdateSensorData(AiMini4wdImuRawData *imu)
 		aiMini4wdMotorDriverUpdateRpm(sCurrentData.rpm);
 	}
 	sPidUpdate = 1 - sPidUpdate;
+
+	samd51_external_restore(SAMD51_EIC_CHANNEL3);
 
 	return AI_OK;
 }
@@ -415,7 +399,6 @@ int aiMini4wdSensorSetTachometerThreshold(uint16_t threshold1_mv, uint16_t thres
 		return AI_ERROR_OUT_OF_RANGE;
 	}
 	samd51_dac_output(1, dac_out);
-
 
 	//J Flashに保存する
 	if (save) {

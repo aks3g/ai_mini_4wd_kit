@@ -9,6 +9,7 @@
 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_interrupt.h>
 
@@ -83,22 +84,22 @@ int samd51_external_interrupt_initialize(int use_clk32k)
 {
 	sEicRegs = (volatile REG_EIC *)SAMD51_EIC_BASE_ADDRESS;
 	
-	NVIC_EnableIRQ(EIC_0_IRQn);
-	NVIC_EnableIRQ(EIC_1_IRQn);
-	NVIC_EnableIRQ(EIC_2_IRQn);
-	NVIC_EnableIRQ(EIC_3_IRQn);
-	NVIC_EnableIRQ(EIC_4_IRQn);
-	NVIC_EnableIRQ(EIC_5_IRQn);
-	NVIC_EnableIRQ(EIC_6_IRQn);
-	NVIC_EnableIRQ(EIC_7_IRQn);
-	NVIC_EnableIRQ(EIC_8_IRQn);
-	NVIC_EnableIRQ(EIC_9_IRQn);
-	NVIC_EnableIRQ(EIC_10_IRQn);
-	NVIC_EnableIRQ(EIC_11_IRQn);
-	NVIC_EnableIRQ(EIC_12_IRQn);
-	NVIC_EnableIRQ(EIC_13_IRQn);
-	NVIC_EnableIRQ(EIC_14_IRQn);
-	NVIC_EnableIRQ(EIC_15_IRQn);
+	samd51_enable_irq(EIC_0_IRQn);
+	samd51_enable_irq(EIC_1_IRQn);
+	samd51_enable_irq(EIC_2_IRQn);
+	samd51_enable_irq(EIC_3_IRQn);
+	samd51_enable_irq(EIC_4_IRQn);
+	samd51_enable_irq(EIC_5_IRQn);
+	samd51_enable_irq(EIC_6_IRQn);
+	samd51_enable_irq(EIC_7_IRQn);
+	samd51_enable_irq(EIC_8_IRQn);
+	samd51_enable_irq(EIC_9_IRQn);
+	samd51_enable_irq(EIC_10_IRQn);
+	samd51_enable_irq(EIC_11_IRQn);
+	samd51_enable_irq(EIC_12_IRQn);
+	samd51_enable_irq(EIC_13_IRQn);
+	samd51_enable_irq(EIC_14_IRQn);
+	samd51_enable_irq(EIC_15_IRQn);
 
 
 	if (use_clk32k) {
@@ -112,7 +113,6 @@ int samd51_external_interrupt_initialize(int use_clk32k)
 	
 	return AI_OK;
 }
-
 
 /*--------------------------------------------------------------------------*/
 void samd51_external_interrupt_finalize(void)
@@ -136,6 +136,16 @@ void samd51_external_interrupt_finalize(void)
 
 	sEicRegs->CTRLA = (1 << SAMD51_EIC_SWRST_bp);
 	while(sEicRegs->SYNCBUSY & (1 << SAMD51_EIC_SWRST_bp));
+}
+
+void samd51_external_pend(SAMD51_EIC_CHANNEL ch)
+{
+	NVIC_DisableIRQ(EIC_0_IRQn + (int)ch);
+}
+
+void samd51_external_restore(SAMD51_EIC_CHANNEL ch)
+{
+	NVIC_EnableIRQ(EIC_0_IRQn + (int)ch);
 }
 
 

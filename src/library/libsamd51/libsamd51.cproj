@@ -112,7 +112,7 @@ cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEv
       <Value>../include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.level>Optimize debugging experience (-Og)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
@@ -144,6 +144,58 @@ cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEv
     <OutputFileName>libsamd51</OutputFileName>
     <OutputFileExtension>.a</OutputFileExtension>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Relase_rtos' ">
+    <ToolchainSettings>
+      <ArmGcc>
+  <armgcc.common.outputfiles.hex>True</armgcc.common.outputfiles.hex>
+  <armgcc.common.outputfiles.lss>True</armgcc.common.outputfiles.lss>
+  <armgcc.common.outputfiles.eep>True</armgcc.common.outputfiles.eep>
+  <armgcc.common.outputfiles.bin>True</armgcc.common.outputfiles.bin>
+  <armgcc.common.outputfiles.srec>True</armgcc.common.outputfiles.srec>
+  <armgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>NDEBUG</Value>
+      <Value>SUPPORT_RTOS</Value>
+    </ListValues>
+  </armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+      <Value>../include</Value>
+    </ListValues>
+  </armgcc.compiler.directories.IncludePaths>
+  <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
+  <armgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -mtune=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp</armgcc.compiler.miscellaneous.OtherFlags>
+  <armgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </armgcc.linker.libraries.Libraries>
+  <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM>False</armgcc.linker.memorysettings.ExternalRAM>
+  <armgcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+    </ListValues>
+  </armgcc.assembler.general.IncludePaths>
+  <armgcc.preprocessingassembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD51_DFP\1.0.70\include</Value>
+    </ListValues>
+  </armgcc.preprocessingassembler.general.IncludePaths>
+</ArmGcc>
+    </ToolchainSettings>
+    <PostBuildEvent>cp $(MSBuildProjectDirectory)\include\*.h $(MSBuildProjectDirectory)\..\include
+cp $(OutputDirectory)\libsamd51_rtos.a $(MSBuildProjectDirectory)\..\lib</PostBuildEvent>
+    <OutputFileName>libsamd51_rtos</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
+    <OutputPath>bin\Relase_rtos\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="include\samd51_ac.h">
       <SubType>compile</SubType>
@@ -170,6 +222,9 @@ cp $(OutputDirectory)\libsamd51.a $(MSBuildProjectDirectory)\..\lib</PostBuildEv
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\samd51_interrupt.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\samd51_irq.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\samd51_nvmctrl.h">

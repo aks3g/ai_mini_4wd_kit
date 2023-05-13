@@ -13,6 +13,7 @@
 #include <samd51_error.h>
 #include <samd51_clock.h>
 #include <samd51_qspi.h>
+#include <samd51_dmac.h>
 
 #include "include/internal/clock.h"
 #include "include/internal/ff.h"
@@ -146,7 +147,7 @@ int aiMini4wdFsInitialize(void)
 	samd51_mclk_enable(SAMD51_AHB_QSPI, 1);
 	samd51_mclk_enable(SAMD51_AHB_DMAC, 1);
 	
-	samd51_qspi_initialize(10, 0, 0, 0, SAMD51_QSPI_CLOCK_MODE0);
+	samd51_qspi_initialize(8, 0, 0, 0, SAMD51_QSPI_CLOCK_MODE0);
 	samd51_dmac_initialize();
 
 //	volatile uint32_t tick = aiMini4WdTimerGetSystemtick();
@@ -306,6 +307,7 @@ int aiMini4wdFsStat(const char *path, AiMini4wdFileInfo *info)
 	return AI_OK;
 }
 
+#ifndef OMMIT_FS_PRINT
 /*--------------------------------------------------------------------------*/
 extern char gCommonLineBuf[512];
 int aiMini4wdFsPrintf(AiMini4wdFile *file, const char *str, ...)
@@ -322,7 +324,7 @@ int aiMini4wdFsPrintf(AiMini4wdFile *file, const char *str, ...)
 }
 
 /*--------------------------------------------------------------------------*/
-static char sPutsBuf[2][512];
+static char sPutsBuf[2][4096];
 static int sActiveBufIndex = 0;
 static size_t sBufferdSize = 0;
 int aiMini4wdFsPuts(AiMini4wdFile *file, const char *str, size_t len)
@@ -343,7 +345,7 @@ int aiMini4wdFsPuts(AiMini4wdFile *file, const char *str, size_t len)
 		str += cpySize;
 		len -= cpySize;
 	}
-	
+
 	return 0;
 }
 
@@ -358,7 +360,7 @@ int aiMini4wdFsPutsFlush(AiMini4wdFile *file)
 	
 	return 0;
 }
-
+#endif /*OMMIT_FS_PRINT*/
 
 /*--------------------------------------------------------------------------*/
 char *aiMini4wdFsGets(AiMini4wdFile *file, char *buf, size_t len)

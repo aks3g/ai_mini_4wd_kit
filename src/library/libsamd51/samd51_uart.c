@@ -6,6 +6,7 @@
  */ 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_uart.h>
 

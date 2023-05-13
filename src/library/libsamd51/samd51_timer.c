@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_timer.h>
 
@@ -302,7 +303,7 @@ int samd51_tc_initialize_as_timer(SAMD51_TC tc, uint32_t peripheral_clock, uint3
 		return AI_ERROR_INVALID;
 	}
 
-	NVIC_EnableIRQ(TC0_IRQn + (int)tc);
+	samd51_enable_irq(TC0_IRQn + (int)tc);
 	reg->INTENSET = (1 << 4);
 
 	//J Set callback
@@ -343,7 +344,7 @@ int samd51_tc_initialize_as_freerun_counter(SAMD51_TC tc, SAMD51_TC_PRESCALE sca
 
 	reg->CCBUF0 = 0xffff;
 
-	NVIC_EnableIRQ(TC0_IRQn + (int)tc);
+	samd51_enable_irq(TC0_IRQn + (int)tc);
 	reg->INTENSET = 0x01; // OVF Interrupt
 
 	// 48.7.1.1 Control A
@@ -447,7 +448,7 @@ int samd51_tc_initialize_as_oneshot(SAMD51_TC tc, uint32_t peripheral_clock, SAM
 
 	reg->CTRLA  = 0;
 
-	NVIC_EnableIRQ(TC0_IRQn + (int)tc);
+	samd51_enable_irq(TC0_IRQn + (int)tc);
 
 	//J Set callback
 	_set_callback(tc, cb);
@@ -600,13 +601,13 @@ int samd51_tcc_initialize_as_freerun_counter(SAMD51_TC tc, SAMD51_TC_PRESCALE sc
 	// Enable IRQ
 	switch (tc){
 	case SAMD51_TCC0:
-		NVIC_EnableIRQ(TCC0_0_IRQn);
+		samd51_enable_irq(TCC0_0_IRQn);
 		break;
 	case SAMD51_TCC1:
-		NVIC_EnableIRQ(TCC1_0_IRQn);
+		samd51_enable_irq(TCC1_0_IRQn);
 		break;
 	case SAMD51_TCC2:
-		NVIC_EnableIRQ(TCC2_0_IRQn);
+		samd51_enable_irq(TCC2_0_IRQn);
 		break;
 	default:
 		return AI_ERROR_NODEV;	

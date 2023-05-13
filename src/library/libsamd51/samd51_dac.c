@@ -9,6 +9,7 @@
 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_dac.h>
 
@@ -116,41 +117,34 @@ static volatile REG_DAC	*reg_dac = (volatile REG_DAC *)(SAMD51_DAC_BASE);
 /*--------------------------------------------------------------------------*/
 int samd51_dac_initialize(uint32_t ch, SAMD51_DAC_REFERENCE ref)
 {
-	if (ch >= 2) {
-		return AI_ERROR_NODEV;
-	}
+	reg_dac->CTRLA = 1;
+	while (reg_dac->SYNBUSY & (1 << SAMD51_DAC_SWRST_pos));
 
-//	reg_dac->CTRLA = 1;
-//	while (reg_dac->SYNBUSY & (1 << SAMD51_DAC_SWRST_pos));
-	
-	reg_dac->CTRLA = 0;
-	while (reg_dac->SYNBUSY & (1 << SAMD51_DAC_ENABLE_pos));
-
-	// Control
-	uint32_t ctrl = OSR_1 | (1 << SAMD51_DAC_CTRL_REFRESH_pos) | DITHERING_DISABLED | RUN_IN_STANDBY_ENABLED | EXTERNAL_FILTER_DISABLED | CC100K | ENABLE;
-	if (ch == 0) {
-		reg_dac->DACCTRL0 = ctrl;
-	}
-	else {
-		reg_dac->DACCTRL1 = ctrl;
-	}
-	
 	// CTRLB
 	reg_dac->CTRLB = ((int)ref << SAMD51_DAC_REFSEL_pos);
 
-	//J Enable 
+	// Control
+	uint32_t ctrl = OSR_1 | (1 << SAMD51_DAC_CTRL_REFRESH_pos) | DITHERING_DISABLED | RUN_IN_STANDBY_ENABLED | EXTERNAL_FILTER_DISABLED | CC100K | ENABLE;
+	if (ch & (1 << 0)) {
+		reg_dac->DACCTRL0 = ctrl;
+	}
+	if (ch & (1 << 1)) {
+		reg_dac->DACCTRL1 = ctrl;
+	}
+
 	reg_dac->CTRLA = (1 << SAMD51_DAC_ENABLE_pos);
 	while (reg_dac->SYNBUSY & (1 << SAMD51_DAC_ENABLE_pos));
 
-
-	if (ch == 0) {
+	
+	if (ch & (1 << 0)) {
 		while ((reg_dac->STATUS & (1<<SAMD51_DAC_READY0_pos)) == 0);
+		samd51_dac_output(0, 0);
 	}
-	else {
+	if (ch & (1 << 1)) {
 		while ((reg_dac->STATUS & (1<<SAMD51_DAC_READY1_pos)) == 0);
+		samd51_dac_output(1, 0);
 	}
 
-	samd51_dac_output(ch, 1000);
 
 	return AI_OK;
 }

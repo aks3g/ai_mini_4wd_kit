@@ -9,6 +9,7 @@
 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_ac.h>
 
@@ -120,9 +121,9 @@ int samd51_ac_initialize(
 	}
 	
 	reg_ac->CTRLA = 0;
-	
-	NVIC_EnableIRQ(AC_IRQn);
-	
+
+	samd51_enable_irq(AC_IRQn);
+
 	uint32_t compctrl = (output_type << SAMD51_AC_COMP_OUT_pos) |
 						(filter << SAMD51_AC_COMP_FLEN_pos) |
 						(hysteresis << SAMD51_AC_COMP_HYST_pos) |

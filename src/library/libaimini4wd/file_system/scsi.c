@@ -11,7 +11,7 @@
 #include "scsi.h"
 #include "internal/ff.h"
 #include "internal/diskio.h"
-#include "internal/sdhc_diskio.h"
+#include "internal/qspi_diskio.h"
 
 typedef struct ScsiControlContext_t
 {
@@ -485,6 +485,7 @@ static int8_t _scsi_process_write10(uint8_t *cdb, size_t cdb_len, uint8_t *buf, 
 	//J 1ブロック分データ溜まった
 	if (sCtx.byte_count == FF_MAX_SS) {
 		qspi_disk_write(sCtx.buf, lba + sCtx.block_count, 1);
+		while(RES_OK != qspi_disk_check_busy());
 
 		sCtx.block_count++;
 		sCtx.byte_count = 0;

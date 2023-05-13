@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_gpio.h>
 

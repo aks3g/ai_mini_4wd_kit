@@ -9,6 +9,7 @@
 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_sercom.h>
 
@@ -34,27 +35,27 @@ int samd51_sercom_set_interrupt_handler(SAMD51_SERCOM sercom, uint32_t index, SA
 
 	switch (sercom) {
 	case SAMD51_SERCOM0:
-		NVIC_EnableIRQ(SERCOM0_0_IRQn + index);
+		samd51_enable_irq(SERCOM0_0_IRQn + index);
 		sCallbacks[sercom][index] = cb;
 		break;
 
 	case SAMD51_SERCOM1:
-		NVIC_EnableIRQ(SERCOM1_0_IRQn + index);
+		samd51_enable_irq(SERCOM1_0_IRQn + index);
 		sCallbacks[sercom][index] = cb;
 		break;
 
 	case SAMD51_SERCOM2:
-		NVIC_EnableIRQ(SERCOM2_0_IRQn + index);
+		samd51_enable_irq(SERCOM2_0_IRQn + index);
 		sCallbacks[sercom][index] = cb;
 		break;
 
 	case SAMD51_SERCOM3:
-		NVIC_EnableIRQ(SERCOM3_0_IRQn + index);
+		samd51_enable_irq(SERCOM3_0_IRQn + index);
 		sCallbacks[sercom][index] = cb;
 		break;
 
 	case SAMD51_SERCOM4:
-		NVIC_EnableIRQ(SERCOM4_0_IRQn + index);
+		samd51_enable_irq(SERCOM4_0_IRQn + index);
 		sCallbacks[sercom][index] = cb;
 		break;
 

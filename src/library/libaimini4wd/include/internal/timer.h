@@ -13,4 +13,7 @@ int aiMini4WdInitializeTimer(void);
 void aiMini4wdSetErrorStatus(int status);
 int aiMini4wdCurrentVoltageMonitorControl(int enable);
 
+
+
+
 #endif /* TIMER_H_ */

@@ -27,6 +27,8 @@
 #include <samd51_dac.h>
 #include <samd51_interrupt.h>
 #include <samd51_usb_device.h>
+#include <samd51_dmac.h>
+#include <samd51_qspi.h>
 
 void RESTART (volatile uint32_t *entry_addr, volatile uint32_t *stack_addr)
 {
@@ -61,6 +63,8 @@ void aiMini4wdReset(uint32_t reset_addr)
 	samd51_tc_finalize(SAMD51_TC0);
 	samd51_tc_finalize(SAMD51_TC2);
 	samd51_tc_finalize(SAMD51_TC4);
+	samd51_dmac_finalize();
+	samd51_qspi_finalize();
 
 	NVIC->ICER[0] = 0xFFFFFFFFUL;
 	NVIC->ICER[1] = 0xFFFFFFFFUL;

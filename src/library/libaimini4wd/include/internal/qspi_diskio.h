@@ -22,6 +22,7 @@ DRESULT qspi_disk_read (BYTE* buff, DWORD sector, UINT count);
 DRESULT qspi_disk_write (const BYTE* buff, DWORD sector, UINT count);
 DRESULT qspi_disk_ioctl (BYTE cmd, void* buff);
 void qspi_disk_timerproc (void);
+DRESULT qspi_disk_check_busy(void);
 
 #ifdef __cplusplus
 }

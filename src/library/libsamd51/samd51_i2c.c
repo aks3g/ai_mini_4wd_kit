@@ -8,6 +8,7 @@
 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 #include <samd51_i2c.h>
 
@@ -115,7 +116,7 @@ typedef struct SAMD51_I2C_COMMUNICATION_CONTEXT_t
 
 static SAMD51_I2C_COMMUNICATION_CONTEXT sI2cCtx[5];
 static volatile int sI2cInterfaceIsBusy[5] = {0, 0, 0, 0, 0};
-
+static int sError = 0;
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 static volatile REG_SERCOM_I2C *_getRegI2C(SAMD51_SERCOM sercom)
@@ -159,7 +160,7 @@ static void _i2c_master_intterupt_handler(SAMD51_SERCOM sercom)
 			ctx->callback(AI_ERROR_I2C_NACK);
 		}
 		memset(ctx, 0x00, sizeof(SAMD51_I2C_COMMUNICATION_CONTEXT));
-
+		sError = AI_ERROR_I2C_NACK;
 		return;
 	}
 
@@ -185,6 +186,7 @@ static void _i2c_master_intterupt_handler(SAMD51_SERCOM sercom)
 		sI2cInterfaceIsBusy[(int)sercom] = 0;
 		if (ctx->callback) {
 			ctx->callback(AI_OK);
+			sError = AI_OK;
 		}
 		memset(ctx, 0x00, sizeof(SAMD51_I2C_COMMUNICATION_CONTEXT));
 	}
@@ -319,6 +321,7 @@ int samd51_i2c_txrx(SAMD51_SERCOM sercom, const uint8_t slave_addr, const uint8_
 
 	if (callback == NULL) {
 		while (sI2cInterfaceIsBusy[(int)sercom]);
+		return sError;
 	}
 	
 	return AI_OK;

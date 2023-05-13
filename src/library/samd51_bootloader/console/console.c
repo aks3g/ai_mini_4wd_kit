@@ -84,7 +84,7 @@ void console_update(char c)
 	else {
 		aiMini4wdDebugPutc(c);	
 	}
-
+	
 	if (c == '\n') {
 		if (wptr) _console_cmd_exec(linebuf);
 

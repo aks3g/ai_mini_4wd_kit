@@ -9,8 +9,8 @@
 #ifndef AI_MINI_4WD_H_
 #define AI_MINI_4WD_H_
 
-#include <stdint.h>
-#include <stddef.h>
+//#include <stdint.h>
+//#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -53,6 +53,7 @@ typedef struct
 typedef void (*SAMD51_QSPI_TRANSACTION_DONE)(int error);
 
 int samd51_qspi_initialize(uint8_t baud_div, uint8_t delay_before_sck, uint8_t minimum_inactive_CS_delay, uint8_t delay_between_consecutive_transfers, SAMD51_QSPI_CLOCK_MODE mode);
+void samd51_qspi_finalize(void);
 
 int samd51_qspi_exec_instruction(SAMD51_QSPI_INSTRUCTION *inst, uint8_t *wbuf, size_t wbuf_len, uint8_t *rbuf, size_t rbuf_len, SAMD51_QSPI_TRANSACTION_DONE cb);
 

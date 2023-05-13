@@ -18,6 +18,7 @@
 #include "include/internal/clock.h"
 #include "include/internal/pwm.h"
 #include "include/internal/hids.h"
+#include "include/internal/rtc.h"
 
 #include "include/ai_mini4wd_sensor.h"
 
@@ -35,10 +36,10 @@ static void _tc0_cb(void);
 int aiMini4WdInitializeTimer(void)
 {
 	samd51_mclk_enable(SAMD51_APBA_TCn0, 1);
-	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_TC0_TC1, LIB_MINI_4WD_CLK_GEN_NUMBER_48MHZ);
+	samd51_gclk_configure_peripheral_channel(SAMD51_GCLK_TC0_TC1, LIB_MINI_4WD_CLK_GEN_NUMBER_1MHZ);
 	
 	//J 5ms 毎のタイマー
-	samd51_tc_initialize_as_timer(SAMD51_TC0, 48*1000*1000, 5 * 1000, _tc0_cb);
+	samd51_tc_initialize_as_timer(SAMD51_TC0, 1*1000*1000, 5 * 1000, _tc0_cb);
 
 	return 0;
 }
@@ -147,7 +148,11 @@ static void _tc0_cb(void)
 		}
 	}
 
-	(void)aiMini4wdUpdateSwitchStatus();
+	if ((sGlobalTick % 1000) == 0) {
+		aiMIni4wdRtcCycle1sec();
+	}
+
+//	(void)aiMini4wdUpdateSwitchStatus();
 	flash_timer_proc();
 
 	return;

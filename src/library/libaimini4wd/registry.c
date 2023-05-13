@@ -17,7 +17,7 @@
 
 #include "include/internal/registry.h"
 
-#define REGISTORY_ADDR			(0xFFE00)
+#define REGISTORY_ADDR			(0xFE000)
 
 
 static volatile int sInitialized = 0;
@@ -31,7 +31,7 @@ int aiMini4wdRegistryLoad(void)
 
 	samd51_nvmctrl_read(REGISTORY_ADDR, &sRegs, sizeof(sRegs));
 	if (sRegs.sdk_data.field.sdk_version != AI_MINI_4WD_VERSION) {
-		samd51_nvmctrl_erase_page(REGISTORY_ADDR, 1);
+		samd51_nvmctrl_erase_block(REGISTORY_ADDR, 1);
 		
 		memset ((void *)&sRegs, 0x00, sizeof(sRegs));		
 		
@@ -63,7 +63,7 @@ int aiMini4wdRegistryUpdate(void)
 		return AI_ERROR_NOT_READY;
 	}
 
-	ret = samd51_nvmctrl_erase_page(REGISTORY_ADDR, 1);
+	ret = samd51_nvmctrl_erase_block(REGISTORY_ADDR, 1);
 	if (ret != AI_OK) {
 		return ret;
 	}
@@ -78,3 +78,4 @@ int aiMini4wdRegistryUpdate(void)
 
 	return AI_OK;
 }
+

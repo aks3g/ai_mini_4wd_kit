@@ -13,11 +13,17 @@
 
 typedef union AiMini4wdImuRawData_t
 {
-	uint8_t bytes[12];
+	uint8_t bytes[14];
 	struct {
-		int16_t gyro[3];
 		int16_t accel[3];
+		int16_t temp;
+		int16_t gyro[3];
 	} imu;
+	struct {
+		uint16_t accel[3];
+		uint16_t temp;
+		uint16_t gyro[3];
+	} imu_us;
 } AiMini4wdImuRawData;
 
 int aiMini4wdSensorsInitialize(void);

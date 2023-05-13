@@ -11,6 +11,7 @@
 
 #include <sam.h>
 
+#include <samd51_irq.h>
 #include <samd51_error.h>
 
 #include "samd51_usb_device.h"
@@ -268,10 +269,10 @@ int samd51_usb_device_initialize(void)
 
 	USB_REG.reg.descadd = (uint32_t)sEpDesc;
 	
-	NVIC_EnableIRQ(USB_0_IRQn);
-	NVIC_EnableIRQ(USB_1_IRQn);
-	NVIC_EnableIRQ(USB_2_IRQn);
-	NVIC_EnableIRQ(USB_3_IRQn);
+	samd51_enable_irq(USB_0_IRQn);
+	samd51_enable_irq(USB_1_IRQn);
+	samd51_enable_irq(USB_2_IRQn);
+	samd51_enable_irq(USB_3_IRQn);
 
 	NVIC_SetPriority(USB_0_IRQn, 6);
 	NVIC_SetPriority(USB_1_IRQn, 6);

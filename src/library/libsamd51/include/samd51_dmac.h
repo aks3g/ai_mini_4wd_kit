@@ -136,6 +136,7 @@ typedef struct REG_DMA_DESC_t
 typedef void (*SAMD51_DMAC_TRANSACTION_DONE)(int status);
 
 int samd51_dmac_initialize(void);
+void samd51_dmac_finalize(void);
 int samd51_dmac_transaction_start(int ch, SAMD51_DMAC_TRIGSRC trig, SAMD51_DMAC_TRIGACT act, REG_DMA_DESC *p_desc, SAMD51_DMAC_TRANSACTION_DONE cb);
 int samd51_dmac_sw_trigger(uint8_t ch);
 
