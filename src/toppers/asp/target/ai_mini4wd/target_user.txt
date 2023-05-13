@@ -1,0 +1,80 @@
+=====================================================================
+                          stm32e407依存部
+=====================================================================
+
+(1) 対応しているターゲットシステムの種類・構成
+
+stm32e407依存部は，Olimex社STM32-E407をサポートしている．
+搭載しているチップはSTM32F407ZGT6である．
+
+(2) 使用する開発環境と動作検証した条件（バージョン，オプション等）
+
+コンパイラはGCCを用いる．動作確認に用いたコンパイラは以下の通りである．
+
+  gcc version 4.6.3/4.9(GCC ARM:2015q3-20150921)
+
+(3) ターゲット定義事項の規定
+
+(3-1) 割込み優先度
+
+CFG_INTで使用可能な割込み優先度の範囲は，-16 〜 -1 である．ARM-Mプロセ
+ッサ依存部のマニュアルあるように，TMIN_INTPRIに設定可能な値の最大値は
+-15であり，カーネル管理内の割込みは-15 〜 -1 の優先度を設定可能であり，
+カーネル管理外の割込みの優先度としては-16が使用可能である．
+
+(4) メモリマップ
+
+プログラムはFLASHへデータはRAMへ配置する．配置を変更するには，
+stm32f4xx_ram.ld/stm32f4xx_rom.ld を変更すること．
+
+(5) シリアルインタフェースドライバの情報
+
+シリアルインタフェースドライバでは，UART3を用いる．通信フォーマットは，
+115200bps, 8bit, non-parity, 1stopbitである．
+
+(6) システムログ機能の情報
+
+システムログの低レベル出力は，UART3を用いる．通信フォーマットは，
+115200bps, 8bit, non-parity, 1stopbitである．
+
+(7) FPUの設定情報
+
+FPUのスイッチング時の退避設定はMakefile.target中のFPU_USAGE設定に従う
+FPU_NO_PRESERV:FPUは有効に設定するが、RTOSの浮動小数点退避機能は使用しない
+FPU_NO_LAZYSTACKING:レイジー・スタック機能を使わず、
+	常に浮動小数点レジスタの退避を行う
+FPU_LAZYSTACKING:デフォルトモード、レイジー・スタック
+	機能を使用して、浮動小数点レジスタの退避を行う
+未設定の場合、FPUを許可しない
+
+(8) ディレクトリ構成・ファイル構成
+ ./stm32e407_gcc 
+   ./Makefile.target
+   ./stm32f4xx_ram.ld
+   ./stm32f4xx_rom.ld
+   ./target.tf
+   ./target_asm.inc
+   ./target_cfg1_out.h
+   ./target_check.tf
+   ./target_config.h
+   ./target_inithook.c
+   ./target_kernel.h
+   ./target_offset.tf
+   ./target_rename.def
+   ./target_rename.h
+   ./target_serial.cfg
+   ./target_serial.h
+   ./target_sil.h
+   ./target_stddef.h
+   ./target_syssvc.h
+   ./target_test.h
+   ./target_timer.cfg
+   ./target_timer.h
+   ./target_unrename.h
+   ./target_user.txt
+
+(9) バージョン履歴
+2015/12/31
+・最初のリリース
+
+以上．
