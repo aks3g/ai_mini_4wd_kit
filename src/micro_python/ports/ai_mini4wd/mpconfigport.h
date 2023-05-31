@@ -67,7 +67,7 @@
 #define MICROPY_PY_SYS              (0)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_VFS                         (1)
-#define MICROPY_VFS_FAT                     (1)
+#define MICROPY_VFS_FAT                     (0)
 #define MICROPY_PY_IO_FILEIO        (1)
 
 #define MICROPY_MODULE_BUILTIN_INIT         (1)
