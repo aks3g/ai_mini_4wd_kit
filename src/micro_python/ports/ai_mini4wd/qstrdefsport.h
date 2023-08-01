@@ -91,7 +91,11 @@ Q(gamma)
 Q(urandom)
 
 
-
+Q(VfsAiMini4wd)
+Q(readlines)
+Q(tell)
+Q(__del__)
+Q(TextIOWrapper)
 
 
 #endif /* QSTRDEFSPORT_H_ */

@@ -16,6 +16,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I../../../library/include/
+INC += -I../../../mini4wd_v5/
 INC += -I../../../packs/atmel/SAMD51_DFP/1.0.70/include/
 INC += -I../../../packs/arm/CMSIS/Include/
 
@@ -47,8 +48,6 @@ SRC_S = \
 	gchelper.s
 
 SRC_C = \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/option/unicode.c \
 	main.c \
 	mini4wd.c \
 	mini4wd_type.c \
@@ -68,14 +67,12 @@ SRC_C = \
 	$(BUILD)/_frozen_mpy.c
 
 SRC_LIB_C = \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/option/unicode.c \
 	wrapper.c \
 	mini4wd.c \
 	mini4wd_type.c \
 	self_position_estimater_type.c \
 	machine_learning_type.c \
-	storage_if.c \
+	vfs_impl.c \
 	modpyb.c \
 	lib/timeutils/timeutils.c \
 	lib/utils/printf.c \

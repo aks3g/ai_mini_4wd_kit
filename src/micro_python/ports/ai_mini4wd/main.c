@@ -358,7 +358,7 @@ soft_reset:
 	aiMini4wdFsSync(sConsoleOut);
 
 	aiMini4wdSetErrorStatus(2);
-    goto soft_reset;
+goto soft_reset;
 
     mp_deinit();
 

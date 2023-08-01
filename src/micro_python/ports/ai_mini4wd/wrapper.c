@@ -14,6 +14,10 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "lib/utils/pyexec.h"
+#include "extmod/vfs.h"
+
+#include "vfs_impl.h"
+
 
 void mpython_wrap_null_hook(void) {}
 
@@ -41,6 +45,39 @@ int mpython_wrap_init(uint32_t stack_ptr, uint32_t stack_size, void *heap_start,
 	mp_init();
 
 	return 0;
+}
+
+typedef struct _fs_ai_mini4wd_mount_t {
+
+} fs_ai_mini4wd_mount_t;
+
+int mpython_wrap_init_vfs(void)
+{
+	fs_usr_mount_t *vfs_usr = m_new_obj_maybe(fs_usr_mount_t);
+	mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
+	if (vfs == NULL) {
+		goto fail;
+	}
+	vfs_usr->base.type = &mp_ai_mini4wd_vfs_type;
+	vfs->str = "/spi";
+	vfs->len = 4;
+	vfs->obj = MP_OBJ_FROM_PTR(vfs_usr);
+	vfs->next = NULL;
+
+	mp_vfs_mount_t **m;
+	for (m = &MP_STATE_VM(vfs_mount_table); ; m = &(*m)->next) {
+		if (*m == NULL) {
+			*m = vfs;
+			break;
+		}
+	}
+
+	MP_STATE_PORT(vfs_cur) = vfs;
+
+	return 0;
+
+fail:
+	return -1;
 }
 
 void mpython_wrap_deinit(void)

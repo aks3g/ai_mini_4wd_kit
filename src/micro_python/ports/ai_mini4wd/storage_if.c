@@ -14,25 +14,21 @@
 
 #include "storage_if.h"
 
-#include "samd51_sdhc.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-extern uint32_t qspi_disk_read (BYTE* buff, DWORD sector, UINT count);
-extern uint32_t qspi_disk_write (const BYTE* buff, DWORD sector, UINT count);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 mp_uint_t _ai_mini4wd_disk_read(uint8_t *dest, uint32_t block_num, uint32_t num_blocks)
 {
-	return qspi_disk_read(dest, block_num, num_blocks);
+//	return qspi_disk_read(dest, block_num, num_blocks);
+	return _ai_mini4wd_disk_read(dest, block_num, num_blocks);
 }
 
 
 /*---------------------------------------------------------------------------*/
 mp_uint_t _ai_mini4wd_disk_write(const uint8_t *src, uint32_t block_num, uint32_t num_blocks)
 {
-	return qspi_disk_write(src, block_num, num_blocks);
+//	return qspi_disk_write(src, block_num, num_blocks);
+	return _ai_mini4wd_disk_write(src, block_num, num_blocks);
 }
 
 
@@ -121,7 +117,7 @@ const mp_obj_type_t ai_mini4wd_disk_type = {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 void ai_mini4wd_fs_init_vfs(fs_user_mount_t *vfs) {
-	vfs->base.type = &mp_fat_vfs_type;
+	vfs->base.type = &mp_fat_vfs_type; //★
 	vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
 	vfs->fatfs.drv = vfs;
 	vfs->readblocks[0] = (mp_obj_t)&ai_mini4wd_disk_readblocks_obj;
