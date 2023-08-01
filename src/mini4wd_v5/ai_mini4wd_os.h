@@ -26,7 +26,7 @@
 #define	STACK_SIZE		4096		/* タスクのスタックサイズ */
 #endif /* STACK_SIZE */
 
-#define IO_STACK_SIZE		4096
+#define IO_STACK_SIZE		4096*2
 #define MAIN_STACK_SIZE		16*1024
 
 

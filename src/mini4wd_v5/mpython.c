@@ -21,6 +21,7 @@
 #include <ai_mini4wd_timer.h>
 #include <ai_mini4wd_motor_driver.h>
 #include <ai_mini4wd_sensor.h>
+#include <ai_mini4wd_trace.h>
 
 #include "io_scheduler.h"
 
@@ -29,6 +30,7 @@ extern int mpython_is_raw_repl_mode(void);
 extern int pyexec_friendly_repl(void);
 extern int pyexec_raw_repl(void);
 extern int mpython_wrap_init(uint32_t stack_top, uint32_t stack_size, void *heap_start, void *heap_end);
+extern int mpython_wrap_init_vfs(void);
 extern void mpython_wrap_deinit(void);
 
 
@@ -195,8 +197,9 @@ void upython_task(intptr_t exinf)
 
 	//J Micro Pythonの初期化
 	TCB *p_tcb = get_tcb_self(MPYTHON_TASK);
-	
+
 	mpython_wrap_init((uint32_t)p_tcb->tskctxb.sp, STACK_SIZE, heap, heap + sizeof(heap));
+	mpython_wrap_init_vfs();
 
 	//J ログファイルの作成とConsole outへの設定
 	struct AiMini4wdTm  t;
@@ -214,14 +217,6 @@ void upython_task(intptr_t exinf)
 	aiMini4wdDebugTraceClear();
 	aiMini4wdDebugTraceControl(1);
 
-/*
-	aiMini4wdSetLedPattern(1);
-	while(1) {
-		aiMini4wdToggleLedPattern(0x3);
-		dly_tsk(20);
-	}
-*/
-
 soft_reset:
 	for (;;) {
 		if (mpython_is_raw_repl_mode()) {
@@ -231,6 +226,7 @@ soft_reset:
 
 			//J モーターは止める
 			aiMini4wdMotorDriverDrive(0);
+			dly_tsk(100);
 
 			//J 強制的にFlushする
 			ioSchedulerFinalizePutc();
@@ -247,11 +243,16 @@ soft_reset:
 
 	aiMini4wdSetErrorStatus(2);
 
-	goto soft_reset;
+//goto soft_reset;
 
-	mpython_wrap_deinit();
-
-	while(1);
+	while(1) {
+		dly_tsk(1);
+		if (sResetReq) {
+//			mpython_wrap_deinit();
+			dly_tsk(500);
+			aiMini4wdReset(0); //Reset
+		}
+	}
 }
 
 
