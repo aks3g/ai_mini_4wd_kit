@@ -43,6 +43,10 @@ void RESTART (volatile uint32_t *entry_addr, volatile uint32_t *stack_addr)
 
 void aiMini4wdReset(uint32_t reset_addr)
 {
+	if (reset_addr == 0) {
+		NVIC_SystemReset();
+	}
+	
 	__disable_irq();
 
 	// Reset all pheripherals

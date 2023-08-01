@@ -69,6 +69,18 @@ static void _destroyFileDescriptor(AiMini4wdFile *file)
 	return;
 }
 
+int aiMini4wdFsIsClosed(AiMini4wdFile *file)
+{
+	for (int i=0 ; i<MAX_FILES ; ++i) {
+		if (((AiMini4wdFile *)&(sFiles[i].file)) == file) {
+			if (sFiles[i].used) return 0;
+			else				return 1;
+		}
+	}
+	return 0;
+}
+
+
 /*--------------------------------------------------------------------------*/
 static AiMini4wdDir *_getUnusedDirDescriptor(void)
 {
@@ -278,6 +290,12 @@ int aiMini4wdFsSync(AiMini4wdFile *file)
 	FRESULT ret = _f_sync((FIL *)file);
 	
 	return _aiMini4wdFsErrorCodeConvert(ret);
+}
+
+/*--------------------------------------------------------------------------*/
+int aiMini4wdFsTell(AiMini4wdFile *file)
+{
+	return _f_tell((FIL*)file);
 }
 
 /*--------------------------------------------------------------------------*/

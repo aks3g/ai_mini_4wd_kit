@@ -39,6 +39,7 @@ int aiMini4wdFsWrite(AiMini4wdFile *file, const void *buf, size_t size);
 
 int aiMini4wdFsSeek(AiMini4wdFile *file, int32_t offset);
 int aiMini4wdFsSize(AiMini4wdFile *file);
+int aiMini4wdFsTell(AiMini4wdFile *file);
 int aiMini4wdFsEof(AiMini4wdFile *file);
 
 int aiMini4wdFsSync(AiMini4wdFile *file);
@@ -55,6 +56,9 @@ void aiMini4wdFsCloseDir(AiMini4wdDir *dir);
 int aiMini4wdFsReadDir(AiMini4wdDir *dir, AiMini4wdFileInfo *file);
 
 int aiMini4wdDiskFormat(void);
+
+int aiMini4wdFsIsClosed(AiMini4wdFile *file);
+
 
 #ifdef __cplusplus
 }

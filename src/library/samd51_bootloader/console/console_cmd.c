@@ -502,7 +502,7 @@ static void _console_cmd_fs_test(char **args, int argn) {
 	aiMini4wdFsClose(fp);
 }
 
-static sTraceIdx=0;
+static int sTraceIdx=0;
 static void log_reader(uint32_t idx, uint32_t tick, uint32_t log)
 {
 	aiMini4wdDebugPrintf("%4d\t%08x\t%08x\n", idx, tick, log);

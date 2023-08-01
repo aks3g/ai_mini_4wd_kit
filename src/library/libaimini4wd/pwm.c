@@ -22,8 +22,6 @@
 
 extern uint32_t gAiMini4wdInitFlags;
 
-static uint32_t sMinusCountMax = 5;
-
 static SAMD51_GPIO_PORT sPwm1Port = SAMD51_GPIO_B14;
 static SAMD51_GPIO_PORT sPwm2Port = SAMD51_GPIO_B15;
 
@@ -76,9 +74,7 @@ int aiMini4wdMotorDriverGetDuty(void)
 
 /*--------------------------------------------------------------------------*/
 int aiMini4wdMotorDriverSetMinusCountMax(uint32_t max_count)
-{
-	sMinusCountMax = max_count;
-	
+{	
 	return 0;
 }
 
@@ -184,7 +180,6 @@ float gDebugErrorSum = 0;
 /*--------------------------------------------------------------------------*/
 int aiMini4wdMotorDriverUpdateRpm(float rpm)
 {
-	static uint32_t sMinusCnt = 0;
 	static float last_rpm = 0;
 
 	if (sDriveMode != DRIVE_MODE_RPM) {
@@ -211,20 +206,13 @@ int aiMini4wdMotorDriverUpdateRpm(float rpm)
 
 	// Dutyが正であれば、最大値を切る
 	if (u >= 0) {
-		sMinusCnt = 0;
 		if (u > 255) {
 			u = 255;
 		}
 	}
 	else {
-		sMinusCnt++;
 		if (u < -255) {
 			u = -255;
-		}
-
-		// Dutyを負の状態で長時間キープさせない
-		if (sMinusCnt > sMinusCountMax) {
-			u = 0;			
 		}
 	}
 
