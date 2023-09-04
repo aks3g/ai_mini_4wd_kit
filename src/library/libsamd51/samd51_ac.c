@@ -185,6 +185,12 @@ int samd51_ac_state(uint32_t ch)
 }
 
 /*--------------------------------------------------------------------------*/
+int samd51_ac_stat_1(void)
+{
+	return (reg_ac->STATUSA & (1<<SAMD51_AC_STATE1_pos));
+}
+
+/*--------------------------------------------------------------------------*/
 void AC_Handler(void) 
 {
 	uint8_t intflag = reg_ac->INTFLAG;

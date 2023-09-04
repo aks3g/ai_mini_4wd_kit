@@ -437,7 +437,7 @@ function trialDataUpdatedCallback(file_name, policy, sensorData)
 
   trial_data_select.appendChild(option);
 
-  var [ave_velocity, ave_duty] = analizeDriveRecord(StateSpaceVec, sensorData, UNIT_mm, 1.0/52.0, wheelSize, ThresholdOfCurve);
+  var [ave_velocity, ave_duty] = analizeDriveRecord(StateSpaceVec, sensorData, UNIT_mm, 1.0/50.0, wheelSize, ThresholdOfCurve);
 
   TrialDataList.push(new TrialDataInfo(id, file_name, policy, ave_velocity, ave_duty));
 }

@@ -46,7 +46,7 @@ Q(calibrateTachometer)
 Q(setTachometerThreshold)
 
 //J Estimater
-Q(SelfPositionEstimater)
+Q(Localization)
 Q(push_map_item)
 Q(len)
 Q(prepare)

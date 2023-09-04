@@ -84,7 +84,7 @@ function estimateVelocityAndOdometory(data, wheelSize)
   var odometryArr = [];
   var odometryArrFromAccel = [];
 
-  var Interval = 1.0/52.0;
+  var Interval = 1.0/50.0;
 
   var odometry = 0;
   var velocity = 0;
@@ -126,7 +126,7 @@ function estimateMachinePosition(data, coeff, wheelSize)
   TracingContext.yArr = [];
   TracingContext.lapArr = [];
 
-  var Interval = 1.0/52.0;
+  var Interval = 1.0/50.0;
 
   //J タコメータの値とYaw軸の回転を見ながら位置をプロットする
   var direction = 0;
@@ -219,7 +219,7 @@ function round180(direction)
 //
 function resampling(data, wheelSize, unit)
 {
-  var Interval = 1.0/52.0;
+  var Interval = 1.0/50.0;
   var resampled = [[],[],[],[],[],[],[],[],[],[]];
 
   var ax = 0;
@@ -251,9 +251,9 @@ function resampling(data, wheelSize, unit)
         ax    += data[IDX_AX][i];
         ay    += data[IDX_AY][i];
         az    += data[IDX_AZ][i];
-        pitch += data[IDX_PITCH][i] * remaining_rate * 1/52;
-        roll  += data[IDX_ROLL][i]  * remaining_rate * 1/52;
-        yaw   += data[IDX_YAW][i]   * remaining_rate * 1/52;
+        pitch += data[IDX_PITCH][i] * remaining_rate * 1/50;
+        roll  += data[IDX_ROLL][i]  * remaining_rate * 1/50;
+        yaw   += data[IDX_YAW][i]   * remaining_rate * 1/50;
         rpm   += data[IDX_RPM][i];
         vbat  += data[IDX_VBAT][i];
         imot  += data[IDX_IMOT][i];
@@ -289,9 +289,9 @@ function resampling(data, wheelSize, unit)
       ax    = data[IDX_AX][i];
       ay    = data[IDX_AY][i];
       az    = data[IDX_AZ][i];
-      pitch = data[IDX_PITCH][i] * fragment_rate * 1/52;
-      roll  = data[IDX_ROLL][i]  * fragment_rate * 1/52;
-      yaw   = data[IDX_YAW][i]   * fragment_rate * 1/52;
+      pitch = data[IDX_PITCH][i] * fragment_rate * 1/50;
+      roll  = data[IDX_ROLL][i]  * fragment_rate * 1/50;
+      yaw   = data[IDX_YAW][i]   * fragment_rate * 1/50;
       rpm   = data[IDX_RPM][i];
       vbat  = data[IDX_VBAT][i];
       imot  = data[IDX_IMOT][i];
@@ -301,9 +301,9 @@ function resampling(data, wheelSize, unit)
       ax    += data[IDX_AX][i];
       ay    += data[IDX_AY][i];
       az    += data[IDX_AZ][i];
-      pitch += data[IDX_PITCH][i] * 1/52;
-      roll  += data[IDX_ROLL][i] * 1/52;
-      yaw   += data[IDX_YAW][i] * 1/52;
+      pitch += data[IDX_PITCH][i] * 1/50;
+      roll  += data[IDX_ROLL][i] * 1/50;
+      yaw   += data[IDX_YAW][i] * 1/50;
       rpm   += data[IDX_RPM][i];
       vbat  += data[IDX_VBAT][i];
       imot  += data[IDX_IMOT][i];
@@ -419,7 +419,7 @@ function featureValue5(delta_mm, yaw_deg, pitch_deg, threshold)
 //
 function createStateSpaceVector(data, unit, coeff, wheelSize, threshold, lane=3, max_lap=3)
 {
-  var Interval = 1.0/52.0;
+  var Interval = 1.0/50.0;
   var stateSpaceVec = []
 
   var posX = 0;
@@ -462,8 +462,8 @@ function createStateSpaceVector(data, unit, coeff, wheelSize, threshold, lane=3,
         cnt++;
         var remaining_rate = (fragment / delta_mm);
 
-        yaw   += data[IDX_YAW][i] * remaining_rate * 1/52;
-        pitch += data[IDX_PITCH][i] * remaining_rate * 1/52;
+        yaw   += data[IDX_YAW][i] * remaining_rate * 1/50;
+        pitch += data[IDX_PITCH][i] * remaining_rate * 1/50;
         rpm   += data[IDX_RPM][i];
 
         if (lane == 3) {
@@ -487,14 +487,14 @@ function createStateSpaceVector(data, unit, coeff, wheelSize, threshold, lane=3,
       } while (remaining_delta > unit)
 
       var fragment_rate = (remaining_delta) / delta_mm;
-      yaw   = data[IDX_YAW][i] * fragment_rate * 1/52;
-      pitch = data[IDX_PITCH][i] * fragment_rate * 1/52;
+      yaw   = data[IDX_YAW][i] * fragment_rate * 1/50;
+      pitch = data[IDX_PITCH][i] * fragment_rate * 1/50;
       rpm   = data[IDX_RPM][i];
       cnt++;
     }
     else {
-      yaw   += data[IDX_YAW][i] * 1/52;
-      pitch += data[IDX_PITCH][i] * 1/52;
+      yaw   += data[IDX_YAW][i] * 1/50;
+      pitch += data[IDX_PITCH][i] * 1/50;
       rpm   += data[IDX_RPM][i];
       cnt++;
     }

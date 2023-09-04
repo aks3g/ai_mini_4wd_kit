@@ -70,9 +70,6 @@ static void _update_rpm(uint16_t count, int dir)
 
 		//J タイヤ軸でのRPM
 		next_rpm =  rpm * 8.0f / 20.0f;
-		if (dir) {
-			next_rpm = -next_rpm;
-		}
 	}
 	else {
 		next_rpm = 0;
@@ -87,8 +84,16 @@ static void _update_rpm(uint16_t count, int dir)
 	memcpy(sSorted, sMedianBuf, sizeof(sMedianBuf));
 	qsort(sSorted, sizeof(sSorted)/sizeof(float), sizeof(float), _float_cmp);
 
-	sCurrentData.rpm = sSorted[2];
-	sCurrentData.rpm_raw = next_rpm;	
+
+	if (dir) {
+		sCurrentData.rpm = -sSorted[2];
+		sCurrentData.rpm_raw = -next_rpm;
+	}
+	else {
+		sCurrentData.rpm = sSorted[2];
+		sCurrentData.rpm_raw = next_rpm;
+	}
+
 
 	sOdometerUpdateCount = sOdometerUpdateCount + 1;
 	
@@ -97,12 +102,13 @@ static void _update_rpm(uint16_t count, int dir)
 
 static void _ac_callback(void)
 {
+	int dir = samd51_ac_stat_1();
 	uint16_t counter = samd51_tc_start_onshot(SAMD51_TC2);
 	if (sOnStartCb) {
 		sOnStartCb();
 	}
 
-	if (samd51_ac_state(1)){
+	if (dir){
 		_update_rpm(counter, 0);
 	}
 	else {
@@ -171,7 +177,7 @@ static int _initialize_tachometer(void)
 	} else {
 //		aiMini4wdSensorSetTachometerThreshold(2500, 2500, 0);
 	}
-	aiMini4wdSensorSetTachometerThreshold(2500, 2500, 1);
+	aiMini4wdSensorSetTachometerThreshold(2735, 2735, 1);
 
 	//J Enable AC
 	samd51_mclk_enable(SAMD51_APBC_AC, 1);
@@ -334,13 +340,15 @@ int _cmp_uint16(const void *p1, const void *p2)
 }
 
 /*--------------------------------------------------------------------------*/
-int aiMini4wdSensorCalibrateTachoMeter(uint16_t *threshold_mv, uint16_t *work_buf, size_t length)
+int aiMini4wdSensorCalibrateTachoMeter(int ch, uint16_t *threshold_mv, uint16_t *work_buf, size_t length)
 {
 	int ret = 0;
 
 	if (threshold_mv == NULL) {
 		return AI_ERROR_NULL;
 	}
+
+	memset(work_buf, 0, sizeof(uint16_t)*length);
 
 	//J ADCをLockする
 	aiMini4wdCurrentVoltageMonitorControl(0);
@@ -352,9 +360,10 @@ int aiMini4wdSensorCalibrateTachoMeter(uint16_t *threshold_mv, uint16_t *work_bu
 	while ((tick+500) > aiMini4WdTimerGetSystemtick());
 	
 	//J ADCで全力サンプリング
+	SAMD51_ADC_POS_INPUT positive= (ch == 0) ? SAMD51_ADC_POS_AIN6 : SAMD51_ADC_POS_AIN7;
 	for (int i=0 ; i<length ; ++i) {
 		sAdcConversionDone= 0;
-		ret = samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, SAMD51_ADC_POS_AIN6, SAMD51_ADC_NEG_GND, _adcConversionDone);
+		ret = samd51_adc_convert(0, SAMD51_ADC_SINGLE_END, positive, SAMD51_ADC_NEG_GND, _adcConversionDone);
 		if (ret != AI_OK) {
 			return ret;
 		}

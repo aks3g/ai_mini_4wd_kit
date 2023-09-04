@@ -11,7 +11,7 @@ var SelfPositionEstimater = {
   milage_index : 0,
   unit_mm : 50,
   wheelSize : 26,
-  interval : 1/52,
+  interval : 1/50,
 
   weight: 0.001,
 

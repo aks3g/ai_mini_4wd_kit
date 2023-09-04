@@ -22,7 +22,7 @@ int aiMini4wdCheckExternalTrigger(void);
 /*---------------------------------------------------------------------------*/
 extern const mp_obj_module_t mini4wd_module;
 extern const mp_obj_type_t machine_type;
-extern const mp_obj_type_t spe_type;
+extern const mp_obj_type_t localization_type;
 extern const mp_obj_type_t machine_learning_type;
 
 

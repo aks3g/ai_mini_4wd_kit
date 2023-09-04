@@ -321,8 +321,8 @@ function onStartButtonClick()
   var wheelSize = Number(document.getElementById("wheel_size").value);
 
   if (isNaN(TimerId)) {
-    initializeSimulater(StateSpaceVec, UNIT_mm,  wheelSize, 1/52.0, ThresholdOfCurve);
-    TimerId = setInterval(onSimulaterTimerEvent, 1000/52);
+    initializeSimulater(StateSpaceVec, UNIT_mm,  wheelSize, 1/50.0, ThresholdOfCurve);
+    TimerId = setInterval(onSimulaterTimerEvent, 1000/50);
     document.getElementById("start_btn").innerHTML = "STOP";
   }
   else {

@@ -303,19 +303,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mini4wd_setGain_obj, 4, mini4wd_setGain);
 
 
 /*---------------------------------------------------------------------------*/
-STATIC mp_obj_t mini4wd_calibrateTachometer(mp_obj_t self_in)
+STATIC mp_obj_t mini4wd_calibrateTachometer(mp_obj_t self_in, mp_obj_t ch)
 {
+	int ch_int = mp_obj_get_int(ch);
 	uint16_t threshold_mv = 0;
 	uint16_t *work_buf = m_new(uint16_t,  1024);
 
-	int ret = aiMini4wdSensorCalibrateTachoMeter(&threshold_mv, work_buf, 1024);
+	int ret = aiMini4wdSensorCalibrateTachoMeter(ch_int, &threshold_mv, work_buf, 1024);
 	if (ret != 0) {
 	   return mp_const_none;
 	}
 
 	return mp_obj_new_int((int)threshold_mv);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mini4wd_calibrateTachometer_obj, mini4wd_calibrateTachometer);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_calibrateTachometer_obj, mini4wd_calibrateTachometer);
 
 
 /*---------------------------------------------------------------------------*/

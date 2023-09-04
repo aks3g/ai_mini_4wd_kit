@@ -75,5 +75,6 @@ int samd51_ac_initialize(
 						);
 void samd51_ac_finalize(void);
 int samd51_ac_state(uint32_t ch);
+int samd51_ac_stat_1(void);
 
 #endif /* SAMD51_AC_H_ */

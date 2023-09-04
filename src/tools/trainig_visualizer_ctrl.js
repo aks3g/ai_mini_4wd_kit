@@ -109,7 +109,7 @@ function canvasOnMove(evt)
 
   //J 記録済みの点が2点以上あれば、2点間の時間を計測する
   if (AuxiliaryLines.length >= 2) {
-    drawTimeCursor(evt.target, AuxiliaryLines[0], AuxiliaryLines[1], 1.0/52.0);
+    drawTimeCursor(evt.target, AuxiliaryLines[0], AuxiliaryLines[1], 1.0/50.0);
   }
 
   //J MinimapのUpdate
@@ -130,7 +130,7 @@ function canvasOnLeave(evt) {
 
   //J 記録済みの点が2点以上あれば、2点間の時間を計測する
   if (AuxiliaryLines.length >= 2) {
-    drawTimeCursor(evt.target, AuxiliaryLines[0], AuxiliaryLines[1], 1.0/52.0);
+    drawTimeCursor(evt.target, AuxiliaryLines[0], AuxiliaryLines[1], 1.0/50.0);
   }
 
 }

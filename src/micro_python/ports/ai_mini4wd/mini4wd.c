@@ -18,7 +18,7 @@ STATIC const mp_rom_map_elem_t mini4wd_module_globals_table[] = {
 
 	//J Global Functions
 	{ MP_ROM_QSTR(MP_QSTR_Machine), MP_ROM_PTR(&machine_type) },
-	{ MP_ROM_QSTR(MP_QSTR_SelfPositionEstimater), MP_ROM_PTR(&spe_type)},
+	{ MP_ROM_QSTR(MP_QSTR_Localization), MP_ROM_PTR(&localization_type)},
 	{ MP_ROM_QSTR(MP_QSTR_MachineLearning), MP_ROM_PTR(&machine_learning_type)},
 };
 
