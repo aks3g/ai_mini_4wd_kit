@@ -315,6 +315,16 @@ static void _capture_done_cb(int status)
 		sRxBuf.imu_us.gyro[1] = ((sRxBuf.imu_us.gyro[1] << 8) & 0xff00) | ((sRxBuf.imu_us.gyro[1] >> 8) & 0x00ff);
 		sRxBuf.imu_us.gyro[2] = ((sRxBuf.imu_us.gyro[2] << 8) & 0xff00) | ((sRxBuf.imu_us.gyro[2] >> 8) & 0x00ff);
 
+		// Keep compatibility 
+		uint16_t swap=sRxBuf.imu_us.gyro[0];
+		sRxBuf.imu_us.gyro[0]=sRxBuf.imu_us.gyro[1];
+		sRxBuf.imu_us.gyro[1]=swap;
+
+		swap=sRxBuf.imu_us.accel[0];
+		sRxBuf.imu_us.accel[0]=sRxBuf.imu_us.accel[1];
+		sRxBuf.imu_us.accel[1]=swap;
+
+
 		aiMini4wdUpdateSensorData(&sRxBuf);
 	}
 
