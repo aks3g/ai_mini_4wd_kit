@@ -13,6 +13,7 @@ var TestData = [[], [], [], [], [], [], [], [], []];
 
 var StateSpaceVec = [];
 var ThresholdOfCurve = [];
+var VelocityArr=[];
 
 var UNIT_mm = 100;
 
@@ -168,6 +169,8 @@ function sensorDataUpdatedCallback(sensorData)
 
   //J 3周分のデータを利用して、状態空間を作り出す
   StateSpaceVec = createStateSpaceVector(SensorData, UNIT_mm, {left:1.0, right:1.0}, wheelSize, ThresholdOfCurve);
+  VelocityArr = [...Array(StateSpaceVec.length)].map(()=>parseInt(document.getElementById("strategy_target_velocity").value));
+
   updateStateSpaceVector(-1);
 
   //J 特徴量リストをMapリストに載せる
@@ -181,6 +184,7 @@ function sensorDataUpdatedCallback(sensorData)
 function parseSsvFile(lines)
 {
   StateSpaceVec = [];
+  VelocityArr =[];
 
   var arr_f = [];
   var arr_x = [];
@@ -189,13 +193,22 @@ function parseSsvFile(lines)
 
   lines.forEach( function (line) {
     //J strategy は arr_policyという名前のPython形式の配列として記述されている
-    if (line.indexOf('arr_s') == 0) {
+    if (line.indexOf('arr_map') == 0) {
       //J []で囲まれた範囲を切り出す
       var begin = line.indexOf('[')+1;
       var end = line.indexOf(']');
       var arr_str = line.substring(begin, end).split(/,/);
       arr_str.forEach(function (v) {
         arr_f.push(Number(v));
+      });
+    }
+    else if (line.indexOf('arr_policy') == 0) {
+      //J []で囲まれた範囲を切り出す
+      var begin = line.indexOf('[')+1;
+      var end = line.indexOf(']');
+      var arr_str = line.substring(begin, end).split(/,/);
+      arr_str.forEach(function (v) {
+        VelocityArr.push(Number(v));
       });
     }
     else if (line.indexOf('arr_x') == 0) {
@@ -298,10 +311,11 @@ function onSaveMapButtonClick()
 
 function createStateSpaceVectorStream(ssv)
 {
-  var str_s = "arr_s = [";
+  var str_s = "arr_map = [";
   var str_x = "arr_x = [";
   var str_y = "arr_y = [";
   var str_l = "arr_l = [";
+  var str_v = "arr_policy = [";
 
   for (var i=0 ; i<ssv.length ; ++i) {
     if (i != 0) {
@@ -309,16 +323,19 @@ function createStateSpaceVectorStream(ssv)
       str_x += ",";
       str_y += ",";
       str_l += ",";
+      str_v += ",";
     }
     str_s += ssv[i].feature.toString();
     str_x += ssv[i].x.toString();
     str_y += ssv[i].y.toString();
     str_l += ssv[i].lap.toString();
+    str_v += VelocityArr[i].toString();
   }
   str_s += "]\n";
   str_x += "]\n";
   str_y += "]\n";
   str_l += "]\n";
+  str_v += "]\n";
 
   var str_curve = "curve_threshold = [";
   str_curve += ThresholdOfCurve.inter_to_center_left.toString() + ",";
@@ -327,7 +344,7 @@ function createStateSpaceVectorStream(ssv)
   str_curve += ThresholdOfCurve.center_to_outer_right.toString();
   str_curve += "]\n";
 
-  str = "# SSV\n" + str_s + str_x + str_y + str_l + str_curve;
+  str = "# SSV\n" + str_s + str_x + str_y + str_l + str_v + str_curve;
 
   //J Byte Streamに変換
   var len = str.length;
@@ -495,7 +512,7 @@ function updateStateSpaceVector(position = -1)
 
 
 //-----------------------------------------------------------------------------
-// 特徴量マップ情報をリストにダンプ
+// 表示情報のUpdate
 //
 function onMapSelecterChanged(select)
 {
@@ -503,11 +520,33 @@ function onMapSelecterChanged(select)
 
   //J Property view を変更
   document.getElementById("course_feature").value = StateSpaceVec[position].feature;
+  document.getElementById("strategy_target_velocity").value = VelocityArr[position];
 
   //J 描画を更新
   updateStateSpaceVector(position);
   updateTrialDataHeatmap(position);
 }
+
+//-----------------------------------------------------------------------------
+// 特徴量マップ情報をリストにダンプ
+//
+function onPropertyUpdate()
+{
+  select = document.getElementById("property_list")
+
+  var position = select.options[select.selectedIndex].value;
+  var v = document.getElementById("strategy_target_velocity").value
+  var f = document.getElementById("course_feature").value
+
+  StateSpaceVec[position].feature = f;
+  VelocityArr[position] = v
+
+  //J 描画を更新
+  updateStateSpaceVector(position);
+  updateTrialDataHeatmap(position);
+}
+
+
 
 //-----------------------------------------------------------------------------
 // 試行データの変更
@@ -571,46 +610,13 @@ function updateMainCanvasAll(position = -1)
   }
 
   if (is_extra_info_enabled) {
-    var select = document.getElementById("trial_data_list");
-    if (select.selectedIndex < 0) {
-      return;
-    }
-    var selected_val = select.options[select.selectedIndex].value;
+    console.log('hogex')
 
+    var arr = VelocityArr;
+    var min = 10;
+    var max = 25;
+    var unit_str = "[km/h]"
 
-    var arr = [];
-    var min = 0;
-    var max = 100;
-    var unit_str = "";
-    if (extra_info_name == "strategy") {
-      arr = TrialDataList[selected_val].policy;
-      min = 10;
-      max = 25;
-      unit_str = "[km/h]"
-    }
-    else if (extra_info_name == "velocity") {
-      arr = TrialDataList[selected_val].average_velocity;
-      min = 10;
-      max = 25;
-      unit_str = "[km/h]"
-    }
-    else if (extra_info_name == "duty") {
-      arr = TrialDataList[selected_val].average_duty;
-      min = -100;
-      max = 100;
-      unit_str = "[%]"
-    }
-    else if (extra_info_name == "diff") {
-      arr = TrialDataList[selected_val].diff;
-      min = _find_min(TrialDataList[selected_val].diff);
-      max = _find_max(TrialDataList[selected_val].diff);
-      if(min < 0) {
-        max = Math.abs(min) > max ? Math.abs(min) : max;
-        min = -max;
-      }
-
-      unit_str = "[km/h]"
-    }
     drawHeatMap(document.getElementById("extra_info_canvas"),
                         document.getElementById("visual_box").clientWidth,
                         document.getElementById("visual_box").clientHeight,
@@ -622,7 +628,6 @@ function updateMainCanvasAll(position = -1)
                         max,
                         unit_str);
 
-
     document.getElementById("extra_info_canvas").style.visibility = "visible";
   }
   else {
@@ -631,3 +636,5 @@ function updateMainCanvasAll(position = -1)
 
 
 }
+
+

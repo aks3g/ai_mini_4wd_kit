@@ -205,11 +205,11 @@ a:hover {
 .visual_box {
   float: left;
 
-  width : -webkit-calc(100% - 530px) ;
-  width : calc(100% - 530px);
-  height: 600px;
+  width : -webkit-calc(100% - 400px) ;
+  width : calc(100% - 400px);
+  height: 1000px;
 
-  padding-left: 10px; 
+  padding-left: 50px; 
 
   position: relative
 }

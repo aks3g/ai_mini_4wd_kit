@@ -55,7 +55,7 @@ var FEATURE_C2_R = 8
 var FEATURE_C3_R = 9
 var FEATURE_C4_R = 10
 var FEATURE_C5_R = 11
-var FEATURE_STRAIGHT = 12
+var FEATURE_5L_STRAIGHT = 12
 
 
 var TracingContext = {
@@ -404,7 +404,7 @@ function featureValue5(delta_mm, yaw_deg, pitch_deg, threshold)
   }
 
   else {
-    feature = FEATURE_STRAIGHT;
+    feature = FEATURE_5L_STRAIGHT;
   }
 
 

@@ -111,16 +111,7 @@ function strategy2rgba(strategy, min=0, max=30, alpha="7F")
   var step = (max - min) / 512
   var position = (strategy - min) / (max - min)
 
-  if (strategy == max) {
-    r =  255;
-    g =  255;
-    b =  255;
-  }
-  else if (strategy  == min) {
-    r =  40;
-    g =  40;
-    b =  40;
-  } else if (position > 0.5) {
+  if (position > 0.5) {
     position = (position - 0.5) * 2;
     r = Math.round(position * 255);
     g = 255 - r;
@@ -179,6 +170,7 @@ function drawStateSpaceVector(canvas, clientWidth, clientHeight, vec, position, 
   ctx2d.lineWidth = 1.5
   for (var i=0; i<vec.length ; ++i) {
     ctx2d.beginPath()
+    ctx2d.lineWidth = 2;
     ctx2d.strokeStyle = FeatureColorTable[vec[i].feature] + AlphaMap[vec[i].lap];
     ctx2d.fillStyle = (i == position) ? "#ff00ffff" : "#00000000"; //TODO
     ctx2d.arc(vec[i].x * scale + org.x, canvas_size.h - (vec[i].y * scale + org.y), 10, 0, Math.PI*2, false);
@@ -211,19 +203,21 @@ function drawStateSpaceVector(canvas, clientWidth, clientHeight, vec, position, 
 /*-----------------------------------------------------------------------------
  * Strategyをヒートマップで描画  0 - 40km/hの間をヒートマップで表現する
  */
-function drawHeatMap(canvas, clientWidth, clientHeight, ssv, strategy, position, focused_lap, min, max, unit_str = "")
+function drawHeatMap(canvas, clientWidth, clientHeight, ssv, arr, position, focused_lap, min, max, unit_str = "")
 {
   var AlphaMap = ["ff", "ff", "ff"];
   if (0 <= position && position < ssv.length) {
     var highlite_lap = ssv[position].lap;
 
     AlphaMap = ["40", "40", "40"];
-    AlphaMap[highlite_lap] = "7f";
+    AlphaMap[highlite_lap] = "ff";
   }
   else if (focused_lap != NaN) {
     AlphaMap = ["40", "40", "40"];
     AlphaMap[focused_lap] = "7f";
   }
+
+  console.log(AlphaMap)
 
   //J mapのサイズを取得する
   var map_size = checkRectSize(ssv);
@@ -253,7 +247,7 @@ function drawHeatMap(canvas, clientWidth, clientHeight, ssv, strategy, position,
   for (var i=0; i<ssv.length ; ++i) {
     ctx2d.beginPath()
     ctx2d.strokeStyle = "#00000000"
-    ctx2d.fillStyle = strategy2rgba(strategy[i], min, max, AlphaMap[ssv[i].lap]);
+    ctx2d.fillStyle = strategy2rgba(arr[i], min, max, AlphaMap[ssv[i].lap]);
     ctx2d.arc(ssv[i].x * scale + org.x, canvas_size.h - (ssv[i].y * scale + org.y), 10, 0, Math.PI*2, false);
     ctx2d.fill();
     ctx2d.stroke();

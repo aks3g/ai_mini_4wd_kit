@@ -28,7 +28,7 @@ def get_git_hash() :
 
 	return orig_head.readline()[0:4];
 
-aup_file = open("MINI4WD.AUP", 'w+');
+aup_file = open("MINI4WD.AUP", 'wb');
 firmware_file = open(sys.argv[1], 'rb');
 
 firmware = firmware_file.read();
