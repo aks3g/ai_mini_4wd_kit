@@ -1,0 +1,214 @@
+[
+  {
+    "name": "straight",
+    "info": [
+      [
+        {"type": 8,"length": 540.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8,"length": 540.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8,"length": 540.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ]
+    ]
+  },
+  {
+    "name": "corner45_right",
+    "info": [
+      [
+        {"type": 5,"length": 519.5,"r": 661.5,"ratio":1.0,"dx":467.8,"dy":-193.7,"rotate":-45}
+      ],
+      [
+        {"type": 6,"length": 427.6,"r": 544.5,"ratio":1.0,"dx":385.0,"dy":-159.5,"rotate":-45}
+      ],
+      [
+        {"type": 7,"length": 335.8,"r": 427.5,"ratio":1.0,"dx":302.3,"dy":-125.2,"rotate":-45}
+      ]
+    ]
+  },
+  {
+    "name": "corner45_left",
+    "info": [
+      [
+        {"type": 4,"length": 335.8,"r": 427.5,"ratio":1.0,"dx":302.3,"dy":125.2,"rotate":45}
+      ],
+      [
+        {"type": 3,"length": 427.6,"r": 544.5,"ratio":1.0,"dx":385.0,"dy":159.5,"rotate":45}
+      ],
+      [
+        {"type": 2,"length": 519.5,"r": 661.5,"ratio":1.0,"dx":467.8,"dy":193.7,"rotate":45}
+      ]
+    ]
+  },
+  {
+    "name": "slope_up",
+    "info": [
+      [
+        {"type": 8, "length":  50.0,"ratio":0.96},
+        {"type": 1, "length": 100.0,"ratio":0.96},
+        {"type": 8, "length": 412.0,"ratio":0.96,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  50.0,"ratio":0.96},
+        {"type": 1, "length": 100.0,"ratio":0.96},
+        {"type": 8, "length": 412.0,"ratio":0.96,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  50.0,"ratio":0.96},
+        {"type": 1, "length": 100.0,"ratio":0.96},
+        {"type": 8, "length": 412.0,"ratio":0.96,"dx":540,"dy":0,"rotate":0}
+      ]
+    ]
+  },
+  {
+    "name": "slope_down",
+    "info": [
+      [
+        {"type": 8, "length": 412.0,"ratio":0.96},
+        {"type": 1, "length": 100.0,"ratio":0.96},
+        {"type": 8, "length":  50.0,"ratio":0.96,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length": 412.0,"ratio":0.96},
+        {"type": 1, "length": 100.0,"ratio":0.96},
+        {"type": 8, "length":  50.0,"ratio":0.96,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length": 412.0,"ratio":0.96},
+        {"type": 1, "length": 100.0,"ratio":0.96},
+        {"type": 8, "length":  50.0,"ratio":0.96,"dx":540,"dy":0,"rotate":0}
+      ]
+    ]
+  },
+  {
+    "name": "bank",
+    "info": [
+      [
+        {"type": 8, "length":  60.0,"ratio":1.0},
+        {"type": 1, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  60.0,"ratio":1.0,"dx":200,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  60.0,"ratio":1.0},
+        {"type": 1, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  60.0,"ratio":1.0,"dx":200,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  60.0,"ratio":1.0},
+        {"type": 1, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  60.0,"ratio":1.0,"dx":200,"dy":0,"rotate":0}
+      ]
+    ]
+  },
+  {
+    "name": "wave",
+    "info": [
+      [
+        {"type": 8, "length":  33.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  33.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  33.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  33.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  33.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  33.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ]
+    ]
+  },
+  {
+    "name": "wave-r",
+    "info": [
+      [
+        {"type": 8, "length":  33.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  33.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  33.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  33.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8, "length":  33.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 2, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length": 100.0,"ratio":1.0},
+        {"type": 5, "length": 100.0,"ratio":1.0},
+        {"type": 8, "length":  33.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ]
+    ]
+  },
+  {
+    "name": "lc1-only",
+    "info": [
+      [
+        {"type": 8,"length": 540.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8,"length": 540.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ],
+      [
+        {"type": 8,"length": 200.0,"ratio":1.0},
+        {"type": 1,"length":  50.0,"ratio":1.0},
+        {"type": 8,"length": 100.0,"ratio":1.0},
+        {"type": 1,"length":  50.0,"ratio":1.0},
+        {"type": 8,"length": 140.0,"ratio":1.0,"dx":540,"dy":0,"rotate":0}
+      ]
+    ]
+  },
+  {
+    "name": "lc",
+    "info": [
+      [
+        {"type": 8,"length": 590.0,"ratio":1.0},
+        {"type": 5,"length": 150.0,"ratio":1.0},
+        {"type": 8,"length": 140.0,"ratio":1.0},
+        {"type": 2,"length": 150.0,"ratio":1.0},
+        {"type": 8,"length": 590.0,"ratio":1.0,"next":1,"dx":1620,"dy":-115,"rotate":0}
+      ],
+      [
+        {"type": 8,"length": 590.0,"ratio":1.0},
+        {"type": 5,"length": 150.0,"ratio":1.0},
+        {"type": 8,"length": 140.0,"ratio":1.0},
+        {"type": 2,"length": 150.0,"ratio":1.0},
+        {"type": 8,"length": 590.0,"ratio":1.0,"next":2,"dx":1620,"dy":-115,"rotate":0}
+      ],
+      [
+        {"type": 1,"length":  40.0,"ratio":1.0},
+        {"type": 8,"length": 340.0,"ratio":1.0},
+        {"type": 2,"length": 350.0,"ratio":1.0},
+        {"type": 8,"length": 220.0,"ratio":1.0},
+        {"type": 5,"length": 350.0,"ratio":1.0},
+        {"type": 8,"length": 340.0,"ratio":1.0},
+        {"type": 1,"length":  40.0,"ratio":1.0,"next":0,"dx":1620,"dy":230,"rotate":0}
+      ]
+    ]
+  }
+]
