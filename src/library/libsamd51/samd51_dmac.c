@@ -145,7 +145,7 @@ void samd51_dmac_finalize(void)
 
 	reg->CTRL = (1<<DMAC_CTRL_SWRST_Pos);
 
-	return AI_OK;
+	return;
 }
 
 

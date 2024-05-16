@@ -43,6 +43,7 @@ int aiMini4wdLedIndicatorEnabled(void);
 int aiMini4wdusbEnabled(void);
 
 int aiMini4wdSetLedIndicator(uint16_t value, uint8_t sep);
+void aiMini4wdExtOutput(int state);
 
 typedef void (*AiMini4wdOnVbusChanged)(int vbus);
 int aiMini4wdRegisterOnVbusChangedCb(AiMini4wdOnVbusChanged cb);

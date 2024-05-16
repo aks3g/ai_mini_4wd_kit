@@ -323,6 +323,17 @@ int aiMini4wdusbEnabled(void)
 	return sGlobalParams.enableUsb;
 }
 
+void aiMini4wdExtOutput(int state)
+{
+	if (state){
+		samd51_gpio_output(SAMD51_GPIO_A15, 1);
+	}
+	else {
+		samd51_gpio_output(SAMD51_GPIO_A15, 0);
+	}
+}
+
+
 static void _led_indicator_txrx_done(int error) {
 	(void)error;
 	

@@ -60,7 +60,16 @@ static int _float_cmp(const void *a, const void *b)
 {
 	return *(float *)a - *(float *)b;
 }
-	
+
+static int sDirBuf[5] = {0,0,0,0,0};
+
+//J DIRを平均値で確認する
+//#define DIR_DETECTION_AVERAGE__
+//J 採用されたRPMと同じIndexのDIRを選択する
+//#define DIR_DETECTION_RPM_PAIR__
+//J 強制的に順方向
+#define DIR_DETECTION_FORCE_FWD__
+
 static void _update_rpm(uint16_t count, int dir)
 {
 	float next_rpm = 0;
@@ -74,18 +83,37 @@ static void _update_rpm(uint16_t count, int dir)
 	else {
 		next_rpm = 0;
 	}
-	
+
 	sMedianBuf[0] = sMedianBuf[1];
 	sMedianBuf[1] = sMedianBuf[2];
 	sMedianBuf[2] = sMedianBuf[3];
 	sMedianBuf[3] = sMedianBuf[4];
 	sMedianBuf[4] = next_rpm;
-	
+
 	memcpy(sSorted, sMedianBuf, sizeof(sMedianBuf));
 	qsort(sSorted, sizeof(sSorted)/sizeof(float), sizeof(float), _float_cmp);
 
+	sDirBuf[0] = sDirBuf[1];
+	sDirBuf[1] = sDirBuf[2];
+	sDirBuf[2] = sDirBuf[3];
+	sDirBuf[3] = sDirBuf[4];
+	sDirBuf[4] = dir;
+#if defined(DIR_DETECTION_AVERAGE__)
+	if ((sDirBuf[0] + sDirBuf[1] + sDirBuf[2] + sDirBuf[3] +sDirBuf[4]) >= 3) {
+#elif defined(DIR_DETECTION_RPM_PAIR__)
+	int dir_sorted=dir;
+	for (int i=0 ; i<5 ; ++i){
+		if (sSorted[2] == sMedianBuf[i]) {
+			dir_sorted = sDirBuf[i];
+		}
+	}
 
+	if (dir_sorted) {
+#elif defined(DIR_DETECTION_FORCE_FWD__)
+	if (0) {
+#else
 	if (dir) {
+#endif
 		sCurrentData.rpm = -sSorted[2];
 		sCurrentData.rpm_raw = -next_rpm;
 	}

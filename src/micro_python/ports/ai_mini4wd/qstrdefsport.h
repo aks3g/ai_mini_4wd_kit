@@ -68,6 +68,8 @@ Q(readblocks)
 Q(writeblocks)
 Q(ioctl)
 
+Q(extOut)
+
 //J PYB
 Q(pyb)
 Q(millis)

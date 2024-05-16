@@ -320,14 +320,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_calibrateTachometer_obj, mini4wd_calibr
 
 
 /*---------------------------------------------------------------------------*/
-STATIC mp_obj_t mini4wd_setTachometerThreshold(mp_obj_t self_in, mp_obj_t threshold)
+STATIC mp_obj_t mini4wd_setTachometerThreshold(mp_obj_t self_in, mp_obj_t threshold1, mp_obj_t threshold2)
 {
-	uint16_t threshold_mv = mp_obj_get_int(threshold);
-	aiMini4wdSensorSetTachometerThreshold(threshold_mv, threshold_mv, 1); // Flashに毎回保存する
+	uint16_t threshold1_mv = mp_obj_get_int(threshold1);
+	uint16_t threshold2_mv = mp_obj_get_int(threshold2);
+	aiMini4wdSensorSetTachometerThreshold(threshold1_mv, threshold2_mv, 1); // Flashに毎回保存する
 
 	return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_setTachometerThreshold_obj, mini4wd_setTachometerThreshold);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(mini4wd_setTachometerThreshold_obj, mini4wd_setTachometerThreshold);
+
+/*---------------------------------------------------------------------------*/
+STATIC mp_obj_t mini4wd_extOut(mp_obj_t self_in, mp_obj_t out)
+{
+	int out_i = mp_obj_get_int(out);
+	aiMini4wdExtOutput(out_i);
+
+	return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mini4wd_extOut_obj, mini4wd_extOut);
+
 
 
 /*---------------------------------------------------------------------------*/
@@ -361,6 +373,7 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 	{ MP_ROM_QSTR(MP_QSTR_waitIntTrig),		MP_ROM_PTR(&mini4wd_waitIntTrig_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_waitExtTrig),		MP_ROM_PTR(&mini4wd_waitExtTrig_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_checkExtTrig),	MP_ROM_PTR(&mini4wd_checkExtTrig_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_extOut),			MP_ROM_PTR(&mini4wd_extOut_obj) },
 	{ MP_ROM_QSTR(MP_QSTR_calibrateTachometer),	MP_ROM_PTR(&mini4wd_calibrateTachometer_obj) },
 };
 
@@ -370,7 +383,7 @@ STATIC const mp_rom_map_elem_t machine_locals_dict_table[] = {
 void machine_state_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind)
 {
 	if (aiMini4wdOdometerEnabled()) {
-		mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%.3f",
+		mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d\t%.3f\t%.3f\t%.3f\t",
 			sSensorCount,
 			sSensorData.imu.accel_f[0],
 			sSensorData.imu.accel_f[1],
@@ -383,13 +396,14 @@ void machine_state_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 			sBatteryVoltage,
 			sMotorCurrent,
 			sCurrentDuty,
-			
+			sSensorData.rpm_raw,
+
 			sSensorData.odometry.delta_x_mm,
 			sSensorData.odometry.delta_y_mm
 			);
 	}
 	else {
-		mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d",
+		mp_printf(print, "%d\t%.3f\t%.3f\t%.3f\t%.0f\t%.0f\t%.0f\t%.3f\t%.3f\t%.3f\t%d\t%.3f",
 			sSensorCount,
 			sSensorData.imu.accel_f[0],
 			sSensorData.imu.accel_f[1],
@@ -401,7 +415,8 @@ void machine_state_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 			
 			sBatteryVoltage,
 			sMotorCurrent,
-			sCurrentDuty);
+			sCurrentDuty,
+			sSensorData.rpm_raw);
 	}
 }
 

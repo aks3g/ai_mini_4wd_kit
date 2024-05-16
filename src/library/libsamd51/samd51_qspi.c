@@ -179,7 +179,7 @@ void samd51_qspi_finalize(void)
 	
 	reg->CTRLA = (1 << SAMD51_QSPI_CTRLA_SWRST_POS);
 
-	return AI_OK;
+	return;
 }
 
 
